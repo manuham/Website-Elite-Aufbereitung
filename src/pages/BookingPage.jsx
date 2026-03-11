@@ -1,78 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Check, ChevronLeft, ChevronRight, ArrowLeft, Phone, Mail, MapPin, Plus, X as XIcon, Sparkles } from 'lucide-react';
-import { serviceCategories } from '../data/services';
-
-// ─── All-In-One combo packages ───────────────────────────────────────────────
-
-const ALL_IN_ONE = [
-    {
-        id: 'aio-1',
-        name: 'Innen & Außen Basis',
-        price: 'ab €130,-',
-        priceNum: 130,
-        savings: '€20 gespart',
-        includes: ['Basic Handwäsche', 'Basic Innenreinigung'],
-        features: [
-            'Kratzfreies Waschen (2-Eimer-Methode)',
-            'Staubsaugen & Abstauben Innenraum',
-            'Felgen, Reifen & Radkästen',
-            'Fenster & Spiegel innen/außen',
-            'Türpfosten & Türschwellen',
-            'Reifenaufbereitung',
-        ],
-    },
-    {
-        id: 'aio-2',
-        name: 'Glanz & Pflege',
-        price: 'ab €230,-',
-        priceNum: 230,
-        savings: '€40 gespart',
-        includes: ['Premium Handwäsche', 'Premium Innenreinigung'],
-        features: [
-            'Kratzfreies Waschen + Sprühwachsversiegelung',
-            'Teer & Flugrost entfernen',
-            'Ledersitze reinigen & pflegen',
-            'Nassreinigung Stoffsitze & Teppich',
-            'Kunststoffteile behandeln',
-            'Fenster streifenfrei innen/außen',
-        ],
-        popular: true,
-    },
-    {
-        id: 'aio-3',
-        name: 'Politur & Keramikschutz',
-        price: 'ab €1.395,-',
-        priceNum: 1395,
-        savings: '€95 gespart',
-        includes: ['Schwere Politur', 'Keramik Beschichtungspaket'],
-        features: [
-            'Dekontaminierende Handwäsche inkl.',
-            'Mehrstufiges Maschinenpolieren',
-            'Kratzer, Hologramme & Oxidation entfernen',
-            'FIREBALL Keramikversiegelung',
-            '2–3 Jahre Standzeit',
-            'UV-, Wasser- & Schmutzschutz',
-        ],
-    },
-    {
-        id: 'aio-4',
-        name: 'Elite Komplettpaket',
-        price: 'ab €1.545,-',
-        priceNum: 1545,
-        savings: '€200 gespart',
-        badge: 'Bestes Paket',
-        includes: ['Premium Handwäsche', 'Premium Innenreinigung', 'Schwere Politur', 'Keramikversiegelung'],
-        features: [
-            'Komplette Innen- & Außenreinigung',
-            'Mehrstufige Maschinenpolierung',
-            'Alle Kratzer & Hologramme entfernt',
-            'FIREBALL Keramikversiegelung',
-            'Garantie: bis zu 5 Jahre',
-            'UV-, Wasser- & Schmutzschutz',
-        ],
-    },
-];
+import { serviceCategories, allInOnePackages } from '../data/services';
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
@@ -177,7 +106,7 @@ function Step1({ selectedItems, toggleItem, onNext }) {
             {/* All-in-One grid */}
             {activeTab === 'aio' && (
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-                    {ALL_IN_ONE.map(pkg => {
+                    {allInOnePackages.map(pkg => {
                         const selected = isSelected(pkg.id);
                         return (
                             <button

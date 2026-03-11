@@ -65,7 +65,7 @@ export default function Navbar() {
                     <img
                         src="/assets/logo.png"
                         alt="Elité Auto Aufbereitung"
-                        className="h-[5rem] sm:h-[6rem] lg:h-[7.5rem] w-auto object-contain -my-12 -ml-2 translate-y-[3px]"
+                        className="h-[5rem] sm:h-[6rem] lg:h-[7.5rem] w-auto object-contain -my-12 -ml-2 translate-y-[7px]"
                     />
                 </div>
 
