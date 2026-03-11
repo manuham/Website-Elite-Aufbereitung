@@ -28,8 +28,8 @@ export default function Pricing() {
     }, [activeTab]);
 
     return (
-        <section id="pricing" className="py-24 sm:py-32 px-4 sm:px-12 lg:px-24 bg-background relative overflow-hidden">
-            <div className="max-w-7xl mx-auto flex flex-col gap-16 items-center">
+        <section id="pricing" className="py-24 sm:py-32 px-4 sm:px-8 lg:px-12 xl:px-16 bg-background relative overflow-hidden">
+            <div className="mx-auto flex flex-col gap-16 items-center">
 
                 {/* Header */}
                 <div className="flex flex-col gap-4 items-center text-center">
@@ -42,7 +42,7 @@ export default function Pricing() {
                 {/* Tab Navigation */}
                 <div
                     ref={tabsRef}
-                    className="flex flex-nowrap md:flex-wrap items-center justify-start md:justify-center gap-3 w-full max-w-4xl overflow-x-auto pb-4 md:pb-0 px-2 md:px-0 snap-x hide-scrollbar"
+                    className="flex flex-nowrap md:flex-wrap items-center justify-start md:justify-center gap-3 w-full overflow-x-auto pb-4 md:pb-0 px-2 md:px-0 snap-x hide-scrollbar"
                 >
                     {serviceCategories.map((cat) => (
                         <button
@@ -68,7 +68,7 @@ export default function Pricing() {
                 {/* Pricing Cards Grid */}
                 <div
                     ref={contentRef}
-                    className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-12 md:gap-8 w-full max-w-6xl items-stretch mt-4"
+                    className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-12 md:gap-6 lg:gap-8 w-full items-stretch mt-4"
                 >
                     {activeCategory?.packages.map((pkg, i) => (
                         <div
@@ -113,7 +113,7 @@ export default function Pricing() {
                     ))}
                 </div>
 
-                <div className="w-full max-w-4xl bg-slate/30 border border-slate/50 rounded-2xl p-6 sm:p-8 mt-12 text-center">
+                <div className="w-full bg-slate/30 border border-slate/50 rounded-2xl p-6 sm:p-8 mt-12 text-center">
                     <p className="font-sans text-[13px] sm:text-sm text-ivory/60 leading-relaxed mx-auto max-w-3xl">
                         <strong className="text-ivory/80 block mb-2">Wichtiger Hinweis zu unseren Preisen:</strong>
                         Alle angegebenen Preise verstehen sich inklusive MwSt und sind Richtpreise. Die Einstiegspreise gelten für durchschnittlich verschmutzte Stadtautos und Pkws. Größere Fahrzeuge wie SUVs, Kombis und Vans erfordern aufgrund der größeren Flächen einen Aufpreis. Transporter, LKWs oder Extremverschmutzungen kalkulieren wir gerne individuell auf Anfrage. Der finale Endpreis basiert stets auf dem tatsächlichen Arbeitsaufwand und Verschmutzungsgrad Ihres Fahrzeugs.
