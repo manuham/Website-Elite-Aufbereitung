@@ -38,18 +38,21 @@ export default function Features() {
             title: 'Kratzerfreie Präzisionswäsche',
             description: 'Jedes Fahrzeug wird mit professioneller 2-Eimer-Methode und kontaktloser Vorwäsche behandelt — für eine absolut kratzfreie Reinigung, die Waschstraßen niemals erreichen.',
             highlights: ['2-Eimer Methode', 'Kontaktlose Vorwäsche', 'pH-neutrale Produkte'],
+            image: 'https://images.unsplash.com/photo-1605559424843-9e4c228bf1c2?w=800&q=80',
         },
         {
             icon: ShieldCheck,
             title: 'Keramik-Schutzschild',
             description: 'FIREBALL Keramikversiegelung mit bis zu 5 Jahren Garantie. Extremer Glanz, wasser- und schmutzabweisend, UV-Schutz — Ihr Lack bleibt makellos.',
             highlights: ['Bis zu 5 Jahre Schutz', 'Hydrophobe Oberfläche', 'UV-Beständig'],
+            image: 'https://images.unsplash.com/photo-1507136566006-cfc505b114fc?w=800&q=80',
         },
         {
             icon: CalendarCheck,
             title: 'Termin in 60 Sekunden',
             description: 'Online-Terminbuchung in Sekunden. Wählen Sie Ihr Paket und Ihren Wunschtermin — wir kümmern uns um den Rest.',
             highlights: ['Online buchen', 'Flexible Zeiten', 'Mo–Sa geöffnet'],
+            image: 'https://images.unsplash.com/photo-1503376780353-7e6692767b70?w=800&q=80',
         },
     ];
 
@@ -74,20 +77,34 @@ export default function Features() {
                     {features.map((feature) => {
                         const Icon = feature.icon;
                         return (
-                            <div key={feature.title} className="feature-card bg-slate/30 border border-slate/50 p-8 rounded-[2rem] shadow-2xl flex flex-col gap-6 hover:border-accent/40 transition-colors group">
-                                <div className="h-48 w-full flex flex-col items-center justify-center gap-5">
-                                    <div className="w-20 h-20 rounded-2xl bg-accent/10 border border-accent/20 flex items-center justify-center group-hover:bg-accent/20 group-hover:border-accent/40 transition-all duration-300">
-                                        <Icon className="w-10 h-10 text-accent" strokeWidth={1.5} />
-                                    </div>
-                                    <div className="flex flex-wrap justify-center gap-2">
-                                        {feature.highlights.map((h) => (
-                                            <span key={h} className="font-mono text-[10px] text-ivory/40 border border-slate/50 rounded-full px-3 py-1 group-hover:border-accent/30 group-hover:text-ivory/60 transition-colors">
-                                                {h}
-                                            </span>
-                                        ))}
+                            <div key={feature.title} className="feature-card rounded-[2rem] shadow-2xl flex flex-col overflow-hidden border border-slate/50 hover:border-accent/40 transition-colors group">
+
+                                {/* Image area */}
+                                <div className="relative h-56 overflow-hidden">
+                                    <img
+                                        src={feature.image}
+                                        alt={feature.title}
+                                        className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                                    />
+                                    <div className="absolute inset-0 bg-gradient-to-t from-obsidian via-obsidian/60 to-obsidian/20" />
+
+                                    {/* Icon + highlights overlay */}
+                                    <div className="absolute inset-0 flex flex-col items-center justify-center gap-4 z-10">
+                                        <div className="w-16 h-16 rounded-2xl bg-obsidian/60 backdrop-blur-sm border border-accent/30 flex items-center justify-center group-hover:bg-accent/20 group-hover:border-accent/50 transition-all duration-300">
+                                            <Icon className="w-8 h-8 text-accent" strokeWidth={1.5} />
+                                        </div>
+                                        <div className="flex flex-wrap justify-center gap-2 px-4">
+                                            {feature.highlights.map((h) => (
+                                                <span key={h} className="font-mono text-[10px] text-ivory/70 bg-obsidian/50 backdrop-blur-sm border border-ivory/10 rounded-full px-3 py-1">
+                                                    {h}
+                                                </span>
+                                            ))}
+                                        </div>
                                     </div>
                                 </div>
-                                <div className="flex flex-col gap-3">
+
+                                {/* Text area */}
+                                <div className="flex flex-col gap-3 p-8 bg-slate/30">
                                     <h4 className="font-sans font-bold text-xl text-ivory group-hover:text-accent transition-colors">{feature.title}</h4>
                                     <p className="font-sans text-sm text-ivory/60 leading-relaxed text-balance">
                                         {feature.description}
