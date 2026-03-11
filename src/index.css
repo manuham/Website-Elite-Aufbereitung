@@ -1,0 +1,46 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    background-color: theme('colors.obsidian');
+    color: theme('colors.ivory');
+  }
+
+  /* SVG Noise Overlay */
+  body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 9999;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.05'/%3E%3C/svg%3E");
+    opacity: 0.6; /* base opacity is 0.05 inside SVG, this adjust lightness */
+  }
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+
+  /* Magnetic Button Layer */
+  .btn-magnetic {
+    @apply relative overflow-hidden transition-transform duration-300;
+    transition-timing-function: cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  }
+  
+  .btn-magnetic:hover {
+    transform: scale(1.03);
+  }
+
+  /* Link lift effect */
+  .link-lift {
+    @apply transition-transform duration-300;
+  }
+
+  .link-lift:hover {
+    transform: translateY(-1px);
+  }
+}
