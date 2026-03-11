@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { X, Menu } from 'lucide-react';
 
@@ -12,14 +12,28 @@ const navLinks = [
 export default function Navbar() {
     const [scrolled, setScrolled] = useState(false);
     const [menuOpen, setMenuOpen] = useState(false);
+    const [visible, setVisible] = useState(true);
+    const hideTimer = useRef(null);
 
     useEffect(() => {
         const handleScroll = () => {
-            setScrolled(window.scrollY > 50);
+            const y = window.scrollY;
+            setScrolled(y > 50);
+            setVisible(true);
+
+            if (hideTimer.current) clearTimeout(hideTimer.current);
+
+            if (y > 50) {
+                hideTimer.current = setTimeout(() => setVisible(false), 1500);
+            }
+
             if (menuOpen) setMenuOpen(false);
         };
         window.addEventListener('scroll', handleScroll, { passive: true });
-        return () => window.removeEventListener('scroll', handleScroll);
+        return () => {
+            window.removeEventListener('scroll', handleScroll);
+            if (hideTimer.current) clearTimeout(hideTimer.current);
+        };
     }, [menuOpen]);
 
     useEffect(() => {
@@ -38,10 +52,10 @@ export default function Navbar() {
     return (
         <>
             <nav
-                className={`fixed top-6 left-1/2 -translate-x-1/2 z-50 transition-all duration-300 rounded-full px-5 sm:px-8 py-2.5 flex items-center justify-between gap-6 sm:gap-10 w-[calc(100%-2rem)] max-w-4xl lg:max-w-3xl xl:max-w-4xl ${scrolled
+                className={`fixed top-6 left-1/2 -translate-x-1/2 z-50 transition-all duration-500 rounded-full px-5 sm:px-8 py-2.5 flex items-center justify-between gap-6 sm:gap-10 w-[calc(100%-2rem)] max-w-4xl lg:max-w-3xl xl:max-w-4xl ${scrolled
                     ? 'bg-obsidian/70 backdrop-blur-xl border border-slate/40 shadow-xl'
                     : 'bg-transparent border border-transparent'
-                    }`}
+                    } ${visible ? 'translate-y-0 opacity-100' : '-translate-y-[calc(100%+3rem)] opacity-0 pointer-events-none'}`}
             >
                 {/* Logo */}
                 <div
@@ -51,7 +65,7 @@ export default function Navbar() {
                     <img
                         src="/assets/logo.png"
                         alt="Elité Auto Aufbereitung"
-                        className="h-[5rem] sm:h-[6rem] lg:h-[7.5rem] w-auto object-contain -my-12 -ml-2"
+                        className="h-[5rem] sm:h-[6rem] lg:h-[7.5rem] w-auto object-contain -my-12 -ml-2 translate-y-[3px]"
                     />
                 </div>
 
