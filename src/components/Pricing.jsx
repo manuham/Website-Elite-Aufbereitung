@@ -8,7 +8,7 @@ import { serviceCategories, allInOnePackages } from '../data/services';
 const ALL_IN_ONE_TAB = 'allinone';
 
 export default function Pricing() {
-    const [activeTab, setActiveTab] = useState(ALL_IN_ONE_TAB);
+    const [activeTab, setActiveTab] = useState(serviceCategories[0].id);
     const contentRef = useRef(null);
     const tabsRef = useRef(null);
 
@@ -30,8 +30,8 @@ export default function Pricing() {
     }, [activeTab]);
 
     const tabs = [
-        { id: ALL_IN_ONE_TAB, title: '✦ All-in-One' },
         ...serviceCategories.map(c => ({ id: c.id, title: c.title })),
+        { id: ALL_IN_ONE_TAB, title: '✦ All-in-One' },
     ];
 
     const packages = isAllInOne ? allInOnePackages : (activeCategory?.packages || []);

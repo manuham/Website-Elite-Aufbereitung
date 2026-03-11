@@ -55,7 +55,7 @@ function StepBar({ step }) {
 // ─── Step 1: Service Selection (multi-select) ─────────────────────────────────
 
 function Step1({ selectedItems, toggleItem, onNext }) {
-    const [activeTab, setActiveTab] = useState('aio');
+    const [activeTab, setActiveTab] = useState(serviceCategories[0].id);
 
     const isSelected = (id) => selectedItems.some(i => i.id === id);
 
@@ -77,8 +77,8 @@ function Step1({ selectedItems, toggleItem, onNext }) {
     const activeCategory = serviceCategories.find(c => c.id === activeTab);
 
     const tabs = [
-        { id: 'aio', label: '✦ All-in-One' },
         ...serviceCategories.map(c => ({ id: c.id, label: c.title })),
+        { id: 'aio', label: '✦ All-in-One' },
     ];
 
     return (
