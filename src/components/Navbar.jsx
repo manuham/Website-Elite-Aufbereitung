@@ -52,7 +52,7 @@ export default function Navbar() {
     return (
         <>
             <nav
-                className={`fixed top-6 left-1/2 -translate-x-1/2 z-50 transition-all duration-500 rounded-full px-5 sm:px-8 py-2.5 flex items-center justify-between gap-6 sm:gap-10 w-[calc(100%-2rem)] max-w-4xl lg:max-w-3xl xl:max-w-4xl ${scrolled
+                className={`fixed top-6 left-1/2 -translate-x-1/2 z-50 transition-all duration-500 rounded-full px-5 sm:px-8 py-2.5 flex items-center justify-between gap-6 sm:gap-10 w-[calc(100%-2rem)] max-w-5xl lg:max-w-4xl xl:max-w-5xl ${scrolled
                     ? 'bg-obsidian/70 backdrop-blur-xl border border-slate/40 shadow-xl'
                     : 'bg-transparent border border-transparent'
                     } ${visible ? 'translate-y-0 opacity-100' : '-translate-y-[calc(100%+3rem)] opacity-0 pointer-events-none'}`}
@@ -76,7 +76,7 @@ export default function Navbar() {
                             <Link
                                 key={link.label}
                                 to={link.href}
-                                className="font-sans text-sm font-medium text-ivory/80 hover:text-champagne transition-colors link-lift"
+                                className="font-sans text-[15px] font-medium text-ivory/80 hover:text-champagne transition-colors link-lift"
                             >
                                 {link.label}
                             </Link>
@@ -84,7 +84,7 @@ export default function Navbar() {
                             <button
                                 key={link.label}
                                 onClick={() => scrollTo(link.id)}
-                                className="font-sans text-sm font-medium text-ivory/80 hover:text-champagne transition-colors link-lift"
+                                className="font-sans text-[15px] font-medium text-ivory/80 hover:text-champagne transition-colors link-lift"
                             >
                                 {link.label}
                             </button>

@@ -48,7 +48,7 @@ export default function Hero() {
                     </h2>
                 </div>
 
-                <p className="hero-element font-sans font-normal text-base sm:text-lg text-ivory/90 max-w-xl leading-relaxed text-balance drop-shadow-md">
+                <p className="hero-element font-sans font-normal text-lg sm:text-xl text-ivory/90 max-w-xl leading-relaxed text-balance drop-shadow-md">
                     Professionelle Fahrzeugaufbereitung in Vorarlberg — Kratzerfreie Handwäsche, Politur & Keramikversiegelung.
                 </p>
 

@@ -81,7 +81,7 @@ export default function Protocol() {
                             {/* Text Content */}
                             <div className="flex-1 flex flex-col gap-6 justify-center p-10 sm:p-14 lg:p-16 relative z-10">
                                 <div className="font-mono text-xl sm:text-2xl text-champagne">{step.num}</div>
-                                <h3 className="font-sans font-bold text-3xl sm:text-4xl lg:text-5xl text-ivory leading-tight">{step.title}</h3>
+                                <h3 className="font-drama italic text-3xl sm:text-4xl lg:text-5xl text-ivory leading-tight">{step.title}</h3>
                                 <p className="font-sans text-base sm:text-lg text-ivory/60 max-w-lg leading-relaxed text-balance">
                                     {step.desc}
                                 </p>
