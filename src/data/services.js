@@ -64,7 +64,7 @@ export const allInOnePackages = [
             'Mehrstufige Maschinenpolierung',
             'Alle Kratzer & Hologramme entfernt',
             'FIREBALL Keramikversiegelung',
-            'Garantie: bis zu 5 Jahre',
+            'Garantie: 40.000 – 60.000 km',
             'UV-, Wasser- & Schmutzschutz',
         ],
     },
@@ -211,7 +211,7 @@ export const serviceCategories = [
     {
         id: "keramik",
         title: "Keramik Versiegelung",
-        subtitle: "5 Jahre Garantie. Extrem wasserabweisend & UV-beständig.",
+        subtitle: "40.000 – 60.000 km Garantie. Extrem wasserabweisend & UV-beständig.",
         packages: [
             {
                 name: "Neuwagen Beschichtung",

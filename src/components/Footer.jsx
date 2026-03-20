@@ -1,4 +1,4 @@
-import { Instagram, Youtube, Facebook } from 'lucide-react';
+import { Instagram, Facebook } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 export default function Footer() {
@@ -53,9 +53,6 @@ export default function Footer() {
                     <div className="flex items-center gap-5">
                         <a href="https://www.instagram.com/eliteaufbereitung/" target="_blank" rel="noreferrer" className="w-12 h-12 rounded-full bg-obsidian flex items-center justify-center text-ivory hover:bg-champagne hover:text-obsidian transition-colors group shadow-md hover:shadow-lg">
                             <Instagram className="w-6 h-6 group-hover:scale-110 transition-transform" strokeWidth={1.5} />
-                        </a>
-                        <a href="https://www.youtube.com/@EliteAufbereitung" target="_blank" rel="noreferrer" className="w-12 h-12 rounded-full bg-obsidian flex items-center justify-center text-ivory hover:bg-champagne hover:text-obsidian transition-colors group shadow-md hover:shadow-lg">
-                            <Youtube className="w-6 h-6 group-hover:scale-110 transition-transform" strokeWidth={1.5} />
                         </a>
                         <a href="https://www.facebook.com/people/Elit%C3%A9-Autoaufbereitung/61555761685065/" target="_blank" rel="noreferrer" className="w-12 h-12 rounded-full bg-obsidian flex items-center justify-center text-ivory hover:bg-champagne hover:text-obsidian transition-colors group shadow-md hover:shadow-lg">
                             <Facebook className="w-6 h-6 group-hover:scale-110 transition-transform" strokeWidth={1.5} />

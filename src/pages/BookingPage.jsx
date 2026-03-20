@@ -2,6 +2,8 @@ import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Check, ChevronLeft, ChevronRight, ArrowLeft, Phone, Mail, MapPin, Plus, X as XIcon, Sparkles } from 'lucide-react';
 import { serviceCategories, allInOnePackages } from '../data/services';
+import { useAvailability } from '../hooks/useAvailability';
+import { submitBooking } from '../lib/api';
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
@@ -241,6 +243,8 @@ function Step2({ datetime, setDatetime, onNext, onBack }) {
     const [viewYear, setViewYear] = useState(today.getFullYear());
     const [viewMonth, setViewMonth] = useState(today.getMonth());
 
+    const { slots, loading: slotsLoading, isFallback } = useAvailability(datetime.date);
+
     const daysInMonth = getDaysInMonth(viewYear, viewMonth);
     const firstDay = getFirstDayOfMonth(viewYear, viewMonth);
 
@@ -252,9 +256,6 @@ function Step2({ datetime, setDatetime, onNext, onBack }) {
         if (d < today || d.getDay() === 0) return;
         setDatetime(dt => ({ ...dt, date: d, time: null }));
     };
-
-    const dow = datetime.date ? datetime.date.getDay() : null;
-    const slots = dow === 6 ? TIME_SLOTS_SATURDAY : TIME_SLOTS_WEEKDAY;
 
     const isDisabled = (day) => {
         const d = new Date(viewYear, viewMonth, day);
@@ -315,15 +316,34 @@ function Step2({ datetime, setDatetime, onNext, onBack }) {
                             <div className="font-sans text-sm text-ivory/60">
                                 Verfügbare Zeiten am <span className="text-ivory font-semibold">{datetime.date.toLocaleDateString('de-AT', { weekday: 'long', day: '2-digit', month: 'long' })}</span>
                             </div>
-                            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-2 xl:grid-cols-3 gap-3">
-                                {slots.map(slot => (
-                                    <button key={slot} onClick={() => setDatetime(dt => ({ ...dt, time: slot }))}
-                                        className={`py-3.5 rounded-xl font-mono text-sm font-medium border transition-all duration-150 ${datetime.time === slot
-                                            ? 'bg-accent text-obsidian border-accent shadow-[0_0_12px_rgba(77,178,146,0.3)] font-bold'
-                                            : 'bg-slate/30 border-slate/50 text-ivory/70 hover:border-accent/50 hover:text-accent'}`}
-                                    >{slot}</button>
-                                ))}
-                            </div>
+                            {slotsLoading ? (
+                                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-2 xl:grid-cols-3 gap-3">
+                                    {Array.from({ length: 6 }).map((_, i) => (
+                                        <div key={i} className="py-3.5 rounded-xl bg-slate/30 border border-slate/50 animate-pulse" />
+                                    ))}
+                                </div>
+                            ) : slots.length > 0 ? (
+                                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-2 xl:grid-cols-3 gap-3">
+                                    {slots.map(slot => (
+                                        <button key={slot} onClick={() => setDatetime(dt => ({ ...dt, time: slot }))}
+                                            className={`py-3.5 rounded-xl font-mono text-sm font-medium border transition-all duration-150 ${datetime.time === slot
+                                                ? 'bg-accent text-obsidian border-accent shadow-[0_0_12px_rgba(77,178,146,0.3)] font-bold'
+                                                : 'bg-slate/30 border-slate/50 text-ivory/70 hover:border-accent/50 hover:text-accent'}`}
+                                        >{slot}</button>
+                                    ))}
+                                </div>
+                            ) : (
+                                <div className="flex-1 flex items-center justify-center py-8">
+                                    <p className="font-sans text-sm text-ivory/40 text-center">
+                                        An diesem Tag sind leider keine Termine mehr frei.
+                                    </p>
+                                </div>
+                            )}
+                            {isFallback && (
+                                <p className="font-mono text-[10px] text-ivory/25 text-center">
+                                    Live-Verfügbarkeit konnte nicht geladen werden — Standardzeiten werden angezeigt.
+                                </p>
+                            )}
                         </>
                     ) : (
                         <div className="flex-1 flex items-center justify-center">
@@ -526,23 +546,27 @@ export default function BookingPage() {
         setSubmitError(null);
 
         const dateStr = datetime.date?.toLocaleDateString('de-AT', { weekday: 'long', day: '2-digit', month: '2-digit', year: 'numeric' });
-        const serviceLines = selectedItems.map(i => `  - ${i.name} (${i.price})`).join('\n');
+        const yyyy = datetime.date.getFullYear();
+        const mm = String(datetime.date.getMonth() + 1).padStart(2, '0');
+        const dd = String(datetime.date.getDate()).padStart(2, '0');
+        const isoDate = `${yyyy}-${mm}-${dd}`;
         const total = selectedItems.reduce((s, i) => s + i.priceNum, 0);
-        const totalLine = selectedItems.length > 1 ? `\nGESAMT: ab €${total.toLocaleString('de-AT')},-` : '';
-
-        const subject = `Terminanfrage: ${selectedItems.map(i => i.name).join(' + ')} — ${dateStr}`;
-        const message =
-            `Neue Terminanfrage über die Website\n\n` +
-            `SERVICES:\n${serviceLines}${totalLine}\n\n` +
-            `DATUM: ${dateStr}\nUHRZEIT: ${datetime.time} Uhr\n\n` +
-            `KONTAKT:\nName: ${contact.name}\nTelefon: ${contact.phone}\nE-Mail: ${contact.email}\nFahrzeug: ${contact.vehicle}\nAnmerkungen: ${contact.notes || '—'}`;
 
         try {
-            const res = await fetch('https://formsubmit.co/ajax/info.eliteaufbereitung@gmail.com', {
+            // Create Google Calendar event (primary booking action)
+            await submitBooking({
+                date: isoDate,
+                time: datetime.time,
+                services: selectedItems,
+                contact,
+            });
+
+            // Send email notification in parallel (fire-and-forget backup)
+            fetch('https://formsubmit.co/ajax/info.eliteaufbereitung@gmail.com', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
                 body: JSON.stringify({
-                    _subject: subject,
+                    _subject: `Terminanfrage: ${selectedItems.map(i => i.name).join(' + ')} — ${dateStr}`,
                     _captcha: 'false',
                     _template: 'table',
                     Name: contact.name,
@@ -555,15 +579,17 @@ export default function BookingPage() {
                     Gesamtsumme: selectedItems.length > 1 ? `ab €${total.toLocaleString('de-AT')},-` : selectedItems[0]?.price || '',
                     Anmerkungen: contact.notes || '—',
                 }),
-            });
+            }).catch(() => {});
 
-            if (res.ok) {
-                setStep(4);
+            setStep(4);
+        } catch (err) {
+            if (err.status === 409 && err.data?.error === 'slot_taken') {
+                setSubmitError('Dieser Termin wurde soeben von jemand anderem gebucht. Bitte wählen Sie einen anderen Zeitpunkt.');
+                setDatetime(dt => ({ ...dt, time: null }));
+                setStep(2);
             } else {
                 setSubmitError('Anfrage konnte nicht gesendet werden. Bitte versuchen Sie es erneut oder kontaktieren Sie uns direkt.');
             }
-        } catch {
-            setSubmitError('Netzwerkfehler. Bitte prüfen Sie Ihre Internetverbindung und versuchen Sie es erneut.');
         } finally {
             setLoading(false);
         }

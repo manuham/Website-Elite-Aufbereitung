@@ -7,7 +7,7 @@ const projects = [
         img: 'https://images.unsplash.com/photo-1555215695-3004980ad54e?w=900&q=80',
         label: 'Keramikversiegelung',
         car: 'BMW 3er — Mineralgrau',
-        tag: '5 Jahre Garantie',
+        tag: '40.000 – 60.000 km Garantie',
     },
     {
         img: 'https://images.unsplash.com/photo-1520340356584-f9917d1eea6f?w=900&q=80',

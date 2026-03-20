@@ -43,8 +43,8 @@ export default function Features() {
         {
             icon: ShieldCheck,
             title: 'Keramik-Schutzschild',
-            description: 'FIREBALL Keramikversiegelung mit bis zu 5 Jahren Garantie. Extremer Glanz, wasser- und schmutzabweisend, UV-Schutz — Ihr Lack bleibt makellos.',
-            highlights: ['Bis zu 5 Jahre Schutz', 'Hydrophobe Oberfläche', 'UV-Beständig'],
+            description: 'FIREBALL Keramikversiegelung mit 40.000 – 60.000 km Garantie. Extremer Glanz, wasser- und schmutzabweisend, UV-Schutz — Ihr Lack bleibt makellos.',
+            highlights: ['40.000 – 60.000 km Schutz', 'Hydrophobe Oberfläche', 'UV-Beständig'],
             image: 'https://images.unsplash.com/photo-1507136566006-cfc505b114fc?w=800&q=80',
         },
         {

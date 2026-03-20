@@ -1,7 +1,7 @@
 import { useEffect, useRef } from 'react';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
-import { Instagram } from 'lucide-react';
+import { Instagram, Facebook } from 'lucide-react';
 
 // Real Unsplash images matching the automotive detailing aesthetic
 const galleryItems = [
@@ -87,15 +87,26 @@ export default function Gallery() {
                             </span>
                         </h2>
                     </div>
-                    <a
-                        href="https://www.instagram.com/eliteaufbereitung/"
-                        target="_blank"
-                        rel="noreferrer"
-                        className="btn-magnetic flex items-center gap-2.5 border border-ivory/20 hover:border-champagne/60 text-ivory/70 hover:text-champagne px-5 py-2.5 rounded-full font-sans text-sm font-medium transition-all duration-300 w-fit shrink-0"
-                    >
-                        <Instagram className="w-4 h-4" />
-                        @eliteaufbereitung
-                    </a>
+                    <div className="flex items-center gap-3 shrink-0">
+                        <a
+                            href="https://www.instagram.com/eliteaufbereitung/"
+                            target="_blank"
+                            rel="noreferrer"
+                            className="btn-magnetic flex items-center gap-2.5 border border-ivory/20 hover:border-champagne/60 text-ivory/70 hover:text-champagne px-5 py-2.5 rounded-full font-sans text-sm font-medium transition-all duration-300 w-fit"
+                        >
+                            <Instagram className="w-4 h-4" />
+                            Instagram
+                        </a>
+                        <a
+                            href="https://www.facebook.com/people/Elit%C3%A9-Autoaufbereitung/61555761685065/"
+                            target="_blank"
+                            rel="noreferrer"
+                            className="btn-magnetic flex items-center gap-2.5 border border-ivory/20 hover:border-champagne/60 text-ivory/70 hover:text-champagne px-5 py-2.5 rounded-full font-sans text-sm font-medium transition-all duration-300 w-fit"
+                        >
+                            <Facebook className="w-4 h-4" />
+                            Facebook
+                        </a>
+                    </div>
                 </div>
 
                 {/* Masonry-style Grid */}
@@ -134,17 +145,28 @@ export default function Gallery() {
                 {/* CTA below grid */}
                 <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4">
                     <p className="font-sans text-sm text-ivory/50 text-center">
-                        Noch mehr Ergebnisse auf unserem Instagram
+                        Noch mehr Ergebnisse auf unseren Kanälen
                     </p>
-                    <a
-                        href="https://www.instagram.com/eliteaufbereitung/"
-                        target="_blank"
-                        rel="noreferrer"
-                        className="btn-magnetic flex items-center gap-2 bg-champagne text-obsidian px-6 py-2.5 rounded-full font-sans font-semibold text-sm"
-                    >
-                        <Instagram className="w-4 h-4" />
-                        Mehr ansehen
-                    </a>
+                    <div className="flex items-center gap-3">
+                        <a
+                            href="https://www.instagram.com/eliteaufbereitung/"
+                            target="_blank"
+                            rel="noreferrer"
+                            className="btn-magnetic flex items-center gap-2 bg-champagne text-obsidian px-6 py-2.5 rounded-full font-sans font-semibold text-sm"
+                        >
+                            <Instagram className="w-4 h-4" />
+                            Instagram
+                        </a>
+                        <a
+                            href="https://www.facebook.com/people/Elit%C3%A9-Autoaufbereitung/61555761685065/"
+                            target="_blank"
+                            rel="noreferrer"
+                            className="btn-magnetic flex items-center gap-2 border border-champagne text-champagne hover:bg-champagne hover:text-obsidian px-6 py-2.5 rounded-full font-sans font-semibold text-sm transition-colors duration-300"
+                        >
+                            <Facebook className="w-4 h-4" />
+                            Facebook
+                        </a>
+                    </div>
                 </div>
 
             </div>

@@ -29,10 +29,10 @@ function HomePage() {
             <Navbar />
             <Hero />
             <Features />
+            <GoogleReviews />
             <Philosophy />
             <Protocol />
             <Gallery />
-            <GoogleReviews />
             <Pricing />
             <Footer />
         </div>

@@ -23,7 +23,7 @@ export default function Protocol() {
         {
             num: "03",
             title: "Versiegelung & Schutz",
-            desc: "FIREBALL Keramikversiegelung bildet eine unsichtbare Schutzschicht: wasserabweisend, UV-beständig und bis zu 5 Jahre haltbar.",
+            desc: "FIREBALL Keramikversiegelung bildet eine unsichtbare Schutzschicht: wasserabweisend, UV-beständig und bis zu 40.000 – 60.000 km haltbar.",
             image: "https://images.unsplash.com/photo-1583121274602-3e2820c69888?w=900&q=80",
         }
     ];
