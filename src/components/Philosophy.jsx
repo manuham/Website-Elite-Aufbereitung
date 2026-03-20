@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import gsap from 'gsap';
 const stats = [
     { value: '500+', label: 'Fahrzeuge aufbereitet' },
-    { value: '5 J.', label: 'Keramik-Garantie' },
+    { value: '60k', label: 'km Keramik-Garantie' },
     { value: '100%', label: 'Kundenzufriedenheit' },
 ];
 
@@ -103,18 +103,15 @@ export default function Philosophy() {
                     ))}
                 </div>
 
-                {/* YouTube Video */}
+                {/* Showcase Video */}
                 <div className="reveal-text w-full max-w-4xl aspect-video rounded-[2rem] overflow-hidden shadow-[0_25px_60px_rgba(0,0,0,0.6)] border border-slate/40 bg-obsidian">
-                    <iframe
-                        width="100%"
-                        height="100%"
-                        src="https://www.youtube.com/embed/Oimr36RdIx4"
-                        title="Elite Auto Aufbereitung Showcase"
-                        style={{ border: 'none' }}
-                        allow="accelerometer; encrypted-media; gyroscope; picture-in-picture"
-                        allowFullScreen
-                        loading="lazy"
-                        className="w-full h-full"
+                    <video
+                        src="/assets/showcase.mp4"
+                        className="w-full h-full object-cover"
+                        controls
+                        playsInline
+                        preload="metadata"
+                        poster=""
                     />
                 </div>
 
