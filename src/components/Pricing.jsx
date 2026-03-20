@@ -158,6 +158,10 @@ export default function Pricing() {
                         <strong className="text-ivory/80 block mb-2">Wichtiger Hinweis zu unseren Preisen:</strong>
                         Alle angegebenen Preise verstehen sich inklusive MwSt und sind Richtpreise. Die Einstiegspreise gelten für durchschnittlich verschmutzte Stadtautos und Pkws. Größere Fahrzeuge wie SUVs, Kombis und Vans erfordern aufgrund der größeren Flächen einen Aufpreis. Transporter, LKWs oder Extremverschmutzungen kalkulieren wir gerne individuell auf Anfrage. Der finale Endpreis basiert stets auf dem tatsächlichen Arbeitsaufwand und Verschmutzungsgrad Ihres Fahrzeugs.
                     </p>
+                    <p className="font-sans text-[13px] sm:text-sm text-ivory/60 leading-relaxed mx-auto max-w-3xl mt-3">
+                        <span className="inline-flex items-center gap-1.5 bg-champagne/10 border border-champagne/20 text-champagne px-3 py-1 rounded-full font-sans text-xs font-semibold mr-2">NEU</span>
+                        Alle Services sind auch als <strong className="text-ivory/80">Mobiler Service</strong> verfügbar — wir kommen mit unserem voll ausgestatteten Van direkt zu Ihnen.
+                    </p>
                 </div>
 
             </div>

@@ -44,6 +44,10 @@ export default function Footer() {
                         <li>6714 Nüziders, Österreich</li>
                         <li className="mt-2"><a href="tel:+436642546078" className="hover:text-champagne transition-colors">+43 664 2546078</a></li>
                         <li><a href="mailto:info.eliteaufbereitung@gmail.com" className="hover:text-champagne transition-colors">info.eliteaufbereitung@gmail.com</a></li>
+                        <li className="mt-2 flex items-center gap-2">
+                            <span className="bg-champagne/20 text-champagne px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider">Neu</span>
+                            <span className="text-ivory/60">Mobiler Service verfügbar</span>
+                        </li>
                     </ul>
                 </div>
 

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
-import { Check, ChevronLeft, ChevronRight, ArrowLeft, Phone, Mail, MapPin, Plus, X as XIcon, Sparkles } from 'lucide-react';
+import { Link, useSearchParams } from 'react-router-dom';
+import { Check, ChevronLeft, ChevronRight, ArrowLeft, Phone, Mail, MapPin, Plus, X as XIcon, Sparkles, AlertTriangle, Truck } from 'lucide-react';
 import { serviceCategories, allInOnePackages } from '../data/services';
 import { useAvailability } from '../hooks/useAvailability';
 import { submitBooking } from '../lib/api';
@@ -39,14 +39,14 @@ function StepDot({ num, label, active, done, totalSteps }) {
 }
 
 function StepBar({ step }) {
-    const steps = ['Service', 'Termin', 'Kontakt'];
+    const steps = ['Standort', 'Service', 'Termin', 'Kontakt'];
     return (
-        <div className="flex items-start justify-center gap-4 sm:gap-8 mb-16" role="list" aria-label="Buchungsschritte">
+        <div className="flex items-start justify-center gap-3 sm:gap-6 mb-16" role="list" aria-label="Buchungsschritte">
             {steps.map((label, i) => (
-                <div key={label} className="flex items-center gap-4 sm:gap-8">
-                    <StepDot num={i + 1} label={label} active={step === i + 1} done={step > i + 1} totalSteps={steps.length} />
+                <div key={label} className="flex items-center gap-3 sm:gap-6">
+                    <StepDot num={i + 1} label={label} active={step === i} done={step > i} totalSteps={steps.length} />
                     {i < steps.length - 1 && (
-                        <div className={`h-px w-10 sm:w-20 mt-[-1.25rem] transition-colors duration-500 ${step > i + 1 ? 'bg-accent' : 'bg-slate'}`} />
+                        <div className={`h-px w-6 sm:w-14 mt-[-1.25rem] transition-colors duration-500 ${step > i ? 'bg-accent' : 'bg-slate'}`} />
                     )}
                 </div>
             ))}
@@ -54,26 +54,118 @@ function StepBar({ step }) {
     );
 }
 
+// ─── Step 0: Service Location Choice ─────────────────────────────────────────
+
+function Step0({ serviceMode, setServiceMode, onNext }) {
+    return (
+        <div className="flex flex-col gap-10 w-full">
+            <div>
+                <h2 className="font-drama italic text-4xl sm:text-5xl text-ivory mb-2">Wo soll es stattfinden?</h2>
+                <p className="font-sans text-sm text-ivory/50">Wählen Sie, ob Sie zu uns kommen oder wir zu Ihnen kommen sollen.</p>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                <button
+                    onClick={() => setServiceMode('studio')}
+                    className={`text-left p-8 rounded-[2rem] border-2 transition-all duration-300 flex flex-col gap-5 group relative overflow-hidden ${serviceMode === 'studio'
+                        ? 'bg-accent/10 border-accent shadow-[0_0_30px_rgba(77,178,146,0.2)]'
+                        : 'bg-slate/30 border-slate/50 hover:border-ivory/30'}`}
+                >
+                    <div className="w-14 h-14 rounded-2xl bg-slate/50 border border-slate/60 flex items-center justify-center group-hover:border-accent/40 transition-colors">
+                        <MapPin className="w-7 h-7 text-accent" strokeWidth={1.5} />
+                    </div>
+                    <div className="flex flex-col gap-2">
+                        <h3 className="font-sans font-bold text-2xl text-ivory">Im Studio</h3>
+                        <p className="font-sans text-sm text-ivory/50">Sie bringen Ihr Fahrzeug zu uns</p>
+                    </div>
+                    <div className="flex items-center gap-2 mt-auto pt-2">
+                        <MapPin className="w-4 h-4 text-ivory/40" />
+                        <span className="font-sans text-xs text-ivory/40">Bundesstraße 2a, 6714 Nüziders</span>
+                    </div>
+                    {serviceMode === 'studio' && (
+                        <div className="absolute top-4 right-4 w-7 h-7 rounded-full bg-accent flex items-center justify-center">
+                            <Check className="w-4 h-4 text-obsidian" strokeWidth={3} />
+                        </div>
+                    )}
+                </button>
+
+                <button
+                    onClick={() => setServiceMode('mobil')}
+                    className={`text-left p-8 rounded-[2rem] border-2 transition-all duration-300 flex flex-col gap-5 group relative overflow-hidden ${serviceMode === 'mobil'
+                        ? 'bg-accent/10 border-accent shadow-[0_0_30px_rgba(77,178,146,0.2)]'
+                        : 'bg-slate/30 border-slate/50 hover:border-ivory/30'}`}
+                >
+                    <span className="absolute top-4 left-4 bg-champagne text-obsidian px-3 py-1 rounded-full font-sans font-bold text-[10px] uppercase tracking-wider">Neu</span>
+                    <div className="w-14 h-14 rounded-2xl bg-slate/50 border border-slate/60 flex items-center justify-center group-hover:border-accent/40 transition-colors mt-4">
+                        <Truck className="w-7 h-7 text-accent" strokeWidth={1.5} />
+                    </div>
+                    <div className="flex flex-col gap-2">
+                        <h3 className="font-sans font-bold text-2xl text-ivory">Mobiler Service</h3>
+                        <p className="font-sans text-sm text-ivory/50">Wir kommen direkt zu Ihnen</p>
+                    </div>
+                    <div className="flex items-center gap-2 mt-auto pt-2">
+                        <Truck className="w-4 h-4 text-ivory/40" />
+                        <span className="font-sans text-xs text-ivory/40">Vorarlberg & Umgebung</span>
+                    </div>
+                    {serviceMode === 'mobil' && (
+                        <div className="absolute top-4 right-4 w-7 h-7 rounded-full bg-accent flex items-center justify-center">
+                            <Check className="w-4 h-4 text-obsidian" strokeWidth={3} />
+                        </div>
+                    )}
+                </button>
+            </div>
+
+            <div className="flex justify-end mt-2">
+                <button
+                    onClick={onNext}
+                    disabled={!serviceMode}
+                    className="btn-magnetic bg-accent text-obsidian px-10 py-4 rounded-full font-sans font-bold text-sm disabled:opacity-30 disabled:cursor-not-allowed shadow-[0_0_20px_rgba(77,178,146,0.2)]"
+                >
+                    Weiter →
+                </button>
+            </div>
+        </div>
+    );
+}
+
 // ─── Step 1: Service Selection (multi-select) ─────────────────────────────────
 
-function Step1({ selectedItems, toggleItem, onNext }) {
+function Step1({ selectedItems, toggleItem, onNext, onBack }) {
     const [activeTab, setActiveTab] = useState(serviceCategories[0].id);
+    const [showDisclaimer, setShowDisclaimer] = useState(false);
+    const [pendingItem, setPendingItem] = useState(null);
 
     const isSelected = (id) => selectedItems.some(i => i.id === id);
 
     const totalNum = selectedItems.reduce((sum, i) => sum + i.priceNum, 0);
     const totalStr = totalNum > 0 ? `ab €${totalNum.toLocaleString('de-AT')},-` : null;
 
+    // Show disclaimer when adding, toggle directly when removing
+    const addWithDisclaimer = (item) => {
+        if (isSelected(item.id)) {
+            toggleItem(item);
+        } else {
+            setPendingItem(item);
+            setShowDisclaimer(true);
+        }
+    };
+
+    const confirmDisclaimer = () => {
+        if (pendingItem) toggleItem(pendingItem);
+        setPendingItem(null);
+        setShowDisclaimer(false);
+    };
+
     // Toggle an All-in-One package
     const toggleAIO = (pkg) => {
-        toggleItem({ id: pkg.id, name: pkg.name, price: pkg.price, priceNum: pkg.priceNum, type: 'aio' });
+        addWithDisclaimer({ id: pkg.id, name: pkg.name, price: pkg.price, priceNum: pkg.priceNum, type: 'aio' });
     };
 
     // Toggle an individual service package
     const toggleService = (cat, pkg, idx) => {
         const id = `${cat.id}-${idx}`;
         const priceNum = parsePriceNum(pkg.price);
-        toggleItem({ id, name: pkg.name, price: pkg.price, priceNum, type: 'service' });
+        addWithDisclaimer({ id, name: pkg.name, price: pkg.price, priceNum, type: 'service' });
     };
 
     const activeCategory = serviceCategories.find(c => c.id === activeTab);
@@ -223,22 +315,49 @@ function Step1({ selectedItems, toggleItem, onNext }) {
                 </div>
             )}
 
-            <div className="flex justify-end mt-2">
+            <div className="flex justify-between mt-2">
+                {onBack && (
+                    <button onClick={onBack} className="flex items-center gap-2 font-sans text-sm text-ivory/50 hover:text-ivory transition-colors link-lift">
+                        <ChevronLeft className="w-4 h-4" /> Zurück
+                    </button>
+                )}
                 <button
                     onClick={onNext}
                     disabled={selectedItems.length === 0}
-                    className="btn-magnetic bg-accent text-obsidian px-10 py-4 rounded-full font-sans font-bold text-sm disabled:opacity-30 disabled:cursor-not-allowed shadow-[0_0_20px_rgba(77,178,146,0.2)]"
+                    className="btn-magnetic bg-accent text-obsidian px-10 py-4 rounded-full font-sans font-bold text-sm disabled:opacity-30 disabled:cursor-not-allowed shadow-[0_0_20px_rgba(77,178,146,0.2)] ml-auto"
                 >
                     Weiter → {selectedItems.length > 0 && `(${selectedItems.length} Service${selectedItems.length > 1 ? 's' : ''})`}
                 </button>
             </div>
+
+            {/* Price disclaimer modal */}
+            {showDisclaimer && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center px-4" onClick={confirmDisclaimer}>
+                    <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" />
+                    <div className="relative bg-obsidian border border-slate/60 rounded-[2rem] p-8 max-w-md w-full shadow-[0_0_40px_rgba(0,0,0,0.5)] flex flex-col items-center gap-5 text-center" onClick={e => e.stopPropagation()}>
+                        <div className="w-14 h-14 rounded-full bg-accent/15 border border-accent/30 flex items-center justify-center">
+                            <AlertTriangle className="w-7 h-7 text-accent" />
+                        </div>
+                        <h3 className="font-drama italic text-2xl text-ivory">Preishinweis</h3>
+                        <p className="font-sans text-sm text-ivory/60 leading-relaxed">
+                            Die angegebenen Preise sind <span className="text-ivory font-semibold">Richtpreise</span> und können je nach Fahrzeuggröße und Verschmutzungsgrad variieren. Der endgültige Preis wird vor Ort individuell festgelegt.
+                        </p>
+                        <button
+                            onClick={confirmDisclaimer}
+                            className="btn-magnetic bg-accent text-obsidian px-10 py-3.5 rounded-full font-sans font-bold text-sm shadow-[0_0_16px_rgba(77,178,146,0.25)] mt-2"
+                        >
+                            Verstanden
+                        </button>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }
 
 // ─── Step 2: Date & Time ──────────────────────────────────────────────────────
 
-function Step2({ datetime, setDatetime, onNext, onBack }) {
+function Step2({ datetime, setDatetime, onNext, onBack, serviceMode }) {
     const today = new Date(); today.setHours(0, 0, 0, 0);
     const [viewYear, setViewYear] = useState(today.getFullYear());
     const [viewMonth, setViewMonth] = useState(today.getMonth());
@@ -267,7 +386,7 @@ function Step2({ datetime, setDatetime, onNext, onBack }) {
     return (
         <div className="flex flex-col gap-10 w-full">
             <div>
-                <h2 className="font-drama italic text-4xl sm:text-5xl text-ivory mb-2">Wann kommen Sie?</h2>
+                <h2 className="font-drama italic text-4xl sm:text-5xl text-ivory mb-2">{serviceMode === 'mobil' ? 'Wann sollen wir kommen?' : 'Wann kommen Sie?'}</h2>
                 <p className="font-sans text-sm text-ivory/50">Wählen Sie einen verfügbaren Termin. Sonntags geschlossen.</p>
             </div>
 
@@ -373,13 +492,14 @@ const VEHICLE_TYPES = ['PKW / Stadtauto', 'SUV / Geländewagen', 'Kombi / Famili
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const PHONE_REGEX = /^[+\d][\d\s\-/]{6,}$/;
 
-function Step3({ contact, setContact, onSubmit, onBack, loading }) {
+function Step3({ contact, setContact, onSubmit, onBack, loading, serviceMode }) {
     const set = (key) => (e) => setContact(c => ({ ...c, [key]: e.target.value }));
 
     const nameValid = contact.name.trim().length >= 2;
     const phoneValid = PHONE_REGEX.test(contact.phone.trim());
     const emailValid = EMAIL_REGEX.test(contact.email.trim());
-    const valid = nameValid && phoneValid && emailValid && contact.vehicle;
+    const addressValid = serviceMode !== 'mobil' || (contact.address && contact.address.trim().length >= 5);
+    const valid = nameValid && phoneValid && emailValid && contact.vehicle && addressValid;
 
     const inputClass = "w-full bg-slate/30 border border-slate/60 focus:border-accent outline-none rounded-xl px-4 py-3.5 font-sans text-sm text-ivory placeholder:text-ivory/30 transition-colors";
     const errorClass = "font-sans text-[11px] text-red-400 mt-1";
@@ -407,6 +527,13 @@ function Step3({ contact, setContact, onSubmit, onBack, loading }) {
                     <input id="booking-email" type="email" value={contact.email} onChange={set('email')} placeholder="max@mustermann.at" className={inputClass} />
                     {contact.email && !emailValid && <span className={errorClass}>Bitte geben Sie eine gültige E-Mail-Adresse ein.</span>}
                 </div>
+                {serviceMode === 'mobil' && (
+                    <div className="flex flex-col gap-2 sm:col-span-2">
+                        <label htmlFor="booking-address" className="font-sans text-xs text-ivory/50 uppercase tracking-widest">Adresse (Einsatzort) *</label>
+                        <input id="booking-address" type="text" value={contact.address || ''} onChange={set('address')} placeholder="Straße, Hausnummer, PLZ, Ort" className={inputClass} />
+                        {contact.address && contact.address.trim().length < 5 && <span className={errorClass}>Bitte geben Sie eine vollständige Adresse ein.</span>}
+                    </div>
+                )}
                 <div className="flex flex-col gap-3 sm:col-span-2">
                     <label className="font-sans text-xs text-ivory/50 uppercase tracking-widest">Fahrzeugtyp *</label>
                     <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
@@ -443,7 +570,7 @@ function Step3({ contact, setContact, onSubmit, onBack, loading }) {
 
 // ─── Step 4: Confirmation ─────────────────────────────────────────────────────
 
-function Step4({ selectedItems, datetime }) {
+function Step4({ selectedItems, datetime, serviceMode, contact }) {
     const total = selectedItems.reduce((s, i) => s + i.priceNum, 0);
 
     return (
@@ -484,6 +611,18 @@ function Step4({ selectedItems, datetime }) {
 
                 <div className="h-px bg-slate/50" />
                 <div className="flex justify-between items-center">
+                    <span className="font-sans text-sm text-ivory/60">Service-Art</span>
+                    <span className="font-sans text-sm font-semibold text-ivory inline-flex items-center gap-2">
+                        {serviceMode === 'mobil' ? (
+                            <><Truck className="w-4 h-4 text-accent" /> Mobiler Service</>
+                        ) : (
+                            <><MapPin className="w-4 h-4 text-accent" /> Im Studio</>
+                        )}
+                    </span>
+                </div>
+
+                <div className="h-px bg-slate/50" />
+                <div className="flex justify-between items-center">
                     <span className="font-sans text-sm text-ivory/60">Datum</span>
                     <span className="font-sans text-sm font-semibold text-ivory">
                         {datetime.date?.toLocaleDateString('de-AT', { weekday: 'short', day: '2-digit', month: '2-digit', year: 'numeric' })}
@@ -509,8 +648,23 @@ function Step4({ selectedItems, datetime }) {
                     </a>
                 </div>
                 <div className="flex items-center gap-3 bg-slate/30 border border-slate/50 rounded-xl px-4 py-3">
-                    <MapPin className="w-4 h-4 text-accent shrink-0" />
-                    <span className="font-sans text-sm text-ivory/70">Bundesstraße 2a, 6714 Nüziders</span>
+                    {serviceMode === 'mobil' ? (
+                        <>
+                            <Truck className="w-4 h-4 text-accent shrink-0" />
+                            <div className="flex flex-col">
+                                <span className="font-sans text-xs text-accent font-semibold uppercase tracking-wider">Mobiler Service</span>
+                                <span className="font-sans text-sm text-ivory/70">{contact?.address}</span>
+                            </div>
+                        </>
+                    ) : (
+                        <>
+                            <MapPin className="w-4 h-4 text-accent shrink-0" />
+                            <div className="flex flex-col">
+                                <span className="font-sans text-xs text-ivory/40 uppercase tracking-wider">Im Studio</span>
+                                <span className="font-sans text-sm text-ivory/70">Bundesstraße 2a, 6714 Nüziders</span>
+                            </div>
+                        </>
+                    )}
                 </div>
             </div>
 
@@ -524,15 +678,24 @@ function Step4({ selectedItems, datetime }) {
 // ─── Main BookingPage ─────────────────────────────────────────────────────────
 
 export default function BookingPage() {
-    const [step, setStep] = useState(1);
+    const [searchParams] = useSearchParams();
+    const [step, setStep] = useState(0);
     const [loading, setLoading] = useState(false);
+    const [serviceMode, setServiceMode] = useState(null);
 
     const [selectedItems, setSelectedItems] = useState([]);
     const [datetime, setDatetime] = useState({ date: null, time: null });
-    const [contact, setContact] = useState({ name: '', phone: '', email: '', vehicle: '', notes: '' });
+    const [contact, setContact] = useState({ name: '', phone: '', email: '', vehicle: '', notes: '', address: '' });
     const [submitError, setSubmitError] = useState(null);
 
-    useEffect(() => { window.scrollTo(0, 0); }, []);
+    useEffect(() => {
+        window.scrollTo(0, 0);
+        const preselect = searchParams.get('service');
+        if (preselect === 'mobil') {
+            setServiceMode('mobil');
+            setStep(1);
+        }
+    }, []);
 
     const toggleItem = (item) => {
         setSelectedItems(prev => {
@@ -559,6 +722,7 @@ export default function BookingPage() {
                 time: datetime.time,
                 services: selectedItems,
                 contact,
+                serviceMode,
             });
 
             // Send email notification in parallel (fire-and-forget backup)
@@ -566,9 +730,11 @@ export default function BookingPage() {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
                 body: JSON.stringify({
-                    _subject: `Terminanfrage: ${selectedItems.map(i => i.name).join(' + ')} — ${dateStr}`,
+                    _subject: `${serviceMode === 'mobil' ? '[MOBIL] ' : ''}Terminanfrage: ${selectedItems.map(i => i.name).join(' + ')} — ${dateStr}`,
                     _captcha: 'false',
                     _template: 'table',
+                    'Service-Art': serviceMode === 'mobil' ? 'Mobiler Service' : 'Im Studio',
+                    ...(serviceMode === 'mobil' ? { Einsatzort: contact.address } : { Standort: 'Bundesstraße 2a, 6714 Nüziders' }),
                     Name: contact.name,
                     Telefon: contact.phone,
                     'E-Mail': contact.email,
@@ -610,18 +776,19 @@ export default function BookingPage() {
                         <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75" />
                         <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500" />
                     </span>
-                    <span className="font-mono text-[10px] text-ivory/60 uppercase tracking-widest">Studio Offen</span>
+                    <span className="font-mono text-[10px] text-ivory/60 uppercase tracking-widest">{serviceMode === 'mobil' ? 'Mobiler Service' : 'Studio Offen'}</span>
                 </div>
             </header>
 
             <main className="pt-28 pb-24 px-6 sm:px-12 lg:px-24">
                 <div className="max-w-4xl mx-auto">
                     {step < 4 && <StepBar step={step} />}
-                    {step === 1 && <Step1 selectedItems={selectedItems} toggleItem={toggleItem} onNext={() => setStep(2)} />}
-                    {step === 2 && <Step2 datetime={datetime} setDatetime={setDatetime} onNext={() => setStep(3)} onBack={() => setStep(1)} />}
+                    {step === 0 && <Step0 serviceMode={serviceMode} setServiceMode={setServiceMode} onNext={() => setStep(1)} />}
+                    {step === 1 && <Step1 selectedItems={selectedItems} toggleItem={toggleItem} onNext={() => setStep(2)} onBack={() => setStep(0)} />}
+                    {step === 2 && <Step2 datetime={datetime} setDatetime={setDatetime} onNext={() => setStep(3)} onBack={() => setStep(1)} serviceMode={serviceMode} />}
                     {step === 3 && (
                         <>
-                            <Step3 contact={contact} setContact={setContact} onSubmit={handleSubmit} onBack={() => setStep(2)} loading={loading} />
+                            <Step3 contact={contact} setContact={setContact} onSubmit={handleSubmit} onBack={() => setStep(2)} loading={loading} serviceMode={serviceMode} />
                             {submitError && (
                                 <div className="mt-6 bg-red-500/10 border border-red-500/30 rounded-xl px-5 py-4 text-center">
                                     <p className="font-sans text-sm text-red-400">{submitError}</p>
@@ -632,7 +799,7 @@ export default function BookingPage() {
                             )}
                         </>
                     )}
-                    {step === 4 && <Step4 selectedItems={selectedItems} datetime={datetime} />}
+                    {step === 4 && <Step4 selectedItems={selectedItems} datetime={datetime} serviceMode={serviceMode} contact={contact} />}
                 </div>
             </main>
         </div>

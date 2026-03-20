@@ -7,6 +7,7 @@ import Navbar from './components/Navbar';
 import Hero from './components/Hero';
 import Features from './components/Features';
 import Philosophy from './components/Philosophy';
+import MobileService from './components/MobileService';
 import Protocol from './components/Protocol';
 import Gallery from './components/Gallery';
 import GoogleReviews from './components/GoogleReviews';
@@ -31,6 +32,7 @@ function HomePage() {
             <Features />
             <GoogleReviews />
             <Philosophy />
+            <MobileService />
             <Protocol />
             <Gallery />
             <Pricing />

@@ -93,12 +93,21 @@ export default function Navbar() {
                 </div>
 
                 {/* CTA — Desktop */}
-                <Link
-                    to="/buchen"
-                    className="hidden md:inline-flex btn-magnetic bg-champagne text-obsidian px-6 py-2.5 rounded-full font-sans font-semibold text-sm whitespace-nowrap items-center justify-center relative overflow-hidden"
-                >
-                    <span className="relative z-10">Jetzt Buchen</span>
-                </Link>
+                <div className="hidden md:inline-flex items-center gap-3">
+                    <Link
+                        to="/buchen?service=mobil"
+                        className="flex items-center gap-1.5 font-sans text-[13px] font-medium text-champagne hover:text-ivory transition-colors link-lift"
+                    >
+                        <span className="bg-champagne/20 text-champagne px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider">Neu</span>
+                        Mobiler Service
+                    </Link>
+                    <Link
+                        to="/buchen"
+                        className="btn-magnetic bg-champagne text-obsidian px-6 py-2.5 rounded-full font-sans font-semibold text-sm whitespace-nowrap items-center justify-center relative overflow-hidden"
+                    >
+                        <span className="relative z-10">Jetzt Buchen</span>
+                    </Link>
+                </div>
 
                 {/* Hamburger — Mobile */}
                 <button
@@ -139,9 +148,19 @@ export default function Navbar() {
                 )}
 
                 <Link
-                    to="/buchen"
+                    to="/buchen?service=mobil"
                     onClick={() => setMenuOpen(false)}
                     style={{ transitionDelay: menuOpen ? `${navLinks.length * 60}ms` : '0ms' }}
+                    className={`flex items-center gap-3 font-sans text-lg text-champagne transition-all duration-300 ${menuOpen ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}
+                >
+                    <span className="bg-champagne/20 text-champagne px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider">Neu</span>
+                    Mobiler Service
+                </Link>
+
+                <Link
+                    to="/buchen"
+                    onClick={() => setMenuOpen(false)}
+                    style={{ transitionDelay: menuOpen ? `${(navLinks.length + 1) * 60}ms` : '0ms' }}
                     className={`mt-4 bg-champagne text-obsidian px-10 py-4 rounded-full font-sans font-bold text-lg transition-all duration-300 ${menuOpen ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}
                 >
                     Jetzt Buchen

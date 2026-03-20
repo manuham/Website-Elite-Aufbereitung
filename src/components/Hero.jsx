@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import gsap from 'gsap';
+import { Truck } from 'lucide-react';
 
 export default function Hero() {
     const containerRef = useRef(null);
@@ -51,6 +52,13 @@ export default function Hero() {
                 <p className="hero-element font-sans font-normal text-lg sm:text-xl text-ivory/90 max-w-xl leading-relaxed text-balance drop-shadow-md">
                     Professionelle Fahrzeugaufbereitung in Vorarlberg — Kratzerfreie Handwäsche, Politur & Keramikversiegelung.
                 </p>
+
+                <div className="hero-element flex items-center gap-2 mt-1">
+                    <span className="bg-champagne/15 border border-champagne/30 text-champagne px-3 py-1 rounded-full font-sans text-xs font-semibold tracking-wide inline-flex items-center gap-1.5">
+                        <Truck className="w-3.5 h-3.5" />
+                        Jetzt auch mobil — wir kommen zu Ihnen!
+                    </span>
+                </div>
 
                 <div className="hero-element flex flex-col sm:flex-row items-stretch sm:items-center gap-4 sm:gap-6 mt-6 w-full sm:w-auto">
                     <Link
