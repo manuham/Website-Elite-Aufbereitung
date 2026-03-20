@@ -9,6 +9,7 @@ import Features from './components/Features';
 import Philosophy from './components/Philosophy';
 import Protocol from './components/Protocol';
 import Gallery from './components/Gallery';
+import GoogleReviews from './components/GoogleReviews';
 import Pricing from './components/Pricing';
 import Footer from './components/Footer';
 import BookingPage from './pages/BookingPage';
@@ -31,6 +32,7 @@ function HomePage() {
             <Philosophy />
             <Protocol />
             <Gallery />
+            <GoogleReviews />
             <Pricing />
             <Footer />
         </div>
