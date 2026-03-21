@@ -54,9 +54,9 @@ export default function Hero() {
                 </p>
 
                 <div className="hero-element flex items-center gap-2 mt-1">
-                    <span className="bg-champagne/15 border border-champagne/30 text-champagne px-3 py-1 rounded-full font-sans text-xs font-semibold tracking-wide inline-flex items-center gap-1.5">
-                        <Truck className="w-3.5 h-3.5" />
-                        Jetzt auch mobil — wir kommen zu Ihnen!
+                    <span className="bg-champagne/20 border border-champagne/40 text-champagne px-3 py-1 rounded-full font-sans text-sm font-bold tracking-wide inline-flex items-center gap-2 shadow-[0_0_20px_rgba(77,178,146,0.3)] animate-pulse">
+                        <Truck className="w-4 h-4" />
+                        NEU: Jetzt auch mobil — wir kommen zu Ihnen!
                     </span>
                 </div>
 
