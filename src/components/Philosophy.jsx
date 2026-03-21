@@ -105,13 +105,16 @@ export default function Philosophy() {
 
                 {/* Showcase Video */}
                 <div className="reveal-text w-full max-w-4xl aspect-video rounded-[2rem] overflow-hidden shadow-[0_25px_60px_rgba(0,0,0,0.6)] border border-slate/40 bg-obsidian">
-                    <video
-                        src="/assets/showcase.mp4"
-                        className="w-full h-full object-cover"
-                        controls
-                        playsInline
-                        preload="metadata"
-                        poster=""
+                    <iframe
+                        width="100%"
+                        height="100%"
+                        src="https://www.youtube.com/embed/Oimr36RdIx4"
+                        title="Elite Auto Aufbereitung Showcase"
+                        style={{ border: 'none' }}
+                        allow="accelerometer; encrypted-media; gyroscope; picture-in-picture"
+                        allowFullScreen
+                        loading="lazy"
+                        className="w-full h-full"
                     />
                 </div>
 

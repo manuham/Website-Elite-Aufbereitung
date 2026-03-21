@@ -52,7 +52,7 @@ export default function Navbar() {
     return (
         <>
             <nav
-                className={`fixed top-6 left-1/2 -translate-x-1/2 z-50 transition-all duration-500 rounded-full px-5 sm:px-8 py-2.5 flex items-center justify-between gap-6 sm:gap-10 w-[calc(100%-2rem)] max-w-5xl lg:max-w-4xl xl:max-w-5xl ${scrolled
+                className={`fixed top-6 left-1/2 -translate-x-1/2 z-50 transition-all duration-500 rounded-full px-5 sm:px-8 py-2.5 flex items-center justify-between gap-4 lg:gap-6 xl:gap-10 w-[calc(100%-2rem)] max-w-full md:max-w-3xl lg:max-w-5xl xl:max-w-6xl 2xl:max-w-7xl ${scrolled
                     ? 'bg-obsidian/70 backdrop-blur-xl border border-slate/40 shadow-xl'
                     : 'bg-transparent border border-transparent'
                     } ${visible ? 'translate-y-0 opacity-100' : '-translate-y-[calc(100%+3rem)] opacity-0 pointer-events-none'}`}
@@ -70,13 +70,13 @@ export default function Navbar() {
                 </div>
 
                 {/* Nav Links — Desktop */}
-                <div className="hidden md:flex items-center gap-7 lg:gap-10">
+                <div className="hidden lg:flex items-center gap-6 xl:gap-10">
                     {navLinks.map((link) =>
                         link.href ? (
                             <Link
                                 key={link.label}
                                 to={link.href}
-                                className="font-sans text-[15px] font-medium text-ivory/80 hover:text-champagne transition-colors link-lift"
+                                className="font-sans text-[15px] font-medium text-ivory/80 hover:text-champagne transition-colors link-lift whitespace-nowrap"
                             >
                                 {link.label}
                             </Link>
@@ -84,7 +84,7 @@ export default function Navbar() {
                             <button
                                 key={link.label}
                                 onClick={() => scrollTo(link.id)}
-                                className="font-sans text-[15px] font-medium text-ivory/80 hover:text-champagne transition-colors link-lift"
+                                className="font-sans text-[15px] font-medium text-ivory/80 hover:text-champagne transition-colors link-lift whitespace-nowrap"
                             >
                                 {link.label}
                             </button>
@@ -93,10 +93,10 @@ export default function Navbar() {
                 </div>
 
                 {/* CTA — Desktop */}
-                <div className="hidden md:inline-flex items-center gap-3">
+                <div className="hidden lg:inline-flex items-center gap-3 xl:gap-4">
                     <Link
                         to="/buchen?service=mobil"
-                        className="flex items-center gap-1.5 font-sans text-[13px] font-medium text-champagne hover:text-ivory transition-colors link-lift"
+                        className="flex items-center gap-1.5 font-sans text-[13px] font-medium text-champagne hover:text-ivory transition-colors link-lift whitespace-nowrap"
                     >
                         <span className="bg-champagne/20 text-champagne px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider">Neu</span>
                         Mobiler Service
@@ -113,7 +113,7 @@ export default function Navbar() {
                 <button
                     onClick={() => setMenuOpen((o) => !o)}
                     aria-label="Menü öffnen"
-                    className="md:hidden flex items-center justify-center w-10 h-10 rounded-full border border-slate/50 text-ivory/80 hover:text-champagne hover:border-champagne/50 transition-colors"
+                    className="lg:hidden flex items-center justify-center w-10 h-10 rounded-full border border-slate/50 text-ivory/80 hover:text-champagne hover:border-champagne/50 transition-colors"
                 >
                     {menuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
                 </button>
@@ -121,7 +121,7 @@ export default function Navbar() {
 
             {/* Mobile Menu Overlay */}
             <div
-                className={`fixed inset-0 z-40 bg-obsidian flex flex-col items-center justify-center gap-10 transition-all duration-500 md:hidden ${menuOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
+                className={`fixed inset-0 z-40 bg-obsidian flex flex-col items-center justify-center gap-10 transition-all duration-500 lg:hidden ${menuOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
                     }`}
             >
                 {navLinks.map((link, i) =>
