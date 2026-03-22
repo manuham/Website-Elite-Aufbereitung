@@ -1,33 +1,47 @@
 import { useEffect, useRef } from 'react';
 import gsap from 'gsap';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { Droplets, ShieldCheck, CalendarCheck } from 'lucide-react';
 
 export default function Features() {
     const containerRef = useRef(null);
 
     useEffect(() => {
+        if (!containerRef.current) return;
+
+        // Ensure positions are fresh after mount
+        ScrollTrigger.refresh();
+
         const ctx = gsap.context(() => {
-            gsap.from('.feature-card', {
-                scrollTrigger: {
-                    trigger: containerRef.current,
-                    start: 'top 75%',
-                },
-                y: 60,
-                opacity: 0,
-                duration: 1,
-                stagger: 0.15,
-                ease: 'power3.out'
-            });
-            gsap.from('.feature-header', {
-                scrollTrigger: {
-                    trigger: containerRef.current,
-                    start: 'top 85%',
-                },
-                y: 30,
-                opacity: 0,
-                duration: 1,
-                ease: 'power3.out'
-            });
+            gsap.fromTo('.feature-card',
+                { y: 60, opacity: 0 },
+                {
+                    scrollTrigger: {
+                        trigger: containerRef.current,
+                        start: 'top 80%',
+                    },
+                    y: 0,
+                    opacity: 1,
+                    duration: 1,
+                    stagger: 0.15,
+                    ease: 'power3.out',
+                    clearProps: 'all',
+                }
+            );
+            gsap.fromTo('.feature-header',
+                { y: 30, opacity: 0 },
+                {
+                    scrollTrigger: {
+                        trigger: containerRef.current,
+                        start: 'top 90%',
+                    },
+                    y: 0,
+                    opacity: 1,
+                    duration: 1,
+                    ease: 'power3.out',
+                    clearProps: 'all',
+                }
+            );
         }, containerRef);
         return () => ctx.revert();
     }, []);
