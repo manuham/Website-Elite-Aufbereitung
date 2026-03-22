@@ -41,44 +41,44 @@ export default function MobileService() {
             ref={containerRef}
             className="py-24 sm:py-32 px-6 sm:px-12 lg:px-24 bg-obsidian relative overflow-hidden"
         >
-            {/* Subtle radial glow */}
-            <div className="absolute inset-0 pointer-events-none">
-                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-champagne/5 rounded-full blur-[120px]" />
+            {/* Subtle radial glow & Premium Light Leaks */}
+            <div className="absolute inset-x-0 inset-y-[-20%] pointer-events-none overflow-hidden mix-blend-screen opacity-60">
+                <div className="absolute top-1/2 left-[10%] -translate-y-1/2 w-[600px] h-[600px] bg-accent/10 rounded-full blur-[120px] animate-pulse" />
+                <div className="absolute top-1/3 right-[10%] w-[500px] h-[500px] bg-sky-500/5 rounded-full blur-[100px] animate-blob" style={{ animationDelay: '2s' }} />
             </div>
 
             <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-center relative z-10">
 
                 {/* Left — Image */}
-                <div className="mobile-image relative rounded-[2rem] overflow-hidden h-[360px] sm:h-[420px] lg:h-[500px]">
+                <div className="mobile-image relative rounded-[2rem] overflow-hidden h-[360px] sm:h-[420px] lg:h-[500px] shadow-[0_20px_50px_rgba(0,0,0,0.5)] group transform-gpu border border-ivory/5">
                     <img
                         src="https://images.unsplash.com/photo-1449965408869-eaa3f722e40d?w=900&q=80"
                         alt="Mobiler Aufbereitungsservice"
-                        className="w-full h-full object-cover"
+                        className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105"
                         loading="lazy"
                     />
-                    <div className="absolute inset-0 bg-gradient-to-t from-obsidian/60 via-transparent to-transparent" />
-                    <span className="mobile-badge absolute top-6 left-6 inline-flex items-center gap-2 bg-champagne text-obsidian px-4 py-2 rounded-full font-sans font-bold text-xs uppercase tracking-widest shadow-[0_0_20px_rgba(77,178,146,0.4)] animate-pulse">
+                    <div className="absolute inset-0 bg-gradient-to-t from-obsidian/90 via-obsidian/20 to-transparent mix-blend-multiply" />
+                    <span className="mobile-badge absolute top-6 left-6 inline-flex items-center gap-2 bg-accent/10 border border-accent/30 backdrop-blur-md text-accent px-5 py-2 rounded-full font-sans font-black text-[10px] sm:text-xs uppercase tracking-widest shadow-[0_0_20px_rgba(77,178,146,0.5)] animate-pulse">
                         Neu
                     </span>
                 </div>
 
                 {/* Right — Content */}
-                <div className="flex flex-col gap-8">
+                <div className="flex flex-col gap-8 relative z-10">
                     <div className="flex flex-col gap-4">
-                        <span className="mobile-text font-sans text-xs uppercase tracking-widest text-champagne font-bold">
+                        <span className="mobile-text font-sans text-[11px] sm:text-xs uppercase tracking-widest text-transparent bg-clip-text bg-gradient-to-r from-accent to-accent-glow font-black drop-shadow-sm">
                             Neu bei Elite
                         </span>
-                        <h2 className="mobile-text font-drama italic text-4xl sm:text-5xl text-ivory">
+                        <h2 className="mobile-text font-drama italic text-4xl sm:text-5xl lg:text-6xl text-ivory">
                             Wir kommen{' '}
-                            <span className="text-champagne relative inline-block">
+                            <span className="text-transparent bg-clip-text bg-gradient-to-r from-accent to-accent-glow relative inline-block drop-shadow-lg">
                                 zu Ihnen.
-                                <span className="absolute bottom-1 left-0 w-full h-px bg-champagne" />
                             </span>
                         </h2>
-                        <p className="mobile-text font-sans text-base text-ivory/60 leading-relaxed max-w-lg">
+                        <p className="mobile-text font-sans text-sm sm:text-base text-ivory/60 leading-relaxed max-w-lg">
                             Ab sofort bieten wir unseren kompletten Service auch mobil an.
                             Unser voll ausgestatteter Aufbereitungs-Van kommt direkt zu Ihnen
-                            nach Hause oder ins Büro — bequem und ohne Aufwand.
+                            nach Hause oder ins Büro — <strong className="font-medium text-ivory/80">bequem und ohne Aufwand.</strong>
                         </p>
                     </div>
 
@@ -87,23 +87,28 @@ export default function MobileService() {
                         {benefits.map((b) => (
                             <div
                                 key={b.title}
-                                className="mobile-benefit bg-slate/30 border border-slate/50 rounded-xl p-4 flex flex-col gap-2"
+                                className="mobile-benefit glass-card rounded-xl p-5 flex flex-col gap-3 group/benefit hover:-translate-y-1 transition-transform duration-300"
                             >
-                                <b.icon className="w-5 h-5 text-champagne" strokeWidth={1.5} />
-                                <span className="font-sans font-bold text-sm text-ivory">{b.title}</span>
-                                <span className="font-sans text-xs text-ivory/50">{b.desc}</span>
+                                <b.icon className="w-6 h-6 text-accent group-hover/benefit:scale-110 transition-transform duration-300" strokeWidth={1.5} />
+                                <div className="flex flex-col gap-1 mt-1">
+                                    <span className="font-sans font-bold text-[13px] text-ivory group-hover/benefit:text-accent transition-colors">{b.title}</span>
+                                    <span className="font-sans text-[11px] text-ivory/50 leading-snug">{b.desc}</span>
+                                </div>
                             </div>
                         ))}
                     </div>
 
                     {/* CTA */}
-                    <div className="mobile-text">
+                    <div className="mobile-text mt-2 sm:mt-4 w-full sm:w-auto">
                         <Link
                             to="/mobiler-service"
-                            className="btn-magnetic inline-flex items-center gap-2 bg-champagne text-obsidian px-8 py-4 rounded-full font-sans font-bold text-sm shadow-[0_0_20px_rgba(77,178,146,0.3)]"
+                            className="btn-magnetic relative overflow-hidden group/btn bg-accent backdrop-blur-md border border-accent/50 text-obsidian px-10 py-4 sm:py-5 rounded-full font-sans font-black tracking-wide text-sm sm:text-[15px] shadow-[0_0_30px_rgba(77,178,146,0.4)] hover:shadow-[0_0_50px_rgba(77,178,146,0.8)] inline-flex items-center justify-center gap-3 w-full sm:w-fit transition-all duration-500"
                         >
-                            Mobilen Termin Buchen
-                            <Truck className="w-4 h-4" />
+                            <span className="relative z-10 flex items-center gap-2">
+                                Mobilen Termin Buchen
+                                <Truck className="w-5 h-5 group-hover/btn:translate-x-1 transition-transform" />
+                            </span>
+                            <div className="absolute top-0 -left-[100%] w-1/2 h-full bg-gradient-to-r from-transparent via-white/50 to-transparent skew-x-[-20deg] group-hover/btn:animate-[shimmer_1.5s_infinite]" />
                         </Link>
                     </div>
                 </div>

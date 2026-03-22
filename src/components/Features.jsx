@@ -77,25 +77,25 @@ export default function Features() {
                     {features.map((feature) => {
                         const Icon = feature.icon;
                         return (
-                            <div key={feature.title} className="feature-card rounded-[2rem] shadow-2xl flex flex-col overflow-hidden border border-slate/50 hover:border-accent/40 transition-colors group">
-
+                            <div key={feature.title} className="feature-card glass-panel rounded-[2rem] flex flex-col overflow-hidden group hover:shadow-[0_0_50px_rgba(77,178,146,0.25)] transition-all duration-500">
                                 {/* Image area */}
                                 <div className="relative h-72 lg:h-80 overflow-hidden">
+                                    <div className="absolute inset-0 bg-accent/20 mix-blend-overlay z-10 opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none" />
                                     <img
                                         src={feature.image}
                                         alt={feature.title}
-                                        className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                                        className="absolute inset-0 w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110"
                                     />
-                                    <div className="absolute inset-0 bg-gradient-to-t from-obsidian via-obsidian/50 to-obsidian/10" />
+                                    <div className="absolute inset-0 bg-gradient-to-t from-obsidian via-obsidian/60 to-transparent z-10" />
 
                                     {/* Icon + highlights overlay */}
-                                    <div className="absolute inset-0 flex flex-col items-center justify-end gap-4 pb-8 z-10">
-                                        <div className="w-18 h-18 rounded-2xl bg-obsidian/50 backdrop-blur-md border border-accent/30 flex items-center justify-center group-hover:bg-accent/20 group-hover:border-accent/50 transition-all duration-300 p-4">
-                                            <Icon className="w-9 h-9 text-accent" strokeWidth={1.5} />
+                                    <div className="absolute inset-x-0 bottom-0 flex flex-col items-center justify-end gap-5 pb-8 z-20 translate-y-4 group-hover:translate-y-0 transition-transform duration-500">
+                                        <div className="w-20 h-20 rounded-2xl glass-card flex items-center justify-center group-hover:bg-accent/30 group-hover:border-accent/40 group-hover:scale-110 transition-all duration-500 p-4 shadow-[0_0_30px_rgba(0,0,0,0.8)]">
+                                            <Icon className="w-10 h-10 text-ivory group-hover:text-accent drop-shadow-lg transition-colors duration-500" strokeWidth={1.5} />
                                         </div>
                                         <div className="flex flex-wrap justify-center gap-2 px-6">
-                                            {feature.highlights.map((h) => (
-                                                <span key={h} className="font-mono text-[11px] text-ivory/80 bg-obsidian/50 backdrop-blur-md border border-ivory/10 rounded-full px-4 py-1.5">
+                                            {feature.highlights.map((h, i) => (
+                                                <span key={h} className="font-mono text-[10px] sm:text-[11px] text-ivory/90 glass-card px-4 py-1.5 opacity-0 group-hover:opacity-100 transition-all duration-500 translate-y-2 group-hover:translate-y-0" style={{ transitionDelay: `${i * 75}ms` }}>
                                                     {h}
                                                 </span>
                                             ))}
@@ -104,9 +104,9 @@ export default function Features() {
                                 </div>
 
                                 {/* Text area */}
-                                <div className="flex flex-col gap-3 p-8 lg:p-10 bg-slate/30">
-                                    <h4 className="font-sans font-bold text-xl lg:text-2xl text-ivory group-hover:text-accent transition-colors">{feature.title}</h4>
-                                    <p className="font-sans text-sm lg:text-[15px] text-ivory/60 leading-relaxed text-balance">
+                                <div className="flex flex-col gap-4 p-8 lg:p-10 relative z-20">
+                                    <h4 className="font-sans font-bold text-2xl lg:text-3xl text-ivory group-hover:text-transparent group-hover:bg-clip-text group-hover:bg-gradient-to-r group-hover:from-accent group-hover:to-accent-glow transition-all duration-500">{feature.title}</h4>
+                                    <p className="font-sans text-sm lg:text-[15px] text-ivory/50 leading-relaxed text-balance group-hover:text-ivory/80 transition-colors duration-500">
                                         {feature.description}
                                     </p>
                                 </div>

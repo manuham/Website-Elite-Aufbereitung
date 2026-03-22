@@ -76,9 +76,9 @@ export default function Philosophy() {
                     </p>
                     <h2 className="reveal-text font-drama italic text-[2.5rem] leading-[1.1] sm:text-5xl lg:text-6xl text-ivory">
                         Wir setzen auf{' '}
-                        <span className="text-champagne">Perfektion</span>{' '}
+                        <span className="text-transparent bg-clip-text bg-gradient-to-r from-accent to-accent-glow">Perfektion</span>{' '}
                         und{' '}
-                        <span className="text-champagne">Leidenschaft.</span>
+                        <span className="text-transparent bg-clip-text bg-gradient-to-r from-accent to-accent-glow">Leidenschaft.</span>
                     </h2>
                     <p className="reveal-text font-sans text-base text-ivory/60 max-w-xl leading-relaxed">
                         Mit Liebe zum Detail und höchstem Qualitätsanspruch setzen wir alles daran,
@@ -87,9 +87,10 @@ export default function Philosophy() {
                     </p>
                     <Link
                         to="/buchen"
-                        className="reveal-text mt-2 inline-block btn-magnetic bg-champagne text-obsidian px-8 py-3.5 rounded-full font-sans font-bold text-sm shadow-[0_0_20px_rgba(77,178,146,0.25)] w-fit whitespace-nowrap"
+                        className="reveal-text mt-4 inline-flex items-center gap-3 btn-magnetic glass-card hover:bg-ivory hover:text-obsidian text-ivory px-10 py-4 sm:py-5 rounded-full font-sans font-black tracking-wide text-sm sm:text-base shadow-[0_0_30px_rgba(255,255,255,0.05)] hover:shadow-[0_0_40px_rgba(255,255,255,0.8)] w-fit transition-all duration-300 group"
                     >
                         Jetzt Buchen
+                        <span className="group-hover:translate-x-1 transition-transform">→</span>
                     </Link>
                 </div>
 
