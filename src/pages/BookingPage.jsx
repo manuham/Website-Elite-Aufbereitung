@@ -3,7 +3,9 @@ import { Link, useSearchParams } from 'react-router-dom';
 import { Check, ChevronLeft, ChevronRight, ArrowLeft, Phone, Mail, MapPin, Plus, X as XIcon, Sparkles, AlertTriangle, Truck } from 'lucide-react';
 import { serviceCategories, allInOnePackages } from '../data/services';
 import { useAvailability } from '../hooks/useAvailability';
+import { useRecommendations } from '../hooks/useRecommendations';
 import { submitBooking } from '../lib/api';
+import RecommendationPanel from '../components/booking/RecommendationPanel';
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
@@ -130,7 +132,7 @@ function Step0({ serviceMode, setServiceMode, onNext }) {
 
 // ─── Step 1: Service Selection (multi-select) ─────────────────────────────────
 
-function Step1({ selectedItems, toggleItem, onNext, onBack }) {
+function Step1({ selectedItems, toggleItem, onNext, onBack, recommendations, packageSuggestion, onReplaceWithPackage }) {
     const [activeTab, setActiveTab] = useState(serviceCategories[0].id);
     const [showDisclaimer, setShowDisclaimer] = useState(false);
     const [pendingItem, setPendingItem] = useState(null);
@@ -287,6 +289,16 @@ function Step1({ selectedItems, toggleItem, onNext, onBack }) {
                         );
                     })}
                 </div>
+            )}
+
+            {/* Smart recommendations */}
+            {selectedItems.length > 0 && (recommendations.length > 0 || packageSuggestion) && (
+                <RecommendationPanel
+                    recommendations={recommendations}
+                    packageSuggestion={packageSuggestion}
+                    onAddService={(service) => addWithDisclaimer(service)}
+                    onReplaceWithPackage={onReplaceWithPackage}
+                />
             )}
 
             {/* Selection basket */}
@@ -784,10 +796,19 @@ export default function BookingPage() {
         }
     }, []);
 
+    const { recommendations, packageSuggestion } = useRecommendations(selectedItems);
+
     const toggleItem = (item) => {
         setSelectedItems(prev => {
             const exists = prev.find(i => i.id === item.id);
             return exists ? prev.filter(i => i.id !== item.id) : [...prev, item];
+        });
+    };
+
+    const replaceWithPackage = (pkg, replaceIds) => {
+        setSelectedItems(prev => {
+            const filtered = prev.filter(i => !replaceIds.includes(i.id));
+            return [...filtered, { id: pkg.id, name: pkg.name, price: pkg.price, priceNum: pkg.priceNum, type: 'aio' }];
         });
     };
 
@@ -877,7 +898,7 @@ export default function BookingPage() {
                 <div className="max-w-4xl mx-auto">
                     {step < 5 && <StepBar step={step} />}
                     {step === 0 && <Step0 serviceMode={serviceMode} setServiceMode={setServiceMode} onNext={() => setStep(1)} />}
-                    {step === 1 && <Step1 selectedItems={selectedItems} toggleItem={toggleItem} onNext={() => setStep(2)} onBack={() => setStep(0)} />}
+                    {step === 1 && <Step1 selectedItems={selectedItems} toggleItem={toggleItem} onNext={() => setStep(2)} onBack={() => setStep(0)} recommendations={recommendations} packageSuggestion={packageSuggestion} onReplaceWithPackage={replaceWithPackage} />}
                     {step === 2 && <StepVehicle vehicleCategory={vehicleCategory} setVehicleCategory={setVehicleCategory} selectedItems={selectedItems} onNext={() => setStep(3)} onBack={() => setStep(1)} />}
                     {step === 3 && <Step2 datetime={datetime} setDatetime={setDatetime} onNext={() => setStep(4)} onBack={() => setStep(2)} serviceMode={serviceMode} />}
                     {step === 4 && (
