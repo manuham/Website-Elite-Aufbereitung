@@ -53,10 +53,10 @@ export default function Hero() {
                     Professionelle Fahrzeugaufbereitung in Vorarlberg — Kratzerfreie Handwäsche, Politur & Keramikversiegelung.
                 </p>
 
-                <div className="hero-element flex items-center gap-2 mt-3 mb-2">
-                    <Link to="/buchen?service=mobil" className="bg-gradient-to-r from-champagne to-[#2ce09a] text-obsidian px-5 py-2.5 sm:px-6 sm:py-3 rounded-full font-sans text-[15px] sm:text-[17px] font-black tracking-tight inline-flex items-center gap-2 sm:gap-3 shadow-[0_0_40px_rgba(77,178,146,0.7)] hover:shadow-[0_0_60px_rgba(77,178,146,1)] animate-[pulse_2s_ease-in-out_infinite] hover:scale-[1.03] transition-all duration-300">
-                        <span className="bg-obsidian text-[#2ce09a] px-3 py-1 rounded-full text-[10px] sm:text-xs uppercase tracking-[0.2em] font-bold">NEU</span>
-                        <Truck className="w-5 h-5 sm:w-6 sm:h-6" />
+                <div className="hero-element flex items-center gap-2 mt-2 mb-1">
+                    <Link to="/mobiler-service" className="bg-champagne/90 text-obsidian px-5 py-2.5 sm:px-6 sm:py-3 rounded-full font-sans text-[13px] sm:text-[14px] font-bold tracking-wide inline-flex items-center gap-2 sm:gap-3 shadow-[0_0_20px_rgba(77,178,146,0.3)] hover:shadow-[0_0_30px_rgba(77,178,146,0.6)] animate-pulse hover:scale-[1.02] transition-all duration-300">
+                        <span className="bg-obsidian text-champagne px-2 py-0.5 rounded-full text-[9px] sm:text-[10px] uppercase tracking-widest font-black">NEU</span>
+                        <Truck className="w-4 h-4 sm:w-5 sm:h-5" />
                         Jetzt auch mobil — wir kommen zu Ihnen!
                     </Link>
                 </div>

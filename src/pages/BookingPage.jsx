@@ -39,7 +39,7 @@ function StepDot({ num, label, active, done, totalSteps }) {
 }
 
 function StepBar({ step }) {
-    const steps = ['Standort', 'Service', 'Termin', 'Kontakt'];
+    const steps = ['Standort', 'Service', 'Fahrzeug', 'Termin', 'Kontakt'];
     return (
         <div className="flex items-start justify-center gap-3 sm:gap-6 mb-16" role="list" aria-label="Buchungsschritte">
             {steps.map((label, i) => (
@@ -359,7 +359,90 @@ function Step1({ selectedItems, toggleItem, onNext, onBack }) {
     );
 }
 
-// ─── Step 2: Date & Time ──────────────────────────────────────────────────────
+// ─── Step 2: Vehicle Category ────────────────────────────────────────────────
+
+const VEHICLE_CATEGORIES = [
+    { id: 'kleinwagen', name: 'Kleinwagen', examples: 'z. B. VW Polo, Ford Fiesta', description: 'Kurze Autos, 2–4 Türen', aufpreis: 0 },
+    { id: 'kompakt', name: 'Kompaktklasse', examples: 'z. B. VW Golf, Audi A3', description: 'Standardgröße, die meisten Autos', aufpreis: 25 },
+    { id: 'mittelklasse', name: 'Mittelklasse / Limousine', examples: 'z. B. BMW 3er, Mercedes C-Klasse, Audi A6', description: 'Länger, oft 4 Türen + Kofferraum', aufpreis: 35 },
+    { id: 'suv', name: 'SUV / Van', examples: 'z. B. VW Tiguan, BMW X5, Sharan', description: 'Höher, größer, mehr Innenraum', aufpreis: 45 },
+    { id: 'gross', name: 'Großfahrzeuge / Transporter', examples: 'z. B. VW Bus, Sprinter, Transporter', description: 'Deutlich größer, gewerblich/Family Vans', aufpreis: null },
+];
+
+function StepVehicle({ vehicleCategory, setVehicleCategory, selectedItems, onNext, onBack }) {
+    const serviceTotal = selectedItems.reduce((sum, i) => sum + i.priceNum, 0);
+
+    return (
+        <div className="flex flex-col gap-10 w-full">
+            <div>
+                <h2 className="font-drama italic text-4xl sm:text-5xl text-ivory mb-2">Ihr Fahrzeug</h2>
+                <p className="font-sans text-sm text-ivory/50">Der Aufpreis richtet sich nach der Fahrzeuggröße.</p>
+            </div>
+
+            <div className="flex flex-col gap-3">
+                {VEHICLE_CATEGORIES.map(cat => {
+                    const selected = vehicleCategory?.id === cat.id;
+                    return (
+                        <button
+                            key={cat.id}
+                            onClick={() => setVehicleCategory(cat)}
+                            className={`text-left p-5 sm:p-6 rounded-[1.5rem] border transition-all duration-200 flex items-center gap-4 sm:gap-5 ${selected
+                                ? 'bg-accent/10 border-accent shadow-[0_0_20px_rgba(77,178,146,0.15)]'
+                                : 'bg-slate/30 border-slate/50 hover:border-slate'}`}
+                        >
+                            <div className={`w-6 h-6 rounded-full border-2 shrink-0 flex items-center justify-center transition-all ${selected ? 'bg-accent border-accent' : 'border-slate'}`}>
+                                {selected && <Check className="w-3.5 h-3.5 text-obsidian" strokeWidth={3} />}
+                            </div>
+                            <div className="flex-1 min-w-0">
+                                <span className="font-sans font-bold text-base text-ivory">{cat.name}</span>
+                                <span className="font-sans text-xs text-ivory/40 block">{cat.examples}</span>
+                                <span className="font-sans text-[11px] text-ivory/25">{cat.description}</span>
+                            </div>
+                            <div className="shrink-0">
+                                {cat.aufpreis === null ? (
+                                    <span className="font-mono text-sm text-champagne font-semibold">auf Anfrage</span>
+                                ) : cat.aufpreis === 0 ? (
+                                    <span className="font-mono text-sm text-accent font-semibold">kein Aufpreis</span>
+                                ) : (
+                                    <span className="font-mono text-sm text-accent font-semibold">+€{cat.aufpreis},-</span>
+                                )}
+                            </div>
+                        </button>
+                    );
+                })}
+            </div>
+
+            {vehicleCategory && serviceTotal > 0 && (
+                <div className="bg-slate/40 border border-accent/30 rounded-[1.5rem] p-5 flex items-center justify-between">
+                    <span className="font-sans text-sm text-ivory/50">Geschätzte Gesamtsumme</span>
+                    {vehicleCategory.aufpreis === null ? (
+                        <div className="flex flex-col items-end gap-0.5">
+                            <span className="font-mono text-lg font-bold text-accent">ab €{serviceTotal.toLocaleString('de-AT')},-</span>
+                            <span className="font-mono text-[10px] text-champagne">+ Aufpreis auf Anfrage</span>
+                        </div>
+                    ) : (
+                        <span className="font-mono text-xl font-bold text-accent">
+                            ab €{(serviceTotal + vehicleCategory.aufpreis).toLocaleString('de-AT')},-
+                        </span>
+                    )}
+                </div>
+            )}
+
+            <div className="flex justify-between mt-2">
+                <button onClick={onBack} className="flex items-center gap-2 font-sans text-sm text-ivory/50 hover:text-ivory transition-colors link-lift">
+                    <ChevronLeft className="w-4 h-4" /> Zurück
+                </button>
+                <button onClick={onNext} disabled={!vehicleCategory}
+                    className="btn-magnetic bg-accent text-obsidian px-10 py-4 rounded-full font-sans font-bold text-sm disabled:opacity-30 disabled:cursor-not-allowed shadow-[0_0_20px_rgba(77,178,146,0.2)] ml-auto"
+                >
+                    Weiter →
+                </button>
+            </div>
+        </div>
+    );
+}
+
+// ─── Step 3: Date & Time ──────────────────────────────────────────────────────
 
 function Step2({ datetime, setDatetime, onNext, onBack, serviceMode }) {
     const today = new Date(); today.setHours(0, 0, 0, 0);
@@ -489,9 +572,7 @@ function Step2({ datetime, setDatetime, onNext, onBack, serviceMode }) {
     );
 }
 
-// ─── Step 3: Contact Form ─────────────────────────────────────────────────────
-
-const VEHICLE_TYPES = ['PKW / Stadtauto', 'SUV / Geländewagen', 'Kombi / Familienauto', 'Transporter / Sprinter'];
+// ─── Step 4: Contact Form ─────────────────────────────────────────────────────
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const PHONE_REGEX = /^[+\d][\d\s\-/]{6,}$/;
@@ -503,7 +584,7 @@ function Step3({ contact, setContact, onSubmit, onBack, loading, serviceMode }) 
     const phoneValid = PHONE_REGEX.test(contact.phone.trim());
     const emailValid = EMAIL_REGEX.test(contact.email.trim());
     const addressValid = serviceMode !== 'mobil' || (contact.address && contact.address.trim().length >= 5);
-    const valid = nameValid && phoneValid && emailValid && contact.vehicle && addressValid;
+    const valid = nameValid && phoneValid && emailValid && addressValid;
 
     const inputClass = "w-full bg-slate/30 border border-slate/60 focus:border-accent outline-none rounded-xl px-4 py-3.5 font-sans text-sm text-ivory placeholder:text-ivory/30 transition-colors";
     const errorClass = "font-sans text-[11px] text-red-400 mt-1";
@@ -538,19 +619,6 @@ function Step3({ contact, setContact, onSubmit, onBack, loading, serviceMode }) 
                         {contact.address && contact.address.trim().length < 5 && <span className={errorClass}>Bitte geben Sie eine vollständige Adresse ein.</span>}
                     </div>
                 )}
-                <div className="flex flex-col gap-3 sm:col-span-2">
-                    <label className="font-sans text-xs text-ivory/50 uppercase tracking-widest">Fahrzeugtyp *</label>
-                    <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-                        {VEHICLE_TYPES.map(v => (
-                            <button key={v} type="button" onClick={() => setContact(c => ({ ...c, vehicle: v }))}
-                                aria-pressed={contact.vehicle === v}
-                                className={`py-3 px-4 rounded-xl border font-sans text-sm text-left transition-all ${contact.vehicle === v
-                                    ? 'bg-accent/10 border-accent text-ivory'
-                                    : 'bg-slate/30 border-slate/50 text-ivory/50 hover:border-slate'}`}
-                            >{v}</button>
-                        ))}
-                    </div>
-                </div>
                 <div className="flex flex-col gap-2 sm:col-span-2">
                     <label htmlFor="booking-notes" className="font-sans text-xs text-ivory/50 uppercase tracking-widest">Anmerkungen</label>
                     <textarea id="booking-notes" rows={3} value={contact.notes} onChange={set('notes')}
@@ -574,8 +642,10 @@ function Step3({ contact, setContact, onSubmit, onBack, loading, serviceMode }) 
 
 // ─── Step 4: Confirmation ─────────────────────────────────────────────────────
 
-function Step4({ selectedItems, datetime, serviceMode, contact }) {
-    const total = selectedItems.reduce((s, i) => s + i.priceNum, 0);
+function Step4({ selectedItems, datetime, serviceMode, contact, vehicleCategory }) {
+    const serviceTotal = selectedItems.reduce((s, i) => s + i.priceNum, 0);
+    const aufpreis = vehicleCategory?.aufpreis ?? 0;
+    const total = serviceTotal + (aufpreis || 0);
 
     return (
         <div className="flex flex-col items-center text-center gap-10 py-8 w-full max-w-xl mx-auto">
@@ -603,15 +673,27 @@ function Step4({ selectedItems, datetime, serviceMode, contact }) {
                     ))}
                 </div>
 
-                {selectedItems.length > 1 && (
-                    <>
-                        <div className="h-px bg-slate/50" />
-                        <div className="flex justify-between items-center">
-                            <span className="font-sans text-sm font-bold text-ivory">Gesamtsumme</span>
-                            <span className="font-mono text-lg font-bold text-accent">ab €{total.toLocaleString('de-AT')},-</span>
-                        </div>
-                    </>
+                {vehicleCategory && (
+                    <div className="flex justify-between items-center">
+                        <span className="font-sans text-sm text-ivory/70">{vehicleCategory.name}</span>
+                        <span className="font-mono text-sm text-accent font-semibold">
+                            {vehicleCategory.aufpreis === null ? 'auf Anfrage' : vehicleCategory.aufpreis === 0 ? 'kein Aufpreis' : `+€${vehicleCategory.aufpreis},-`}
+                        </span>
+                    </div>
                 )}
+
+                <div className="h-px bg-slate/50" />
+                <div className="flex justify-between items-center">
+                    <span className="font-sans text-sm font-bold text-ivory">Gesamtsumme</span>
+                    {vehicleCategory?.aufpreis === null ? (
+                        <div className="flex flex-col items-end gap-0.5">
+                            <span className="font-mono text-lg font-bold text-accent">ab €{serviceTotal.toLocaleString('de-AT')},-</span>
+                            <span className="font-mono text-[10px] text-champagne">+ Aufpreis auf Anfrage</span>
+                        </div>
+                    ) : (
+                        <span className="font-mono text-lg font-bold text-accent">ab €{total.toLocaleString('de-AT')},-</span>
+                    )}
+                </div>
 
                 <div className="h-px bg-slate/50" />
                 <div className="flex justify-between items-center">
@@ -688,8 +770,9 @@ export default function BookingPage() {
     const [serviceMode, setServiceMode] = useState(null);
 
     const [selectedItems, setSelectedItems] = useState([]);
+    const [vehicleCategory, setVehicleCategory] = useState(null);
     const [datetime, setDatetime] = useState({ date: null, time: null });
-    const [contact, setContact] = useState({ name: '', phone: '', email: '', vehicle: '', notes: '', address: '' });
+    const [contact, setContact] = useState({ name: '', phone: '', email: '', notes: '', address: '' });
     const [submitError, setSubmitError] = useState(null);
 
     useEffect(() => {
@@ -717,7 +800,10 @@ export default function BookingPage() {
         const mm = String(datetime.date.getMonth() + 1).padStart(2, '0');
         const dd = String(datetime.date.getDate()).padStart(2, '0');
         const isoDate = `${yyyy}-${mm}-${dd}`;
-        const total = selectedItems.reduce((s, i) => s + i.priceNum, 0);
+        const serviceTotal = selectedItems.reduce((s, i) => s + i.priceNum, 0);
+        const aufpreis = vehicleCategory?.aufpreis ?? 0;
+        const total = serviceTotal + (aufpreis || 0);
+        const aufpreisStr = vehicleCategory?.aufpreis === null ? 'auf Anfrage' : aufpreis > 0 ? `+€${aufpreis},-` : 'kein Aufpreis';
 
         try {
             // Create Google Calendar event (primary booking action)
@@ -727,6 +813,7 @@ export default function BookingPage() {
                 services: selectedItems,
                 contact,
                 serviceMode,
+                vehicleCategory: vehicleCategory?.name,
             });
 
             // Send email notification in parallel (fire-and-forget backup)
@@ -742,21 +829,23 @@ export default function BookingPage() {
                     Name: contact.name,
                     Telefon: contact.phone,
                     'E-Mail': contact.email,
-                    Fahrzeug: contact.vehicle,
+                    Fahrzeug: `${vehicleCategory?.name || '—'} (${aufpreisStr})`,
                     Datum: dateStr,
                     Uhrzeit: `${datetime.time} Uhr`,
                     Services: selectedItems.map(i => `${i.name} (${i.price})`).join(', '),
-                    Gesamtsumme: selectedItems.length > 1 ? `ab €${total.toLocaleString('de-AT')},-` : selectedItems[0]?.price || '',
+                    Gesamtsumme: vehicleCategory?.aufpreis === null
+                        ? `ab €${serviceTotal.toLocaleString('de-AT')},- + Aufpreis auf Anfrage`
+                        : `ab €${total.toLocaleString('de-AT')},-`,
                     Anmerkungen: contact.notes || '—',
                 }),
             }).catch(() => {});
 
-            setStep(4);
+            setStep(5);
         } catch (err) {
             if (err.status === 409 && err.data?.error === 'slot_taken') {
                 setSubmitError('Dieser Termin wurde soeben von jemand anderem gebucht. Bitte wählen Sie einen anderen Zeitpunkt.');
                 setDatetime(dt => ({ ...dt, time: null }));
-                setStep(2);
+                setStep(3);
             } else {
                 setSubmitError('Anfrage konnte nicht gesendet werden. Bitte versuchen Sie es erneut oder kontaktieren Sie uns direkt.');
             }
@@ -786,13 +875,14 @@ export default function BookingPage() {
 
             <main className="pt-28 pb-24 px-6 sm:px-12 lg:px-24">
                 <div className="max-w-4xl mx-auto">
-                    {step < 4 && <StepBar step={step} />}
+                    {step < 5 && <StepBar step={step} />}
                     {step === 0 && <Step0 serviceMode={serviceMode} setServiceMode={setServiceMode} onNext={() => setStep(1)} />}
                     {step === 1 && <Step1 selectedItems={selectedItems} toggleItem={toggleItem} onNext={() => setStep(2)} onBack={() => setStep(0)} />}
-                    {step === 2 && <Step2 datetime={datetime} setDatetime={setDatetime} onNext={() => setStep(3)} onBack={() => setStep(1)} serviceMode={serviceMode} />}
-                    {step === 3 && (
+                    {step === 2 && <StepVehicle vehicleCategory={vehicleCategory} setVehicleCategory={setVehicleCategory} selectedItems={selectedItems} onNext={() => setStep(3)} onBack={() => setStep(1)} />}
+                    {step === 3 && <Step2 datetime={datetime} setDatetime={setDatetime} onNext={() => setStep(4)} onBack={() => setStep(2)} serviceMode={serviceMode} />}
+                    {step === 4 && (
                         <>
-                            <Step3 contact={contact} setContact={setContact} onSubmit={handleSubmit} onBack={() => setStep(2)} loading={loading} serviceMode={serviceMode} />
+                            <Step3 contact={contact} setContact={setContact} onSubmit={handleSubmit} onBack={() => setStep(3)} loading={loading} serviceMode={serviceMode} />
                             {submitError && (
                                 <div className="mt-6 bg-red-500/10 border border-red-500/30 rounded-xl px-5 py-4 text-center">
                                     <p className="font-sans text-sm text-red-400">{submitError}</p>
@@ -803,7 +893,7 @@ export default function BookingPage() {
                             )}
                         </>
                     )}
-                    {step === 4 && <Step4 selectedItems={selectedItems} datetime={datetime} serviceMode={serviceMode} contact={contact} />}
+                    {step === 5 && <Step4 selectedItems={selectedItems} datetime={datetime} serviceMode={serviceMode} contact={contact} vehicleCategory={vehicleCategory} />}
                 </div>
             </main>
         </div>
