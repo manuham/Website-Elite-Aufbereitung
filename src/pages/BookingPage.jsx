@@ -770,7 +770,7 @@ export default function BookingPage() {
                 <Link to="/" className="flex items-center gap-2 font-sans text-sm text-ivory/50 hover:text-ivory transition-colors link-lift">
                     <ArrowLeft className="w-4 h-4" /> Zurück
                 </Link>
-                <img src="/assets/logo-new.png" alt="Elité Auto Aufbereitung" className="h-12 w-auto object-contain" />
+                <img src="/assets/logo-new2.png" alt="Elité Auto Aufbereitung" className="h-12 w-auto object-contain" />
                 <div className="flex items-center gap-2 bg-obsidian/50 px-3 py-1.5 rounded-full border border-slate/50">
                     <span className="relative flex h-2 w-2">
                         <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75" />

@@ -11,7 +11,7 @@ export default function Footer() {
                 {/* Col 1 */}
                 <div className="flex flex-col gap-6">
                     <div className="flex items-center gap-1 cursor-pointer" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>
-                        <img src="/assets/logo-new.png" alt="Elité Auto Aufbereitung" className="h-28 sm:h-36 lg:h-44 w-auto object-contain -ml-2 drop-shadow-xl" />
+                        <img src="/assets/logo-new2.png" alt="Elité Auto Aufbereitung" className="h-28 sm:h-36 lg:h-44 w-auto object-contain -ml-2 drop-shadow-xl" />
                     </div>
                     <p className="font-sans text-sm text-ivory/50 leading-relaxed text-balance">
                         Professionelle Fahrzeugaufbereitung in Vorarlberg. Perfektion bis ins Detail.

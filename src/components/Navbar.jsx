@@ -63,7 +63,7 @@ export default function Navbar() {
                     onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
                 >
                     <img
-                        src="/assets/logo-new.png"
+                        src="/assets/logo-new2.png"
                         alt="Elité Auto Aufbereitung"
                         className="h-[5rem] sm:h-[6rem] lg:h-[7.5rem] w-auto object-contain -my-12 -ml-2 translate-y-[7px]"
                     />
