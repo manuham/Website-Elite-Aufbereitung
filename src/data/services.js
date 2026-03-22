@@ -196,6 +196,17 @@ export const serviceCategories = [
                 ]
             },
             {
+                name: "Spot-Politur",
+                price: "ab €45,-",
+                popular: false,
+                features: [
+                    "Gezielte Entfernung kleiner Kratzer",
+                    "Hologramme oder Lackdefekte beheben",
+                    "Perfekt ohne vollständige Politur",
+                    "Für einen makellosen Look"
+                ]
+            },
+            {
                 name: "Scheinwerfer Polieren",
                 price: "ab €45,-",
                 popular: false,
@@ -290,6 +301,18 @@ export const serviceCategories = [
                     "Ozonbehandlung (Geruch/Schimmel): ab €75",
                     "Kunststoffteile außen: ab €75",
                     "Stellt Original-Look wieder her"
+                ]
+            },
+            {
+                name: "Verkaufsaufbereitung",
+                price: "ab €295,-",
+                popular: false,
+                features: [
+                    "Gründliche Innen- und Außenreinigung",
+                    "Flecken entfernen",
+                    "Lack polieren für glänzenden Auftritt",
+                    "Frisches Ambiente im Innenraum",
+                    "Fahrzeug optimal für den Verkauf vorbereiten"
                 ]
             }
         ]
