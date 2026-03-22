@@ -99,7 +99,7 @@ export default function MobileService() {
                     {/* CTA */}
                     <div className="mobile-text">
                         <Link
-                            to="/buchen?service=mobil"
+                            to="/mobiler-service"
                             className="btn-magnetic inline-flex items-center gap-2 bg-champagne text-obsidian px-8 py-4 rounded-full font-sans font-bold text-sm shadow-[0_0_20px_rgba(77,178,146,0.3)]"
                         >
                             Mobilen Termin Buchen

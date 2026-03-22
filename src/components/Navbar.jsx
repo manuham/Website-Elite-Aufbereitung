@@ -65,12 +65,12 @@ export default function Navbar() {
                     <img
                         src="/assets/logo-new2.png"
                         alt="Elité Auto Aufbereitung"
-                        className="h-[5rem] sm:h-[6rem] lg:h-[7.5rem] w-auto object-contain -my-12 -ml-2 translate-y-[7px]"
+                        className="h-[6.5rem] sm:h-[8rem] lg:h-[10rem] w-auto object-contain -my-16 -ml-3 translate-y-[5px]"
                     />
                 </div>
 
                 {/* Nav Links — Desktop */}
-                <div className="hidden lg:flex items-center gap-6 xl:gap-10">
+                <div className="hidden lg:flex items-center gap-6 xl:gap-8 2xl:gap-10">
                     {navLinks.map((link) =>
                         link.href ? (
                             <Link
@@ -90,17 +90,17 @@ export default function Navbar() {
                             </button>
                         )
                     )}
+                    <Link
+                        to="/mobiler-service"
+                        className="group flex items-center gap-2 font-sans text-[15px] font-bold text-champagne hover:text-ivory transition-all link-lift whitespace-nowrap"
+                    >
+                        <span className="bg-champagne text-obsidian px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-widest shadow-[0_0_15px_rgba(77,178,146,0.6)] animate-[pulse_2s_ease-in-out_infinite]">Neu</span>
+                        Mobiler Service
+                    </Link>
                 </div>
 
                 {/* CTA — Desktop */}
                 <div className="hidden lg:inline-flex items-center gap-3 xl:gap-4">
-                    <Link
-                        to="/buchen?service=mobil"
-                        className="group flex items-center gap-2 font-sans text-[13px] font-semibold text-champagne hover:text-ivory transition-all link-lift whitespace-nowrap"
-                    >
-                        <span className="bg-champagne text-obsidian px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-widest shadow-[0_0_15px_rgba(77,178,146,0.6)] animate-pulse">Neu</span>
-                        Mobiler Service
-                    </Link>
                     <Link
                         to="/buchen"
                         className="btn-magnetic bg-champagne text-obsidian px-6 py-2.5 rounded-full font-sans font-semibold text-sm whitespace-nowrap items-center justify-center relative overflow-hidden"
@@ -148,7 +148,7 @@ export default function Navbar() {
                 )}
 
                 <Link
-                    to="/buchen?service=mobil"
+                    to="/mobiler-service"
                     onClick={() => setMenuOpen(false)}
                     style={{ transitionDelay: menuOpen ? `${navLinks.length * 60}ms` : '0ms' }}
                     className={`flex items-center gap-3 font-sans text-xl font-semibold text-champagne transition-all duration-300 ${menuOpen ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}

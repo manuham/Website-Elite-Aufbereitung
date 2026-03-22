@@ -1,0 +1,233 @@
+import { Link } from 'react-router-dom';
+import { ArrowLeft, Truck, Clock, ShieldCheck, MapPin, Wrench, Sparkles, ArrowRight, Phone, CheckCircle } from 'lucide-react';
+
+const steps = [
+    { num: '01', title: 'Termin buchen', desc: 'Wählen Sie online Ihren Wunschtermin und die gewünschten Services aus.', icon: Clock },
+    { num: '02', title: 'Wir kommen zu Ihnen', desc: 'Unser voll ausgestatteter Aufbereitungs-Van fährt direkt zu Ihrem Standort.', icon: Truck },
+    { num: '03', title: 'Ergebnis genießen', desc: 'Lehnen Sie sich zurück — Ihr Fahrzeug erstrahlt in neuem Glanz.', icon: Sparkles },
+];
+
+const services = [
+    { title: 'Premium Handwäsche', desc: 'Schonende Reinigung mit pH-neutralen Produkten und Mikrofasertüchern.', icon: Sparkles },
+    { title: 'Innenreinigung', desc: 'Tiefenreinigung aller Oberflächen, Polster und Teppiche — wie neu.', icon: ShieldCheck },
+    { title: 'Maschinenpolitur', desc: 'Entfernung von Kratzern und Swirls für spiegelnden Hochglanz.', icon: Wrench },
+    { title: 'Keramikversiegelung', desc: 'Langzeitschutz mit FIREBALL Keramik — bis zu 60.000 km Garantie.', icon: ShieldCheck },
+];
+
+const benefits = [
+    { title: 'Kein Weg, kein Stress', desc: 'Sparen Sie sich die Anfahrt — wir arbeiten bei Ihnen vor Ort.' },
+    { title: 'Flexible Termine', desc: 'Mo–Sa, auch nach Feierabend. Wir richten uns nach Ihrem Zeitplan.' },
+    { title: 'Professionelles Equipment', desc: 'Unser Van ist voll ausgestattet — identische Qualität wie im Studio.' },
+    { title: 'Ganz Vorarlberg', desc: 'Wir sind in Vorarlberg und Umgebung für Sie unterwegs.' },
+];
+
+const vanImages = [
+    { src: 'https://images.unsplash.com/photo-1619642751034-765dfdf7c58e?w=900&q=80', alt: 'Professionelle Fahrzeugaufbereitung' },
+    { src: 'https://images.unsplash.com/photo-1601362840469-51e4d8d58785?w=900&q=80', alt: 'Mobiler Aufbereitungsservice' },
+    { src: 'https://images.unsplash.com/photo-1507136566006-cfc505b114fc?w=900&q=80', alt: 'Detailing Ausrüstung' },
+];
+
+export default function MobilerService() {
+    return (
+        <div className="min-h-screen bg-obsidian text-ivory font-sans">
+
+            {/* Back nav */}
+            <div className="px-6 sm:px-12 lg:px-24 pt-10">
+                <Link
+                    to="/"
+                    className="inline-flex items-center gap-2 text-ivory/50 hover:text-champagne transition-colors text-sm"
+                >
+                    <ArrowLeft className="w-4 h-4" />
+                    Zurück zur Startseite
+                </Link>
+            </div>
+
+            {/* Hero */}
+            <div className="px-6 sm:px-12 lg:px-24 pt-16 pb-20 max-w-7xl mx-auto">
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-center">
+                    <div className="flex flex-col gap-6">
+                        <div className="flex items-center gap-3">
+                            <span className="bg-champagne text-obsidian px-4 py-1.5 rounded-full font-sans font-bold text-xs uppercase tracking-widest shadow-[0_0_20px_rgba(77,178,146,0.4)] animate-pulse">
+                                Neu
+                            </span>
+                            <span className="font-mono text-xs text-champagne uppercase tracking-widest">Mobiler Service</span>
+                        </div>
+                        <h1 className="font-drama italic text-5xl sm:text-6xl lg:text-7xl text-ivory leading-tight">
+                            Wir kommen{' '}
+                            <span className="text-champagne">zu Ihnen.</span>
+                        </h1>
+                        <p className="font-sans text-lg text-ivory/60 leading-relaxed max-w-lg">
+                            Ab sofort bietet Elité Auto Aufbereitung den kompletten Service auch mobil an.
+                            Unser professionell ausgestatteter Van kommt direkt zu Ihnen nach Hause,
+                            ins Büro oder an jeden gewünschten Standort in Vorarlberg.
+                        </p>
+                        <div className="flex flex-wrap gap-4 mt-2">
+                            <Link
+                                to="/buchen?service=mobil"
+                                className="btn-magnetic inline-flex items-center gap-2 bg-champagne text-obsidian px-8 py-4 rounded-full font-sans font-bold text-sm shadow-[0_0_20px_rgba(77,178,146,0.3)]"
+                            >
+                                Jetzt Buchen
+                                <ArrowRight className="w-4 h-4" />
+                            </Link>
+                            <a
+                                href="tel:+436642546078"
+                                className="inline-flex items-center gap-2 border border-slate/60 hover:border-champagne/50 text-ivory/70 hover:text-ivory px-8 py-4 rounded-full font-sans text-sm transition-colors"
+                            >
+                                <Phone className="w-4 h-4" />
+                                Anrufen
+                            </a>
+                        </div>
+                    </div>
+                    <div className="relative rounded-[2rem] overflow-hidden h-[360px] sm:h-[420px] lg:h-[500px]">
+                        <img
+                            src="https://images.unsplash.com/photo-1520340356584-f9917d1eea6f?w=900&q=80"
+                            alt="Mobiler Aufbereitungsservice — Elité kommt zu Ihnen"
+                            className="w-full h-full object-cover"
+                            loading="lazy"
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-obsidian/60 via-transparent to-transparent" />
+                        <div className="absolute bottom-6 left-6 flex items-center gap-2 bg-obsidian/70 backdrop-blur-sm px-4 py-2 rounded-full">
+                            <Truck className="w-4 h-4 text-champagne" />
+                            <span className="font-mono text-[11px] text-ivory/80 uppercase tracking-widest">Voll ausgestattet</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {/* How it works */}
+            <div className="px-6 sm:px-12 lg:px-24 py-24 sm:py-32 bg-slate/20">
+                <div className="max-w-7xl mx-auto flex flex-col gap-16">
+                    <div className="flex flex-col gap-4 text-center">
+                        <span className="font-mono text-xs text-champagne uppercase tracking-widest">So funktioniert's</span>
+                        <h2 className="font-drama italic text-4xl sm:text-5xl text-ivory">
+                            In drei Schritten zum <span className="text-champagne">Glanz.</span>
+                        </h2>
+                    </div>
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-8 lg:gap-12">
+                        {steps.map((step) => (
+                            <div key={step.num} className="flex flex-col gap-5 text-center items-center">
+                                <div className="w-16 h-16 rounded-2xl bg-champagne/10 border border-champagne/30 flex items-center justify-center">
+                                    <step.icon className="w-7 h-7 text-champagne" strokeWidth={1.5} />
+                                </div>
+                                <span className="font-mono text-xs text-champagne/60 uppercase tracking-widest">{step.num}</span>
+                                <h3 className="font-sans font-bold text-xl text-ivory">{step.title}</h3>
+                                <p className="font-sans text-sm text-ivory/50 leading-relaxed max-w-xs">{step.desc}</p>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            </div>
+
+            {/* Services available mobile */}
+            <div className="px-6 sm:px-12 lg:px-24 py-24 sm:py-32">
+                <div className="max-w-7xl mx-auto flex flex-col gap-16">
+                    <div className="flex flex-col gap-4">
+                        <span className="font-mono text-xs text-champagne uppercase tracking-widest">Unser Angebot</span>
+                        <h2 className="font-drama italic text-4xl sm:text-5xl text-ivory">
+                            Kompletter Service, <span className="text-champagne">mobil.</span>
+                        </h2>
+                        <p className="font-sans text-ivory/60 text-lg max-w-xl leading-relaxed">
+                            Alle Leistungen, die Sie aus unserem Studio kennen — jetzt auch direkt bei Ihnen vor Ort.
+                        </p>
+                    </div>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                        {services.map((s) => (
+                            <div key={s.title} className="bg-slate/30 border border-slate/50 rounded-[2rem] p-8 flex flex-col gap-4 hover:border-champagne/30 transition-colors">
+                                <div className="w-12 h-12 rounded-xl bg-champagne/10 border border-champagne/30 flex items-center justify-center">
+                                    <s.icon className="w-6 h-6 text-champagne" strokeWidth={1.5} />
+                                </div>
+                                <h3 className="font-sans font-bold text-xl text-ivory">{s.title}</h3>
+                                <p className="font-sans text-sm text-ivory/50 leading-relaxed">{s.desc}</p>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            </div>
+
+            {/* Van gallery */}
+            <div className="px-6 sm:px-12 lg:px-24 py-24 sm:py-32 bg-slate/20">
+                <div className="max-w-7xl mx-auto flex flex-col gap-16">
+                    <div className="flex flex-col gap-4">
+                        <span className="font-mono text-xs text-champagne uppercase tracking-widest">Unser Fahrzeug</span>
+                        <h2 className="font-drama italic text-4xl sm:text-5xl text-ivory">
+                            Der Elité <span className="text-champagne">Van.</span>
+                        </h2>
+                        <p className="font-sans text-ivory/60 text-lg max-w-xl leading-relaxed">
+                            Voll ausgestattet mit allem, was wir für eine professionelle Aufbereitung brauchen — vom
+                            Hochdruckreiniger über die Poliermaschine bis hin zu unseren Premium-Produkten von FIREBALL.
+                        </p>
+                    </div>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                        {vanImages.map((img, i) => (
+                            <div key={i} className="rounded-[1.75rem] overflow-hidden h-[280px] sm:h-[320px]">
+                                <img
+                                    src={img.src}
+                                    alt={img.alt}
+                                    className="w-full h-full object-cover hover:scale-105 transition-transform duration-700"
+                                    loading="lazy"
+                                />
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            </div>
+
+            {/* Benefits */}
+            <div className="px-6 sm:px-12 lg:px-24 py-24 sm:py-32">
+                <div className="max-w-7xl mx-auto flex flex-col gap-16">
+                    <div className="flex flex-col gap-4 text-center">
+                        <span className="font-mono text-xs text-champagne uppercase tracking-widest">Ihre Vorteile</span>
+                        <h2 className="font-drama italic text-4xl sm:text-5xl text-ivory">
+                            Warum <span className="text-champagne">mobil?</span>
+                        </h2>
+                    </div>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                        {benefits.map((b) => (
+                            <div key={b.title} className="bg-slate/30 border border-slate/50 rounded-[1.5rem] p-6 flex flex-col gap-3 text-center items-center hover:border-champagne/30 transition-colors">
+                                <CheckCircle className="w-6 h-6 text-champagne" strokeWidth={1.5} />
+                                <h3 className="font-sans font-bold text-base text-ivory">{b.title}</h3>
+                                <p className="font-sans text-xs text-ivory/50 leading-relaxed">{b.desc}</p>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            </div>
+
+            {/* Service area */}
+            <div className="px-6 sm:px-12 lg:px-24 py-16 bg-slate/20">
+                <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-center gap-4 text-center sm:text-left">
+                    <MapPin className="w-6 h-6 text-champagne shrink-0" strokeWidth={1.5} />
+                    <p className="font-sans text-lg text-ivory/70">
+                        Wir sind in ganz <span className="text-ivory font-semibold">Vorarlberg & Umgebung</span> für Sie unterwegs.
+                    </p>
+                </div>
+            </div>
+
+            {/* CTA */}
+            <div className="bg-slate mx-6 sm:mx-12 lg:mx-24 my-16 rounded-[2.5rem] px-8 sm:px-16 py-16 flex flex-col sm:flex-row items-center justify-between gap-8 max-w-7xl lg:mx-auto">
+                <div className="flex flex-col gap-3 text-center sm:text-left">
+                    <span className="font-mono text-xs text-champagne uppercase tracking-widest">Bereit?</span>
+                    <h2 className="font-drama italic text-3xl sm:text-4xl text-ivory">
+                        Jetzt mobilen Termin buchen.
+                    </h2>
+                    <p className="font-sans text-sm text-ivory/50 max-w-md">
+                        Wählen Sie Ihren Wunschtermin online — wir kommen mit allem, was wir brauchen, direkt zu Ihnen.
+                    </p>
+                </div>
+                <Link
+                    to="/buchen?service=mobil"
+                    className="shrink-0 btn-magnetic inline-flex items-center gap-2 bg-champagne text-obsidian px-10 py-4 rounded-full font-sans font-bold text-sm shadow-[0_0_20px_rgba(77,178,146,0.3)] hover:brightness-110 transition-all"
+                >
+                    Jetzt Buchen
+                    <Truck className="w-5 h-5" />
+                </Link>
+            </div>
+
+            {/* Footer strip */}
+            <div className="border-t border-ivory/10 px-6 sm:px-12 lg:px-24 py-8 text-center font-sans text-xs text-ivory/30">
+                © 2026 Elité Auto Aufbereitung. Alle Rechte vorbehalten.
+            </div>
+
+        </div>
+    );
+}
