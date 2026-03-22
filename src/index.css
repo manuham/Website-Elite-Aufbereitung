@@ -63,4 +63,10 @@
       animation-play-state: paused;
     }
   }
+
+  /* Shimmer for package savings banner */
+  @keyframes shimmer {
+    0%, 100% { transform: translateX(-100%); }
+    50%      { transform: translateX(100%); }
+  }
 }
