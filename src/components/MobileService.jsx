@@ -52,7 +52,7 @@ export default function MobileService() {
                 {/* Left — Image */}
                 <div className="mobile-image relative rounded-[2rem] overflow-hidden h-[360px] sm:h-[420px] lg:h-[500px] shadow-[0_20px_50px_rgba(0,0,0,0.5)] group transform-gpu border border-ivory/5">
                     <img
-                        src="https://images.unsplash.com/photo-1449965408869-eaa3f722e40d?w=900&q=80"
+                        src="/assets/VAN.png"
                         alt="Mobiler Aufbereitungsservice"
                         className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105"
                         loading="lazy"

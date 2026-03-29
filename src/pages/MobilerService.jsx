@@ -21,11 +21,6 @@ const benefits = [
     { title: 'Ganz Vorarlberg', desc: 'Wir sind in Vorarlberg und Umgebung für Sie unterwegs.' },
 ];
 
-const vanImages = [
-    { src: 'https://images.unsplash.com/photo-1619642751034-765dfdf7c58e?w=900&q=80', alt: 'Professionelle Fahrzeugaufbereitung' },
-    { src: 'https://images.unsplash.com/photo-1601362840469-51e4d8d58785?w=900&q=80', alt: 'Mobiler Aufbereitungsservice' },
-    { src: 'https://images.unsplash.com/photo-1507136566006-cfc505b114fc?w=900&q=80', alt: 'Detailing Ausrüstung' },
-];
 
 export default function MobilerService() {
     return (
@@ -80,7 +75,7 @@ export default function MobilerService() {
                     </div>
                     <div className="relative rounded-[2rem] overflow-hidden h-[360px] sm:h-[420px] lg:h-[500px]">
                         <img
-                            src="https://images.unsplash.com/photo-1520340356584-f9917d1eea6f?w=900&q=80"
+                            src="/assets/VAN.png"
                             alt="Mobiler Aufbereitungsservice — Elité kommt zu Ihnen"
                             className="w-full h-full object-cover"
                             loading="lazy"
@@ -157,17 +152,58 @@ export default function MobilerService() {
                             Hochdruckreiniger über die Poliermaschine bis hin zu unseren Premium-Produkten von FIREBALL.
                         </p>
                     </div>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                        {vanImages.map((img, i) => (
-                            <div key={i} className="rounded-[1.75rem] overflow-hidden h-[280px] sm:h-[320px]">
-                                <img
-                                    src={img.src}
-                                    alt={img.alt}
-                                    className="w-full h-full object-cover hover:scale-105 transition-transform duration-700"
-                                    loading="lazy"
-                                />
+
+                    {/* Editorial magazine layout */}
+                    <div className="grid grid-cols-1 lg:grid-cols-3 lg:grid-rows-2 gap-4 lg:h-[600px]">
+
+                        {/* Main — spans 2 cols & 2 rows */}
+                        <div className="lg:col-span-2 lg:row-span-2 rounded-[1.75rem] overflow-hidden relative group h-[360px] lg:h-full">
+                            <img
+                                src="/assets/VAN.png"
+                                alt="Der Elité Aufbereitungs-Van"
+                                className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105"
+                                loading="lazy"
+                            />
+                            <div className="absolute inset-0 bg-gradient-to-t from-obsidian/80 via-obsidian/10 to-transparent" />
+                            <div className="absolute bottom-6 left-6 flex flex-col gap-1">
+                                <span className="font-mono text-[10px] text-champagne uppercase tracking-widest">Der Van</span>
+                                <span className="font-sans font-bold text-ivory text-lg leading-tight">Voll ausgestattet.<br />Bereit für alles.</span>
                             </div>
-                        ))}
+                            <div className="absolute top-5 right-5 bg-obsidian/60 backdrop-blur-sm border border-champagne/20 px-3 py-1.5 rounded-full">
+                                <span className="font-mono text-[10px] text-champagne uppercase tracking-widest">Elité Mobile</span>
+                            </div>
+                        </div>
+
+                        {/* Top right */}
+                        <div className="rounded-[1.75rem] overflow-hidden relative group h-[280px] lg:h-full">
+                            <img
+                                src="/assets/VAN_Auto.jpg"
+                                alt="Fahrzeugaufbereitung vor Ort"
+                                className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105"
+                                loading="lazy"
+                            />
+                            <div className="absolute inset-0 bg-gradient-to-t from-obsidian/70 via-transparent to-transparent" />
+                            <div className="absolute bottom-5 left-5">
+                                <span className="font-mono text-[10px] text-champagne uppercase tracking-widest">Service</span>
+                                <p className="font-sans text-sm text-ivory/80 mt-0.5">Direkt zu Ihnen</p>
+                            </div>
+                        </div>
+
+                        {/* Bottom right */}
+                        <div className="rounded-[1.75rem] overflow-hidden relative group h-[280px] lg:h-full">
+                            <img
+                                src="/assets/VAN_Matthias.jpg"
+                                alt="Matthias — Ihr Aufbereitungsexperte"
+                                className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105"
+                                loading="lazy"
+                            />
+                            <div className="absolute inset-0 bg-gradient-to-t from-obsidian/70 via-transparent to-transparent" />
+                            <div className="absolute bottom-5 left-5">
+                                <span className="font-mono text-[10px] text-champagne uppercase tracking-widest">Team</span>
+                                <p className="font-sans text-sm text-ivory/80 mt-0.5">Matthias, Ihr Experte</p>
+                            </div>
+                        </div>
+
                     </div>
                 </div>
             </div>
