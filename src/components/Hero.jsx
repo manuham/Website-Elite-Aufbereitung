@@ -47,7 +47,7 @@ export default function Hero() {
                 <div className="absolute inset-0 bg-gradient-to-t from-obsidian via-obsidian/90 to-obsidian/30" />
                 
                 {/* Animated Foam/Gloss Orbs (Apple-style abstract blobs) */}
-                <div className="absolute inset-0 overflow-hidden mix-blend-screen opacity-60">
+                <div className="absolute inset-0 overflow-hidden mix-blend-screen opacity-30">
                     <div className="absolute -top-[10%] -left-[10%] w-[500px] h-[500px] sm:w-[800px] sm:h-[800px] bg-accent/20 rounded-full filter blur-[100px] sm:blur-[140px] animate-blob" />
                     <div className="absolute top-[20%] -right-[10%] w-[400px] h-[400px] sm:w-[600px] sm:h-[600px] bg-sky-500/10 rounded-full filter blur-[90px] animate-blob" style={{ animationDelay: '2s' }} />
                     <div className="absolute -bottom-[20%] left-[20%] w-[600px] h-[600px] sm:w-[900px] sm:h-[900px] bg-accent-glow/10 rounded-full filter blur-[120px] animate-blob" style={{ animationDelay: '4s' }} />
@@ -62,8 +62,6 @@ export default function Hero() {
                     </h1>
                     <h2 className="hero-element font-drama italic text-[4rem] sm:text-7xl lg:text-[8rem] leading-[1.05] text-transparent bg-clip-text bg-gradient-to-r from-ivory via-champagne to-ivory drop-shadow-2xl pr-4 relative">
                         Präzision.
-                        {/* Inner glowing aura for the text */}
-                        <div className="absolute inset-0 bg-champagne/20 blur-3xl opacity-40 mix-blend-screen pointer-events-none" />
                     </h2>
                 </div>
 
@@ -72,7 +70,7 @@ export default function Hero() {
                 </p>
 
                 <div className="hero-element flex items-center gap-2 mt-2 mb-1">
-                    <Link to="/mobiler-service" className="bg-champagne/90 text-obsidian px-5 py-2.5 sm:px-6 sm:py-3 rounded-full font-sans text-[13px] sm:text-[14px] font-bold tracking-wide inline-flex items-center gap-2 sm:gap-3 shadow-[0_0_20px_rgba(77,178,146,0.3)] hover:shadow-[0_0_30px_rgba(77,178,146,0.6)] animate-pulse hover:scale-[1.02] transition-all duration-300">
+                    <Link to="/mobiler-service" className="bg-champagne/90 text-obsidian px-5 py-2.5 sm:px-6 sm:py-3 rounded-full font-sans text-[13px] sm:text-[14px] font-bold tracking-wide inline-flex items-center gap-2 sm:gap-3 shadow-md hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300">
                         <span className="bg-obsidian text-champagne px-2 py-0.5 rounded-full text-[9px] sm:text-[10px] uppercase tracking-widest font-black">NEU</span>
                         <Truck className="w-4 h-4 sm:w-5 sm:h-5" />
                         Jetzt auch mobil — wir kommen zu Ihnen!
@@ -82,7 +80,7 @@ export default function Hero() {
                 <div className="hero-element flex flex-col sm:flex-row items-stretch sm:items-center gap-5 sm:gap-6 mt-8 w-full sm:w-auto">
                     <Link
                         to="/buchen"
-                        className="btn-magnetic relative overflow-hidden group bg-accent backdrop-blur-md border border-accent/50 text-obsidian px-10 py-4 sm:py-5 rounded-full font-sans font-black tracking-wide text-base sm:text-lg shadow-[0_0_30px_rgba(77,178,146,0.5)] hover:shadow-[0_0_50px_rgba(77,178,146,0.8)] text-center w-full sm:w-auto transition-all duration-500"
+                        className="btn-magnetic relative overflow-hidden group bg-accent backdrop-blur-md border border-accent/50 text-obsidian px-10 py-4 sm:py-5 rounded-full font-sans font-black tracking-wide text-base sm:text-lg shadow-lg hover:shadow-xl hover:-translate-y-1 text-center w-full sm:w-auto transition-all duration-500"
                     >
                         <span className="relative z-10 flex items-center justify-center gap-2">
                             Jetzt Buchen

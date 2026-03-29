@@ -94,7 +94,7 @@ export default function Navbar() {
                         to="/mobiler-service"
                         className="group flex items-center gap-2 font-sans text-[15px] font-bold text-champagne hover:text-ivory transition-all link-lift whitespace-nowrap"
                     >
-                        <span className="bg-champagne text-obsidian px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-widest shadow-[0_0_15px_rgba(77,178,146,0.6)] animate-[pulse_2s_ease-in-out_infinite]">Neu</span>
+                        <span className="bg-champagne text-obsidian px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-widest shadow-sm">Neu</span>
                         Mobiler Service
                     </Link>
                 </div>
@@ -153,7 +153,7 @@ export default function Navbar() {
                     style={{ transitionDelay: menuOpen ? `${navLinks.length * 60}ms` : '0ms' }}
                     className={`flex items-center gap-3 font-sans text-xl font-semibold text-champagne transition-all duration-300 ${menuOpen ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}
                 >
-                    <span className="bg-champagne text-obsidian px-3 py-1 rounded-full text-xs font-black uppercase tracking-widest shadow-[0_0_15px_rgba(77,178,146,0.6)] animate-pulse">Neu</span>
+                    <span className="bg-champagne text-obsidian px-3 py-1 rounded-full text-xs font-black uppercase tracking-widest shadow-sm">Neu</span>
                     Mobiler Service
                 </Link>
 

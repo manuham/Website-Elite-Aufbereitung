@@ -91,7 +91,7 @@ export default function Features() {
                     {features.map((feature) => {
                         const Icon = feature.icon;
                         return (
-                            <div key={feature.title} className="feature-card glass-panel rounded-[2rem] flex flex-col overflow-hidden group hover:shadow-[0_0_50px_rgba(77,178,146,0.25)] transition-all duration-500">
+                            <div key={feature.title} className="feature-card glass-panel rounded-[2rem] flex flex-col overflow-hidden group hover:shadow-2xl transition-all duration-500">
                                 {/* Image area */}
                                 <div className="relative h-72 lg:h-80 overflow-hidden">
                                     <div className="absolute inset-0 bg-accent/20 mix-blend-overlay z-10 opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none" />
@@ -104,8 +104,8 @@ export default function Features() {
 
                                     {/* Icon + highlights overlay */}
                                     <div className="absolute inset-x-0 bottom-0 flex flex-col items-center justify-end gap-5 pb-8 z-20 translate-y-4 group-hover:translate-y-0 transition-transform duration-500">
-                                        <div className="w-20 h-20 rounded-2xl glass-card flex items-center justify-center group-hover:bg-accent/30 group-hover:border-accent/40 group-hover:scale-110 transition-all duration-500 p-4 shadow-[0_0_30px_rgba(0,0,0,0.8)]">
-                                            <Icon className="w-10 h-10 text-ivory group-hover:text-accent drop-shadow-lg transition-colors duration-500" strokeWidth={1.5} />
+                                        <div className="w-20 h-20 rounded-2xl glass-card flex items-center justify-center group-hover:bg-accent/30 group-hover:border-accent/40 group-hover:scale-110 transition-all duration-500 p-4 shadow-xl">
+                                            <Icon className="w-10 h-10 text-ivory group-hover:text-accent drop-shadow-md transition-colors duration-500" strokeWidth={1.5} />
                                         </div>
                                         <div className="flex flex-wrap justify-center gap-2 px-6">
                                             {feature.highlights.map((h, i) => (

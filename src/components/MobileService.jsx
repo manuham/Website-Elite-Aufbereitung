@@ -42,15 +42,15 @@ export default function MobileService() {
             className="py-24 sm:py-32 px-6 sm:px-12 lg:px-24 bg-obsidian relative overflow-hidden"
         >
             {/* Subtle radial glow & Premium Light Leaks */}
-            <div className="absolute inset-x-0 inset-y-[-20%] pointer-events-none overflow-hidden mix-blend-screen opacity-60">
-                <div className="absolute top-1/2 left-[10%] -translate-y-1/2 w-[600px] h-[600px] bg-accent/10 rounded-full blur-[120px] animate-pulse" />
+            <div className="absolute inset-x-0 inset-y-[-20%] pointer-events-none overflow-hidden mix-blend-screen opacity-30">
+                <div className="absolute top-1/2 left-[10%] -translate-y-1/2 w-[600px] h-[600px] bg-accent/10 rounded-full blur-[120px]" />
                 <div className="absolute top-1/3 right-[10%] w-[500px] h-[500px] bg-sky-500/5 rounded-full blur-[100px] animate-blob" style={{ animationDelay: '2s' }} />
             </div>
 
             <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-center relative z-10">
 
                 {/* Left — Image */}
-                <div className="mobile-image relative rounded-[2rem] overflow-hidden h-[360px] sm:h-[420px] lg:h-[500px] shadow-[0_20px_50px_rgba(0,0,0,0.5)] group transform-gpu border border-ivory/5">
+                <div className="mobile-image relative rounded-[2rem] overflow-hidden h-[360px] sm:h-[420px] lg:h-[500px] shadow-2xl group transform-gpu border border-ivory/5">
                     <img
                         src="/assets/VAN.png"
                         alt="Mobiler Aufbereitungsservice"
@@ -58,7 +58,7 @@ export default function MobileService() {
                         loading="lazy"
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-obsidian/90 via-obsidian/20 to-transparent mix-blend-multiply" />
-                    <span className="mobile-badge absolute top-6 left-6 inline-flex items-center gap-2 bg-accent/10 border border-accent/30 backdrop-blur-md text-accent px-5 py-2 rounded-full font-sans font-black text-[10px] sm:text-xs uppercase tracking-widest shadow-[0_0_20px_rgba(77,178,146,0.5)] animate-pulse">
+                    <span className="mobile-badge absolute top-6 left-6 inline-flex items-center gap-2 bg-accent/10 border border-accent/30 backdrop-blur-md text-accent px-5 py-2 rounded-full font-sans font-black text-[10px] sm:text-xs uppercase tracking-widest shadow-md">
                         Neu
                     </span>
                 </div>
@@ -102,7 +102,7 @@ export default function MobileService() {
                     <div className="mobile-text mt-2 sm:mt-4 w-full sm:w-auto">
                         <Link
                             to="/mobiler-service"
-                            className="btn-magnetic relative overflow-hidden group/btn bg-accent backdrop-blur-md border border-accent/50 text-obsidian px-10 py-4 sm:py-5 rounded-full font-sans font-black tracking-wide text-sm sm:text-[15px] shadow-[0_0_30px_rgba(77,178,146,0.4)] hover:shadow-[0_0_50px_rgba(77,178,146,0.8)] inline-flex items-center justify-center gap-3 w-full sm:w-fit transition-all duration-500"
+                            className="btn-magnetic relative overflow-hidden group/btn bg-accent backdrop-blur-md border border-accent/50 text-obsidian px-10 py-4 sm:py-5 rounded-full font-sans font-black tracking-wide text-sm sm:text-[15px] shadow-lg hover:shadow-xl inline-flex items-center justify-center gap-3 w-full sm:w-fit transition-all duration-500"
                         >
                             <span className="relative z-10 flex items-center gap-2">
                                 Mobilen Termin Buchen

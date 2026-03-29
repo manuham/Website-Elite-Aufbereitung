@@ -87,7 +87,7 @@ export default function Philosophy() {
                     </p>
                     <Link
                         to="/buchen"
-                        className="reveal-text mt-4 inline-flex items-center gap-3 btn-magnetic glass-card hover:bg-ivory hover:text-obsidian text-ivory px-10 py-4 sm:py-5 rounded-full font-sans font-black tracking-wide text-sm sm:text-base shadow-[0_0_30px_rgba(255,255,255,0.05)] hover:shadow-[0_0_40px_rgba(255,255,255,0.8)] w-fit transition-all duration-300 group"
+                        className="reveal-text mt-4 inline-flex items-center gap-3 btn-magnetic glass-card hover:bg-ivory hover:text-obsidian text-ivory px-10 py-4 sm:py-5 rounded-full font-sans font-black tracking-wide text-sm sm:text-base shadow-lg hover:shadow-xl w-fit transition-all duration-300 group"
                     >
                         Jetzt Buchen
                         <span className="group-hover:translate-x-1 transition-transform">→</span>
@@ -105,7 +105,7 @@ export default function Philosophy() {
                 </div>
 
                 {/* Showcase Video */}
-                <div className="reveal-text w-full max-w-4xl aspect-video rounded-[2rem] overflow-hidden shadow-[0_25px_60px_rgba(0,0,0,0.6)] border border-slate/40 bg-obsidian">
+                <div className="reveal-text w-full max-w-4xl aspect-video rounded-[2rem] overflow-hidden shadow-2xl border border-slate/40 bg-obsidian">
                     <iframe
                         width="100%"
                         height="100%"

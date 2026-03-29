@@ -58,7 +58,7 @@ export default function Pricing() {
                             key={tab.id}
                             onClick={() => setActiveTab(tab.id)}
                             className={`whitespace-nowrap shrink-0 snap-center px-6 py-3 rounded-full font-sans font-bold text-sm transition-all duration-300 ${activeTab === tab.id
-                                ? 'bg-accent text-obsidian shadow-[0_0_20px_rgba(77,178,146,0.3)]'
+                                ? 'bg-accent text-obsidian shadow-md'
                                 : 'bg-slate/50 text-ivory/70 border border-ivory/10 hover:border-ivory/30 hover:text-ivory'
                                 }`}
                         >
@@ -93,12 +93,12 @@ export default function Pricing() {
                         <div
                             key={`${activeTab}-${i}`}
                             className={`relative flex flex-col gap-8 rounded-[2rem] p-6 sm:p-8 md:p-10 transition-all duration-700 ease-out hover:-translate-y-2 group ${isPremium
-                                ? 'bg-gradient-to-b from-slate/60 to-obsidian border border-accent/40 shadow-[0_20px_60px_-15px_rgba(77,178,146,0.2)] lg:scale-105 z-10 hover:shadow-[0_30px_80px_-20px_rgba(77,178,146,0.5)] hover:border-accent'
+                                ? 'bg-gradient-to-b from-slate/60 to-obsidian border border-accent/40 shadow-xl lg:scale-105 z-10 hover:shadow-2xl hover:border-accent'
                                 : 'glass-card border-slate/50 hover:border-ivory/20 hover:bg-slate/30 z-0'
                                 }`}
                         >
                             {isPremium && (
-                                <div className="absolute -top-4 sm:-top-5 left-1/2 -translate-x-1/2 bg-accent/10 border border-accent/30 backdrop-blur-md text-accent px-5 py-1.5 rounded-full font-sans font-black text-[10px] sm:text-xs uppercase tracking-widest whitespace-nowrap shadow-[0_0_20px_rgba(77,178,146,0.3)]">
+                                <div className="absolute -top-4 sm:-top-5 left-1/2 -translate-x-1/2 bg-accent/10 border border-accent/30 backdrop-blur-md text-accent px-5 py-1.5 rounded-full font-sans font-black text-[10px] sm:text-xs uppercase tracking-widest whitespace-nowrap shadow-sm">
                                     {pkg.popular ? 'Beliebtestes Paket' : pkg.badge}
                                 </div>
                             )}
@@ -137,7 +137,7 @@ export default function Pricing() {
                             <Link
                                 to="/buchen"
                                 className={`relative mt-4 w-full py-4 rounded-full font-sans font-bold text-[15px] transition-all duration-500 overflow-hidden text-center block ${isPremium
-                                    ? 'bg-accent text-obsidian shadow-[0_0_20px_rgba(77,178,146,0.4)] hover:shadow-[0_0_40px_rgba(77,178,146,0.8)] hover:scale-[1.02]'
+                                    ? 'bg-accent text-obsidian shadow-lg hover:shadow-xl hover:scale-[1.02]'
                                     : 'bg-transparent text-ivory border border-ivory/20 hover:border-ivory/60 hover:bg-ivory/10'
                                     } group/btn`}
                             >
@@ -159,7 +159,7 @@ export default function Pricing() {
                         Alle angegebenen Preise verstehen sich inklusive MwSt und sind Richtpreise. Die Einstiegspreise gelten für durchschnittlich verschmutzte Stadtautos und Pkws. Größere Fahrzeuge wie SUVs, Kombis und Vans erfordern aufgrund der größeren Flächen einen Aufpreis. Transporter, LKWs oder Extremverschmutzungen kalkulieren wir gerne individuell auf Anfrage. Der finale Endpreis basiert stets auf dem tatsächlichen Arbeitsaufwand und Verschmutzungsgrad Ihres Fahrzeugs.
                     </p>
                     <p className="font-sans text-[13px] sm:text-sm text-ivory/60 leading-relaxed mx-auto max-w-3xl mt-3">
-                        <span className="inline-flex items-center gap-1.5 bg-champagne text-obsidian px-3 py-1 rounded-full font-sans text-xs font-black uppercase tracking-widest shadow-[0_0_15px_rgba(77,178,146,0.6)] animate-pulse mr-2">NEU</span>
+                        <span className="inline-flex items-center gap-1.5 bg-champagne text-obsidian px-3 py-1 rounded-full font-sans text-xs font-black uppercase tracking-widest shadow-sm mr-2">NEU</span>
                         Alle Services sind auch als <strong className="text-ivory/80">Mobiler Service</strong> verfügbar — wir kommen mit unserem voll ausgestatteten Van direkt zu Ihnen.
                     </p>
                 </div>
