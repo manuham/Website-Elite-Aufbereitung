@@ -4,37 +4,37 @@ import { ArrowLeft, ChevronLeft, ChevronRight } from 'lucide-react';
 
 const projects = [
     {
-        img: 'https://images.unsplash.com/photo-1555215695-3004980ad54e?w=900&q=80',
+        img: '/assets/Ergebnisse/P1345324.jpg',
         label: 'Keramikversiegelung',
         car: 'BMW 3er — Mineralgrau',
         tag: '40.000 – 60.000 km Garantie',
     },
     {
-        img: 'https://images.unsplash.com/photo-1520340356584-f9917d1eea6f?w=900&q=80',
+        img: '/assets/Außenreinigung/P1334869.jpg',
         label: 'Vollpolitur',
         car: 'Mercedes C-Klasse — Obsidianschwarz',
         tag: 'Lackkorrektur',
     },
     {
-        img: 'https://images.unsplash.com/photo-1607860108855-64acf2078ed9?w=900&q=80',
+        img: '/assets/Innenreinigung/P1335024-2.jpg',
         label: 'Premium Innenreinigung',
         car: 'Audi A4 — Cognacbraun Leder',
         tag: 'Innenaufbereitung',
     },
     {
-        img: 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=900&q=80',
+        img: '/assets/Außenreinigung/P1334477-2.jpg',
         label: 'Felgenreinigung & Versiegelung',
         car: 'VW Golf R — 19" Felgen',
         tag: 'Detailing',
     },
     {
-        img: 'https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?w=900&q=80',
+        img: '/assets/Ergebnisse/P1345330.jpg',
         label: 'Lackkorrektur',
         car: 'Porsche Cayenne — Weißsilber',
         tag: 'Mehrstufige Politur',
     },
     {
-        img: 'https://images.unsplash.com/photo-1619405399517-d7fce0f13302?w=900&q=80',
+        img: '/assets/Autos/IMG_2374.jpg',
         label: 'Komplettaufbereitung',
         car: 'Tesla Model 3 — Perlweiß',
         tag: 'Elite Paket',

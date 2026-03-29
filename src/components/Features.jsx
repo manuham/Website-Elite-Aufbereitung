@@ -52,21 +52,21 @@ export default function Features() {
             title: 'Kratzerfreie Präzisionswäsche',
             description: 'Jedes Fahrzeug wird mit professioneller 2-Eimer-Methode und kontaktloser Vorwäsche behandelt — für eine absolut kratzfreie Reinigung, die Waschstraßen niemals erreichen.',
             highlights: ['2-Eimer Methode', 'Kontaktlose Vorwäsche', 'pH-neutrale Produkte'],
-            image: 'https://images.unsplash.com/photo-1605559424843-9e4c228bf1c2?w=800&q=80',
+            image: '/assets/Außenreinigung/P1334323.jpg',
         },
         {
             icon: ShieldCheck,
             title: 'Keramik-Schutzschild',
             description: 'FIREBALL Keramikversiegelung mit 40.000 – 60.000 km Garantie. Extremer Glanz, wasser- und schmutzabweisend, UV-Schutz — Ihr Lack bleibt makellos.',
             highlights: ['40.000 – 60.000 km Schutz', 'Hydrophobe Oberfläche', 'UV-Beständig'],
-            image: 'https://images.unsplash.com/photo-1507136566006-cfc505b114fc?w=800&q=80',
+            image: '/assets/Produkte/P1345270.jpg',
         },
         {
             icon: CalendarCheck,
             title: 'Termin in 60 Sekunden',
             description: 'Online-Terminbuchung in Sekunden. Wählen Sie Ihr Paket und Ihren Wunschtermin — wir kümmern uns um den Rest.',
             highlights: ['Online buchen', 'Flexible Zeiten', 'Mo–Sa geöffnet'],
-            image: 'https://images.unsplash.com/photo-1503376780353-7e6692767b70?w=800&q=80',
+            image: '/assets/Autos/IMG_2195.jpg',
         },
     ];
 

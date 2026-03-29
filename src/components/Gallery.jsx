@@ -3,36 +3,53 @@ import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { Instagram, Facebook } from 'lucide-react';
 
-// Real Unsplash images matching the automotive detailing aesthetic
 const galleryItems = [
     {
-        src: 'https://images.unsplash.com/photo-1619405399517-d7fce0f13302?w=800&q=80',
-        alt: 'Keramikversiegelung Wasserabweisung',
+        src: '/assets/Ergebnisse/P1345319.jpg',
+        alt: 'Keramikversiegelung Ergebnis',
         label: 'Keramikversiegelung',
         span: 'col-span-1 row-span-2',
     },
     {
-        src: 'https://images.unsplash.com/photo-1520340356584-f9917d1eea6f?w=800&q=80',
-        alt: 'Schwarzes Fahrzeug nach Politur',
+        src: '/assets/Außenreinigung/P1334645.jpg',
+        alt: 'Lackpolitur Außenreinigung',
         label: 'Lackpolitur',
         span: 'col-span-1 row-span-1',
     },
     {
-        src: 'https://images.unsplash.com/photo-1607860108855-64acf2078ed9?w=800&q=80',
-        alt: 'Detailing Innenraum Leder',
+        src: '/assets/Innenreinigung/P1334911.jpg',
+        alt: 'Innenreinigung Detailing',
         label: 'Innenreinigung',
         span: 'col-span-1 row-span-1',
     },
     {
-        src: 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=800&q=80',
-        alt: 'Handwäsche Felgen',
+        src: '/assets/Außenreinigung/P1334666.jpg',
+        alt: 'Felgenreinigung Handwäsche',
         label: 'Felgenreinigung',
         span: 'col-span-1 row-span-1',
     },
     {
-        src: 'https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?w=800&q=80',
-        alt: 'Luxusauto Glanz nach Aufbereitung',
+        src: '/assets/Ergebnisse/P1345322.jpg',
+        alt: 'Premium Finish Ergebnis',
         label: 'Premium Finish',
+        span: 'col-span-1 row-span-1',
+    },
+    {
+        src: '/assets/Innenreinigung/P1345243.jpg',
+        alt: 'Innenreinigung Detail',
+        label: 'Innendetail',
+        span: 'col-span-1 row-span-1',
+    },
+    {
+        src: '/assets/Ergebnisse/P1345331.jpg',
+        alt: 'Aufbereitung Ergebnis',
+        label: 'Ergebnis',
+        span: 'col-span-1 row-span-1',
+    },
+    {
+        src: '/assets/Außenreinigung/P1334780.jpg',
+        alt: 'Außenreinigung Detailing',
+        label: 'Detailing',
         span: 'col-span-1 row-span-1',
     },
 ];

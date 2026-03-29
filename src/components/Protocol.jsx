@@ -12,19 +12,19 @@ export default function Protocol() {
             num: "01",
             title: "Reinigung & Dekontamination",
             desc: "Kontaktlose Vorwäsche, sichere 2-Eimer-Handwäsche, Teer- und Flugrost-Entfernung. Die Grundlage für jede weitere Behandlung.",
-            image: "https://images.unsplash.com/photo-1601362840469-51e4d8d58785?w=900&q=80",
+            image: "/assets/Außenreinigung/P1334438.jpg",
         },
         {
             num: "02",
             title: "Politur & Lackkorrektur",
             desc: "Mehrstufiges Maschinenpolieren entfernt Kratzer, Hologramme und Oxidation. Ihr Lack erhält seinen ursprünglichen Tiefenglanz zurück.",
-            image: "https://images.unsplash.com/photo-1625047509248-ec889cbff17f?w=900&q=80",
+            image: "/assets/Außenreinigung/P1334780.jpg",
         },
         {
             num: "03",
             title: "Versiegelung & Schutz",
             desc: "FIREBALL Keramikversiegelung bildet eine unsichtbare Schutzschicht: wasserabweisend, UV-beständig und bis zu 40.000 – 60.000 km haltbar.",
-            image: "https://images.unsplash.com/photo-1583121274602-3e2820c69888?w=900&q=80",
+            image: "/assets/Produkte/P1345294-2.jpg",
         }
     ];
 
