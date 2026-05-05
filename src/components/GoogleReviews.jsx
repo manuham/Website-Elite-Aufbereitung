@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import gsap from 'gsap';
 import { googleReviews } from '../data/reviews';
 
@@ -55,10 +55,70 @@ function ReviewCard({ review }) {
     );
 }
 
+function SkeletonCard() {
+    return (
+        <div className="flex-shrink-0 w-[320px] sm:w-[360px] bg-[#1a1a24] border border-slate/60 rounded-2xl p-6 flex flex-col gap-4 animate-pulse">
+            <div className="flex items-center justify-between">
+                <div className="flex flex-col gap-2">
+                    <div className="h-3 w-24 bg-slate/40 rounded" />
+                    <div className="h-3 w-20 bg-slate/40 rounded" />
+                </div>
+                <div className="w-6 h-6 bg-slate/40 rounded-full" />
+            </div>
+            <div className="flex flex-col gap-2">
+                <div className="h-3 w-full bg-slate/40 rounded" />
+                <div className="h-3 w-full bg-slate/40 rounded" />
+                <div className="h-3 w-3/4 bg-slate/40 rounded" />
+            </div>
+            <div className="h-3 w-16 bg-slate/40 rounded mt-auto" />
+        </div>
+    );
+}
+
 export default function GoogleReviews() {
     const containerRef = useRef(null);
+    const [reviews, setReviews] = useState([]);
+    const [overallRating, setOverallRating] = useState(5);
+    const [totalCount, setTotalCount] = useState(null);
+    const [loading, setLoading] = useState(true);
 
     useEffect(() => {
+        async function fetchReviews() {
+            try {
+                const res = await fetch('/api/reviews');
+                if (!res.ok) throw new Error('API error');
+                const data = await res.json();
+
+                const mapped = (data.reviews || [])
+                    .filter((r) => r.rating >= 4)
+                    .map((r) => ({
+                        name: r.author_name,
+                        rating: r.rating,
+                        text: r.text,
+                        timeAgo: r.relative_time_description,
+                    }));
+
+                if (mapped.length > 0) {
+                    setReviews(mapped);
+                } else {
+                    setReviews(googleReviews);
+                }
+
+                if (data.rating) setOverallRating(data.rating);
+                if (data.total) setTotalCount(data.total);
+            } catch {
+                setReviews(googleReviews);
+            } finally {
+                setLoading(false);
+            }
+        }
+
+        fetchReviews();
+    }, []);
+
+    useEffect(() => {
+        if (loading) return;
+
         const ctx = gsap.context(() => {
             gsap.from('.reviews-header', {
                 scrollTrigger: {
@@ -84,9 +144,11 @@ export default function GoogleReviews() {
         }, containerRef);
 
         return () => ctx.revert();
-    }, []);
+    }, [loading]);
 
-    const doubledReviews = [...googleReviews, ...googleReviews];
+    const displayReviews = loading
+        ? Array(3).fill(null)
+        : [...reviews, ...reviews];
 
     return (
         <section
@@ -109,13 +171,13 @@ export default function GoogleReviews() {
                     </span>
                 </h2>
                 <div className="flex items-center gap-2 mt-2">
-                    <StarRating rating={5} />
+                    <StarRating rating={Math.round(overallRating)} />
                     <span className="font-mono text-sm text-ivory/60">
-                        5.0 Sterne
+                        {overallRating.toFixed(1)} Sterne
                     </span>
                     <span className="text-ivory/30">|</span>
                     <span className="font-sans text-sm text-ivory/60">
-                        {googleReviews.length}+ Bewertungen
+                        {totalCount ? `${totalCount}` : `${googleReviews.length}+`} Bewertungen
                     </span>
                 </div>
             </div>
@@ -125,9 +187,11 @@ export default function GoogleReviews() {
                 <div className="absolute right-0 top-0 bottom-0 w-16 sm:w-24 bg-gradient-to-l from-obsidian to-transparent z-10 pointer-events-none" />
 
                 <div className="marquee-track flex gap-6 w-fit">
-                    {doubledReviews.map((review, index) => (
-                        <ReviewCard key={index} review={review} />
-                    ))}
+                    {loading
+                        ? displayReviews.map((_, i) => <SkeletonCard key={i} />)
+                        : displayReviews.map((review, index) => (
+                              <ReviewCard key={index} review={review} />
+                          ))}
                 </div>
             </div>
         </section>

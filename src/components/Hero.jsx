@@ -70,8 +70,8 @@ export default function Hero() {
                 </p>
 
                 <div className="hero-element flex items-center gap-2 mt-2 mb-1">
-                    <Link to="/mobiler-service" className="bg-champagne/90 text-obsidian px-5 py-2.5 sm:px-6 sm:py-3 rounded-full font-sans text-[13px] sm:text-[14px] font-bold tracking-wide inline-flex items-center gap-2 sm:gap-3 shadow-md hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300">
-                        <span className="bg-obsidian text-champagne px-2 py-0.5 rounded-full text-[9px] sm:text-[10px] uppercase tracking-widest font-black">NEU</span>
+                    <Link to="/mobiler-service" className="bg-emerald-500/90 text-obsidian px-5 py-2.5 sm:px-6 sm:py-3 rounded-full font-sans text-[13px] sm:text-[14px] font-bold tracking-wide inline-flex items-center gap-2 sm:gap-3 shadow-[0_0_15px_rgba(16,185,129,0.5)] hover:shadow-[0_0_25px_rgba(16,185,129,0.8)] hover:-translate-y-0.5 transition-all duration-300">
+                        <span className="bg-obsidian text-emerald-400 px-2 py-0.5 rounded-full text-[9px] sm:text-[10px] uppercase tracking-widest font-black animate-pulse shadow-[0_0_10px_rgba(16,185,129,0.2)]">NEU</span>
                         <Truck className="w-4 h-4 sm:w-5 sm:h-5" />
                         Jetzt auch mobil — wir kommen zu Ihnen!
                     </Link>
