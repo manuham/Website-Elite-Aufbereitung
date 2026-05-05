@@ -38,9 +38,19 @@ export default function MobilerService() {
             </div>
 
             {/* Hero */}
-            <div className="px-6 sm:px-12 lg:px-24 pt-16 pb-20 max-w-7xl mx-auto">
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-center">
-                    <div className="flex flex-col gap-6">
+            <div className="relative min-h-[70vh] sm:min-h-[80vh] flex items-center overflow-hidden">
+                {/* Background image */}
+                <img
+                    src="/assets/VAN.png"
+                    alt="Mobiler Aufbereitungsservice — Elité kommt zu Ihnen"
+                    className="absolute inset-0 w-full h-full object-cover object-center"
+                />
+                {/* Overlay for readability */}
+                <div className="absolute inset-0 bg-gradient-to-r from-obsidian/85 via-obsidian/60 to-obsidian/30" />
+                <div className="absolute inset-0 bg-gradient-to-t from-obsidian via-transparent to-obsidian/40" />
+
+                <div className="relative z-10 px-6 sm:px-12 lg:px-24 py-24 sm:py-32 max-w-7xl mx-auto w-full">
+                    <div className="flex flex-col gap-6 max-w-2xl">
                         <div className="flex items-center gap-3">
                             <span className="bg-champagne text-obsidian px-4 py-1.5 rounded-full font-sans font-bold text-xs uppercase tracking-widest shadow-[0_0_20px_rgba(77,178,146,0.4)] animate-pulse">
                                 Neu
@@ -51,7 +61,7 @@ export default function MobilerService() {
                             Wir kommen{' '}
                             <span className="text-champagne">zu Ihnen.</span>
                         </h1>
-                        <p className="font-sans text-lg text-ivory/60 leading-relaxed max-w-lg">
+                        <p className="font-sans text-lg text-ivory/70 leading-relaxed max-w-lg">
                             Ab sofort bietet Elité Auto Aufbereitung den kompletten Service auch mobil an.
                             Unser professionell ausgestatteter Van kommt direkt zu Ihnen nach Hause,
                             ins Büro oder an jeden gewünschten Standort in Vorarlberg.
@@ -66,24 +76,11 @@ export default function MobilerService() {
                             </Link>
                             <a
                                 href="tel:+436642546078"
-                                className="inline-flex items-center gap-2 border border-slate/60 hover:border-champagne/50 text-ivory/70 hover:text-ivory px-8 py-4 rounded-full font-sans text-sm transition-colors"
+                                className="inline-flex items-center gap-2 border border-ivory/30 hover:border-champagne/50 text-ivory/80 hover:text-ivory px-8 py-4 rounded-full font-sans text-sm transition-colors backdrop-blur-sm"
                             >
                                 <Phone className="w-4 h-4" />
                                 Anrufen
                             </a>
-                        </div>
-                    </div>
-                    <div className="relative rounded-[2rem] overflow-hidden h-[360px] sm:h-[420px] lg:h-[500px]">
-                        <img
-                            src="/assets/VAN.png"
-                            alt="Mobiler Aufbereitungsservice — Elité kommt zu Ihnen"
-                            className="w-full h-full object-cover"
-                            loading="lazy"
-                        />
-                        <div className="absolute inset-0 bg-gradient-to-t from-obsidian/60 via-transparent to-transparent" />
-                        <div className="absolute bottom-6 left-6 flex items-center gap-2 bg-obsidian/70 backdrop-blur-sm px-4 py-2 rounded-full">
-                            <Truck className="w-4 h-4 text-champagne" />
-                            <span className="font-mono text-[11px] text-ivory/80 uppercase tracking-widest">Voll ausgestattet</span>
                         </div>
                     </div>
                 </div>
