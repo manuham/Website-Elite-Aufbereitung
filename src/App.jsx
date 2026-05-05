@@ -31,9 +31,9 @@ function HomePage() {
             <Navbar />
             <Hero />
             <Features />
+            <MobileService />
             <GoogleReviews />
             <Philosophy />
-            <MobileService />
             <Protocol />
             <Gallery />
             <Pricing />

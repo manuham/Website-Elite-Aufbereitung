@@ -40,8 +40,8 @@ export default function Hero() {
             <div className="absolute inset-0 z-0 overflow-hidden bg-obsidian pointer-events-none">
                 <img
                     ref={bgRef}
-                    src="/assets/home_bg.jpg"
-                    alt="Dark luxury car detailing"
+                    src="/assets/VAN/VAN_Auto.jpg"
+                    alt="Elite Aufbereitung mobiler Service Van"
                     className="w-full h-full object-cover opacity-60 mix-blend-luminosity will-change-transform scale-105"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-obsidian via-obsidian/90 to-obsidian/30" />
@@ -56,6 +56,14 @@ export default function Hero() {
 
             {/* Content Content pushed to bottom-left third */}
             <div className="relative z-10 w-full max-w-3xl flex flex-col items-start gap-6">
+                <div className="hero-element">
+                    <Link to="/mobiler-service" className="bg-emerald-500/90 text-obsidian px-5 py-2.5 sm:px-7 sm:py-3 rounded-full font-sans text-[13px] sm:text-[15px] font-bold tracking-wide inline-flex items-center gap-2 sm:gap-3 shadow-[0_0_20px_rgba(16,185,129,0.6)] hover:shadow-[0_0_30px_rgba(16,185,129,0.8)] hover:-translate-y-0.5 transition-all duration-300">
+                        <span className="bg-obsidian text-emerald-400 px-2.5 py-0.5 rounded-full text-[9px] sm:text-[11px] uppercase tracking-widest font-black animate-pulse shadow-[0_0_10px_rgba(16,185,129,0.3)]">NEU</span>
+                        <Truck className="w-4 h-4 sm:w-5 sm:h-5" />
+                        Jetzt auch mobil — wir kommen zu Ihnen!
+                    </Link>
+                </div>
+
                 <div className="flex flex-col relative w-full">
                     <h1 className="hero-element font-sans font-extrabold text-3xl sm:text-5xl lg:text-6xl text-ivory tracking-tight mb-0 sm:mb-1 text-balance">
                         Perfektion trifft
@@ -69,12 +77,12 @@ export default function Hero() {
                     Professionelle Fahrzeugaufbereitung in Vorarlberg — Kratzerfreie Handwäsche, Politur & Keramikversiegelung.
                 </p>
 
-                <div className="hero-element flex items-center gap-2 mt-2 mb-1">
-                    <Link to="/mobiler-service" className="bg-emerald-500/90 text-obsidian px-5 py-2.5 sm:px-6 sm:py-3 rounded-full font-sans text-[13px] sm:text-[14px] font-bold tracking-wide inline-flex items-center gap-2 sm:gap-3 shadow-[0_0_15px_rgba(16,185,129,0.5)] hover:shadow-[0_0_25px_rgba(16,185,129,0.8)] hover:-translate-y-0.5 transition-all duration-300">
-                        <span className="bg-obsidian text-emerald-400 px-2 py-0.5 rounded-full text-[9px] sm:text-[10px] uppercase tracking-widest font-black animate-pulse shadow-[0_0_10px_rgba(16,185,129,0.2)]">NEU</span>
-                        <Truck className="w-4 h-4 sm:w-5 sm:h-5" />
-                        Jetzt auch mobil — wir kommen zu Ihnen!
-                    </Link>
+                <div className="hero-element flex flex-wrap items-center gap-2 sm:gap-3">
+                    {['Feldkirch', 'Nüziders', 'Mobiler Service'].map((loc) => (
+                        <span key={loc} className="font-sans text-[11px] sm:text-xs font-semibold text-ivory/70 bg-ivory/5 border border-ivory/10 backdrop-blur-sm px-3 py-1.5 rounded-full tracking-wide">
+                            {loc}
+                        </span>
+                    ))}
                 </div>
 
                 <div className="hero-element flex flex-col sm:flex-row items-stretch sm:items-center gap-5 sm:gap-6 mt-8 w-full sm:w-auto">

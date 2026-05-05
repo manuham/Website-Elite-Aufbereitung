@@ -98,6 +98,17 @@ export default function MobileService() {
                         ))}
                     </div>
 
+                    {/* Anfahrtspauschale */}
+                    <div className="mobile-benefit bg-accent/5 border border-accent/20 rounded-2xl p-5 sm:p-6 flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-5">
+                        <span className="font-mono text-2xl sm:text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-accent to-accent-glow shrink-0">50 €</span>
+                        <div className="flex flex-col gap-1">
+                            <span className="font-sans font-bold text-sm text-ivory">Anfahrtspauschale</span>
+                            <span className="font-sans text-[13px] text-ivory/60 leading-relaxed">
+                                Du sparst dir 2 Autofahrten, Wartezeit und den Nachmittag. Wir arbeiten, während du arbeitest.
+                            </span>
+                        </div>
+                    </div>
+
                     {/* CTA */}
                     <div className="mobile-text mt-2 sm:mt-4 w-full sm:w-auto">
                         <Link

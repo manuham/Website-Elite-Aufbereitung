@@ -14,6 +14,9 @@ export default {
         champagne: '#4DB292',
         ivory: '#FAF8F5',
         slate: '#2A2A35',
+        bronze: { DEFAULT: '#8B6914', light: '#C4943A', dark: '#6B4F0E' },
+        silver: { DEFAULT: '#8A8A8A', light: '#B8B8B8', dark: '#5C5C5C' },
+        gold: { DEFAULT: '#B8860B', light: '#DAA520', dark: '#8B6914' },
       },
       fontFamily: {
         sans: ['Inter', 'sans-serif'],
