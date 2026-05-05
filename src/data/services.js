@@ -6,7 +6,7 @@ export const tierPackages = [
         name: 'Wash & Clean',
         subtitle: 'Premium Handwäsche & Innenreinigung',
         price: 'ab 230,–',
-        headerGradient: 'from-bronze-dark via-bronze to-bronze-light',
+        headerStyle: { background: 'linear-gradient(135deg, #6B4F0E, #8B6914, #C4943A)' },
         features: [
             { section: 'Aussen' },
             { text: 'Kratzfreie Handwäsche (2-Eimer-Methode)' },
@@ -31,7 +31,7 @@ export const tierPackages = [
         name: 'Deep Clean',
         subtitle: 'Bronze + Politur & Versiegelung',
         price: 'ab 390,–',
-        headerGradient: 'from-silver-dark via-silver to-silver-light',
+        headerStyle: { background: 'linear-gradient(135deg, #5C5C5C, #8A8A8A, #B8B8B8)' },
         features: [
             { text: 'Alles aus Bronze', muted: true },
             { text: 'Lackvorbereitung & Entfettung', bold: true },
@@ -47,7 +47,7 @@ export const tierPackages = [
         name: 'Deep Polish',
         subtitle: 'Silber + 2-stufige Politur & Beschichtungen',
         price: 'ab 690,–',
-        headerGradient: 'from-gold-dark via-gold to-gold-light',
+        headerStyle: { background: 'linear-gradient(135deg, #8B6914, #B8860B, #DAA520)' },
         features: [
             { text: 'Alles aus Bronze & Silber', muted: true },
             { text: 'Lackvorbereitung & Entfettung', bold: true },
@@ -66,7 +66,7 @@ export const tierPackages = [
         name: 'Endstufe',
         subtitle: 'Das Ultimative. Kein Kompromiss.',
         price: 'ab 1.790,–',
-        headerGradient: 'from-emerald-900 via-emerald-700 to-accent',
+        headerStyle: { background: 'linear-gradient(135deg, #064E3B, #047857, #4DB292)' },
         features: [
             { text: 'Alles aus Gold', muted: true },
             { text: '3-Gang Politur', bold: true, sub: 'maximaler Glanz, bestmögliche Kratzerentfernung' },
@@ -86,6 +86,14 @@ export const tierPackages = [
         ctaLabel: 'Mehr erfahren',
     },
 ];
+
+// Legacy alias for useRecommendations hook compatibility
+export const allInOnePackages = tierPackages.map(pkg => ({
+    id: pkg.id,
+    name: `${pkg.tier} – ${pkg.name}`,
+    price: `${pkg.price} €`,
+    priceNum: parseInt(pkg.price.replace(/[^\d]/g, '')),
+}));
 
 export const serviceCategories = [
     {

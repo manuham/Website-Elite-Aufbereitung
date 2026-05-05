@@ -93,7 +93,7 @@ export default function Pricing() {
                                     className={`relative flex flex-col rounded-[1.5rem] overflow-hidden transition-all duration-700 ease-out hover:-translate-y-2 group ${isElite ? 'shadow-xl shadow-accent/10 border border-accent/30' : 'border border-ivory/10'} bg-ivory`}
                                 >
                                     {/* Colored Header */}
-                                    <div className={`px-6 pt-6 pb-5 bg-gradient-to-br ${pkg.headerGradient}`}>
+                                    <div className="px-6 pt-6 pb-5" style={pkg.headerStyle}>
                                         <div className="flex items-center gap-1.5 mb-3">
                                             {pkg.dots > 0 ? (
                                                 Array.from({ length: pkg.dots }).map((_, i) => (
