@@ -109,7 +109,7 @@ export default function Philosophy() {
                     <iframe
                         width="100%"
                         height="100%"
-                        src="https://www.youtube.com/embed/Oimr36RdIx4"
+                        src="https://www.youtube.com/embed/QrwdgrPwF4c?si=VzTS3_zS674CX_xt"
                         title="Elite Auto Aufbereitung Showcase"
                         style={{ border: 'none' }}
                         allow="accelerometer; encrypted-media; gyroscope; picture-in-picture"

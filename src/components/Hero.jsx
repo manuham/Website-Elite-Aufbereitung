@@ -40,7 +40,7 @@ export default function Hero() {
             <div className="absolute inset-0 z-0 overflow-hidden bg-obsidian pointer-events-none">
                 <img
                     ref={bgRef}
-                    src="/assets/VAN/VAN_Auto.jpg"
+                    src="/assets/VAN/VAN.png"
                     alt="Elite Aufbereitung mobiler Service Van"
                     className="w-full h-full object-cover opacity-60 mix-blend-luminosity will-change-transform scale-105"
                 />
