@@ -114,7 +114,7 @@ export default function Pricing() {
                                             <span className={`font-mono text-3xl sm:text-4xl font-black ${isElite ? 'text-accent' : 'text-obsidian'}`}>
                                                 {pkg.price}
                                             </span>
-                                            <span className="font-sans text-xs text-obsidian/50">€ zzgl. MwSt.</span>
+                                            <span className="font-sans text-xs text-obsidian/50">€ inkl. MwSt.</span>
                                         </div>
                                     </div>
 
