@@ -19,20 +19,17 @@ export default function Hero() {
         const blobs = container.querySelector('.hero-blob-layer');
         const content = container.querySelector('.hero-content-layer');
 
-        const moveBg = gsap.quickTo(bg, 'x', { duration: 0.8, ease: 'power2.out' });
-        const moveBgY = gsap.quickTo(bg, 'y', { duration: 0.8, ease: 'power2.out' });
-        const moveBlobs = gsap.quickTo(blobs, 'x', { duration: 0.6, ease: 'power2.out' });
-        const moveBlobsY = gsap.quickTo(blobs, 'y', { duration: 0.6, ease: 'power2.out' });
-        const moveContent = gsap.quickTo(content, 'x', { duration: 0.4, ease: 'power2.out' });
-        const moveContentY = gsap.quickTo(content, 'y', { duration: 0.4, ease: 'power2.out' });
+        // Only animate X to avoid conflict with scroll-triggered Y parallax
+        const moveBgX = gsap.quickTo(bg, 'x', { duration: 0.8, ease: 'power2.out' });
+        const moveBlobsX = gsap.quickTo(blobs, 'x', { duration: 0.6, ease: 'power2.out' });
+        const moveContentX = gsap.quickTo(content, 'x', { duration: 0.4, ease: 'power2.out' });
 
         const onMouseMove = (e) => {
             const cx = (e.clientX / window.innerWidth - 0.5) * 2;   // -1 to 1
-            const cy = (e.clientY / window.innerHeight - 0.5) * 2;
 
-            moveBg(cx * -8);     moveBgY(cy * -5);      // slowest, opposite
-            moveBlobs(cx * -15); moveBlobsY(cy * -10);   // mid
-            moveContent(cx * 6); moveContentY(cy * 4);   // content follows cursor slightly
+            moveBgX(cx * -10);       // background: opposite, subtle
+            moveBlobsX(cx * -18);    // blobs: more movement
+            moveContentX(cx * 8);    // content: follows slightly
         };
 
         container.addEventListener('mousemove', onMouseMove);

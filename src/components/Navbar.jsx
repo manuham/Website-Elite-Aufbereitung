@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { X, Menu } from 'lucide-react';
 import gsap from 'gsap';
@@ -46,34 +46,31 @@ export default function Navbar() {
         return () => { document.body.style.overflow = ''; };
     }, [menuOpen]);
 
-    // GSAP timeline for mobile menu
+    // GSAP timeline for mobile menu — only build on open, to avoid animating hidden elements
     useEffect(() => {
         const overlay = overlayRef.current;
         if (!overlay) return;
 
-        const items = overlay.querySelectorAll('.menu-item');
-        const tl = gsap.timeline({ paused: true });
-
-        tl.fromTo(overlay,
-            { clipPath: 'circle(0% at calc(100% - 2.5rem) 2.5rem)', opacity: 1 },
-            { clipPath: 'circle(150% at calc(100% - 2.5rem) 2.5rem)', duration: 0.7, ease: 'power4.inOut' }
-        )
-        .fromTo(items,
-            { y: 40, opacity: 0, scale: 0.95, filter: 'blur(8px)' },
-            { y: 0, opacity: 1, scale: 1, filter: 'blur(0px)', duration: 0.5, stagger: 0.08, ease: 'power3.out' },
-            '-=0.3'
-        );
-
-        menuTl.current = tl;
-
-        return () => { tl.kill(); };
-    }, []);
-
-    useEffect(() => {
-        if (!menuTl.current) return;
         if (menuOpen) {
-            menuTl.current.timeScale(1).play();
-        } else {
+            const items = overlay.querySelectorAll('.menu-item');
+            const tl = gsap.timeline();
+
+            tl.fromTo(overlay,
+                { clipPath: 'circle(0% at calc(100% - 2.5rem) 2.5rem)' },
+                { clipPath: 'circle(150% at calc(100% - 2.5rem) 2.5rem)', duration: 0.7, ease: 'power4.inOut' }
+            );
+
+            if (items.length) {
+                tl.fromTo(items,
+                    { y: 40, opacity: 0, scale: 0.95, filter: 'blur(8px)' },
+                    { y: 0, opacity: 1, scale: 1, filter: 'blur(0px)', duration: 0.5, stagger: 0.08, ease: 'power3.out' },
+                    '-=0.3'
+                );
+            }
+
+            menuTl.current = tl;
+        } else if (menuTl.current) {
+            // Reverse close
             menuTl.current.timeScale(1.5).reverse();
         }
     }, [menuOpen]);
@@ -163,7 +160,10 @@ export default function Navbar() {
             <div
                 ref={overlayRef}
                 className="fixed inset-0 z-40 bg-obsidian flex flex-col items-center justify-center gap-10 lg:hidden"
-                style={{ clipPath: 'circle(0% at calc(100% - 2.5rem) 2.5rem)', opacity: 1 }}
+                style={{
+                    clipPath: 'circle(0% at calc(100% - 2.5rem) 2.5rem)',
+                    pointerEvents: menuOpen ? 'auto' : 'none',
+                }}
             >
                 {navLinks.map((link) =>
                     link.href ? (

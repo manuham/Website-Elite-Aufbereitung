@@ -64,37 +64,21 @@ export default function Features() {
                 const track = trackRef.current;
                 if (!track) return;
 
-                const cards = track.querySelectorAll('.feature-card');
-                const totalScroll = track.scrollWidth - track.offsetWidth;
+                const getScrollAmount = () => track.scrollWidth - track.offsetWidth;
+
+                if (getScrollAmount() <= 0) return;
 
                 gsap.to(track, {
-                    x: () => -totalScroll,
+                    x: () => -getScrollAmount(),
                     ease: 'none',
                     scrollTrigger: {
                         trigger: containerRef.current,
                         start: 'top top',
-                        end: () => `+=${totalScroll}`,
+                        end: () => `+=${getScrollAmount()}`,
                         pin: true,
                         scrub: 1,
                         invalidateOnRefresh: true,
                     },
-                });
-
-                // Parallax on feature card images during horizontal scroll
-                cards.forEach(card => {
-                    const img = card.querySelector('.feature-card-img');
-                    if (!img) return;
-                    gsap.to(img, {
-                        scrollTrigger: {
-                            trigger: card,
-                            containerAnimation: gsap.getById?.('featuresHScroll'),
-                            start: 'left right',
-                            end: 'right left',
-                            scrub: true,
-                        },
-                        x: -30,
-                        ease: 'none',
-                    });
                 });
             });
 
