@@ -135,7 +135,7 @@ export default function Pricing() {
                                                         <span className={`font-sans text-[13px] leading-snug ${feat.bold ? 'font-bold text-obsidian' : feat.muted ? 'text-obsidian/40' : 'text-obsidian/80'}`}>
                                                             {feat.text}
                                                             {feat.badge && (
-                                                                <span className="inline-block ml-2 font-mono text-[10px] font-bold bg-amber-100 text-amber-700 border border-amber-200 px-2 py-0.5 rounded align-middle">
+                                                                <span className="inline-block ml-2 font-mono text-[10px] font-bold bg-emerald-100 text-emerald-700 border border-emerald-200 px-2 py-0.5 rounded align-middle">
                                                                     {feat.badge}
                                                                 </span>
                                                             )}

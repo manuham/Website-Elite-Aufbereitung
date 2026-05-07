@@ -14,11 +14,11 @@ All 4 required questions have been answered from the existing site. **Skip the q
 
 **Preset B — "Midnight Luxe" (Dark Editorial)**
 
-Rationale: The brand name literally contains "Elité". This is a premium auto detailing service in a small Austrian town that charges €895+ for ceramic coatings. The dark, luxurious aesthetic perfectly matches their positioning — high-end car care with meticulous attention to detail. Dark backgrounds will make the car photography pop, and champagne/gold accents communicate the premium price point.
+Rationale: The brand name literally contains "Elité". This is a premium auto detailing service in a small Austrian town that charges €895+ for ceramic coatings. The dark, luxurious aesthetic perfectly matches their positioning — high-end car care with meticulous attention to detail. Dark backgrounds will make the car photography pop, and elite green accents communicate the premium price point.
 
 #### Customized Palette (adapted for automotive)
 - **Obsidian** `#0D0D12` — Primary (deep dark backgrounds)
-- **Champagne Gold** `#C9A84C` — Accent (premium highlights, CTAs, price tags)
+- **Elite Green** `#4DB292` — Accent (premium highlights, CTAs, price tags)
 - **Ivory** `#FAF8F5` — Light background (alternating sections)
 - **Slate** `#2A2A35` — Secondary dark (cards, footer)
 
@@ -125,8 +125,8 @@ Use the three cards defined above in section 3. All card text in German.
 **Contrast Statements:**
 - Neutral (small, Inter): "Die meisten Autowäschen setzen auf Geschwindigkeit und Masse."
 - Impact (massive, Playfair Display Italic): "Wir setzen auf _Perfektion_ und _Leidenschaft._"
-  - "Perfektion" in Champagne Gold `#C9A84C`
-  - "Leidenschaft" in Champagne Gold `#C9A84C`
+  - "Perfektion" in Elite Green `#4DB292`
+  - "Leidenschaft" in Elite Green `#4DB292`
 
 **Supporting text (Inter, small, muted):**
 "Mit Liebe zum Detail und höchstem Qualitätsanspruch setzen wir alles daran, jedes Auto in neuem Glanz erstrahlen zu lassen. Vertrauen Sie uns Ihr Fahrzeug an — und erleben Sie den Unterschied."

@@ -3,7 +3,7 @@ import { Plus, ArrowUp, Sparkles, ShieldCheck, Package, ChevronDown, ArrowRight 
 import gsap from 'gsap';
 
 const TYPE_CONFIG = {
-    upgrade:    { label: 'Upgrade',        icon: ArrowUp,     color: 'text-amber-400',  bg: 'bg-amber-400/10',  border: 'border-amber-400/25' },
+    upgrade:    { label: 'Upgrade',        icon: ArrowUp,     color: 'text-emerald-400',  bg: 'bg-emerald-400/10',  border: 'border-emerald-400/25' },
     complement: { label: 'Perfekte Kombi', icon: Plus,        color: 'text-accent',     bg: 'bg-accent/10',     border: 'border-accent/25' },
     addon:      { label: 'Beliebtes Extra',icon: Sparkles,    color: 'text-purple-400', bg: 'bg-purple-400/10', border: 'border-purple-400/25' },
     protect:    { label: 'Langzeitschutz', icon: ShieldCheck, color: 'text-sky-400',    bg: 'bg-sky-400/10',    border: 'border-sky-400/25' },
