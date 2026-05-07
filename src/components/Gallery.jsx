@@ -127,10 +127,10 @@ export default function Gallery() {
                 </div>
 
                 {/* Masonry-style Grid */}
-                <div className="gallery-grid grid grid-cols-2 lg:grid-cols-3 gap-4 auto-rows-[220px]">
+                <div className="gallery-grid grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 auto-rows-[220px] sm:auto-rows-[220px]">
 
                     {/* Tall featured image — left */}
-                    <div className="gallery-item col-span-1 row-span-2 relative group rounded-[1.5rem] overflow-hidden">
+                    <div className="gallery-item col-span-1 row-span-1 sm:row-span-2 relative group rounded-[1.5rem] overflow-hidden">
                         <img
                             src={galleryItems[0].src}
                             alt={galleryItems[0].alt}

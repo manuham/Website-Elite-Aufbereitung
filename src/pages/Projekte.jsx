@@ -1,6 +1,8 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowLeft, ChevronLeft, ChevronRight } from 'lucide-react';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
+import Navbar from '../components/Navbar';
+import Footer from '../components/Footer';
 
 const projects = [
     {
@@ -144,21 +146,11 @@ function BeforeAfterSlider({ img, label, car, tag }) {
 
 export default function Projekte() {
     return (
-        <div className="min-h-screen bg-obsidian text-ivory font-sans">
-
-            {/* Back nav */}
-            <div className="px-6 sm:px-12 lg:px-24 pt-10">
-                <Link
-                    to="/"
-                    className="inline-flex items-center gap-2 text-ivory/50 hover:text-champagne transition-colors text-sm"
-                >
-                    <ArrowLeft className="w-4 h-4" />
-                    Zurück zur Startseite
-                </Link>
-            </div>
+        <div className="min-h-screen bg-obsidian text-ivory font-sans overflow-hidden">
+            <Navbar />
 
             {/* Hero */}
-            <div className="px-6 sm:px-12 lg:px-24 pt-16 pb-20 max-w-7xl mx-auto flex flex-col gap-5">
+            <div className="px-6 sm:px-12 lg:px-24 pt-32 sm:pt-36 pb-20 max-w-7xl mx-auto flex flex-col gap-5">
                 <span className="font-mono text-xs text-champagne uppercase tracking-widest">Portfolio</span>
                 <h1 className="font-drama text-5xl sm:text-6xl lg:text-7xl text-ivory leading-tight">
                     Vorher &{' '}
@@ -194,11 +186,7 @@ export default function Projekte() {
                 </Link>
             </div>
 
-            {/* Footer strip */}
-            <div className="border-t border-ivory/10 px-6 sm:px-12 lg:px-24 py-8 text-center font-sans text-xs text-ivory/30">
-                © 2026 Elité Auto Aufbereitung. Alle Rechte vorbehalten.
-            </div>
-
+            <Footer />
         </div>
     );
 }

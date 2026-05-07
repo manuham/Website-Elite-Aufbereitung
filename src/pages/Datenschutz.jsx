@@ -1,23 +1,13 @@
-import { Link } from 'react-router-dom';
-import { ArrowLeft } from 'lucide-react';
+import Navbar from '../components/Navbar';
+import Footer from '../components/Footer';
 
 export default function Datenschutz() {
     return (
-        <div className="min-h-screen bg-obsidian text-ivory font-sans">
-
-            {/* Back nav */}
-            <div className="px-6 sm:px-12 lg:px-24 pt-10">
-                <Link
-                    to="/"
-                    className="inline-flex items-center gap-2 text-ivory/50 hover:text-champagne transition-colors text-sm"
-                >
-                    <ArrowLeft className="w-4 h-4" />
-                    Zurück zur Startseite
-                </Link>
-            </div>
+        <div className="min-h-screen bg-obsidian text-ivory font-sans overflow-hidden">
+            <Navbar />
 
             {/* Content */}
-            <div className="max-w-3xl mx-auto px-6 sm:px-12 py-16 flex flex-col gap-10">
+            <div className="max-w-3xl mx-auto px-6 sm:px-12 pt-32 sm:pt-36 pb-16 flex flex-col gap-10">
 
                 <div className="flex flex-col gap-2">
                     <span className="font-mono text-xs text-champagne uppercase tracking-widest">Rechtliches</span>
@@ -127,11 +117,7 @@ export default function Datenschutz() {
 
             </div>
 
-            {/* Footer strip */}
-            <div className="border-t border-ivory/10 px-6 sm:px-12 lg:px-24 py-8 text-center font-sans text-xs text-ivory/30">
-                © 2026 Elité Auto Aufbereitung. Alle Rechte vorbehalten.
-            </div>
-
+            <Footer />
         </div>
     );
 }

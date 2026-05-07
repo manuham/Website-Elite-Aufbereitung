@@ -43,9 +43,9 @@ function StepDot({ num, label, active, done, totalSteps }) {
 function StepBar({ step }) {
     const steps = ['Standort', 'Service', 'Fahrzeug', 'Termin', 'Kontakt'];
     return (
-        <div className="flex items-start justify-center gap-3 sm:gap-6 mb-16" role="list" aria-label="Buchungsschritte">
+        <div className="flex items-start justify-start sm:justify-center gap-3 sm:gap-6 mb-16 overflow-x-auto hide-scrollbar pb-2" role="list" aria-label="Buchungsschritte">
             {steps.map((label, i) => (
-                <div key={label} className="flex items-center gap-3 sm:gap-6">
+                <div key={label} className="flex items-center gap-3 sm:gap-6 shrink-0">
                     <StepDot num={i + 1} label={label} active={step === i} done={step > i} totalSteps={steps.length} />
                     {i < steps.length - 1 && (
                         <div className={`h-px w-6 sm:w-14 mt-[-1.25rem] transition-colors duration-500 ${step > i ? 'bg-accent' : 'bg-slate'}`} />
@@ -884,7 +884,7 @@ export default function BookingPage() {
                 <Link to="/" className="flex items-center gap-2 font-sans text-sm text-ivory/50 hover:text-ivory transition-colors link-lift">
                     <ArrowLeft className="w-4 h-4" /> Zurück
                 </Link>
-                <img src="/assets/logo-new2.png" alt="Elité Auto Aufbereitung" className="h-[5.5rem] sm:h-[7.5rem] lg:h-[9rem] w-auto object-contain -my-10" />
+                <img src="/assets/logo-new2.png" alt="Elité Auto Aufbereitung" className="h-[4rem] sm:h-[5rem] lg:h-[6rem] w-auto object-contain" />
                 <div className="flex items-center gap-2 bg-obsidian/50 px-3 py-1.5 rounded-full border border-slate/50">
                     <span className="relative flex h-2 w-2">
                         <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75" />

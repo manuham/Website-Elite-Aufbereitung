@@ -114,7 +114,7 @@ export default function Pricing() {
                                             <span className={`font-mono text-3xl sm:text-4xl font-black ${isElite ? 'text-accent' : 'text-obsidian'}`}>
                                                 {pkg.price}
                                             </span>
-                                            <span className="font-sans text-xs text-obsidian/50">€ inkl. MwSt.</span>
+                                            <span className="font-sans text-xs text-obsidian/50">€ Endpreis</span>
                                         </div>
                                     </div>
 
@@ -245,7 +245,7 @@ export default function Pricing() {
                 <div className="w-full bg-slate/30 border border-slate/50 rounded-2xl p-6 sm:p-8 mt-12 text-center">
                     <p className="font-sans text-[13px] sm:text-sm text-ivory/60 leading-relaxed mx-auto max-w-3xl">
                         <strong className="text-ivory/80 block mb-2">Wichtiger Hinweis zu unseren Preisen:</strong>
-                        Alle angegebenen Preise verstehen sich inklusive MwSt und sind Richtpreise. Die Einstiegspreise gelten für durchschnittlich verschmutzte Stadtautos und Pkws. Größere Fahrzeuge wie SUVs, Kombis und Vans erfordern aufgrund der größeren Flächen einen Aufpreis. Transporter, LKWs oder Extremverschmutzungen kalkulieren wir gerne individuell auf Anfrage. Der finale Endpreis basiert stets auf dem tatsächlichen Arbeitsaufwand und Verschmutzungsgrad Ihres Fahrzeugs.
+                        Alle angegebenen Preise sind Endpreise (keine Umsatzsteuer gemäß § 6 Abs. 1 Z 27 UStG) und Richtpreise. Die Einstiegspreise gelten für durchschnittlich verschmutzte Stadtautos und Pkws. Größere Fahrzeuge wie SUVs, Kombis und Vans erfordern aufgrund der größeren Flächen einen Aufpreis. Transporter, LKWs oder Extremverschmutzungen kalkulieren wir gerne individuell auf Anfrage. Der finale Endpreis basiert stets auf dem tatsächlichen Arbeitsaufwand und Verschmutzungsgrad Ihres Fahrzeugs.
                     </p>
                     <p className="font-sans text-[13px] sm:text-sm text-ivory/60 leading-relaxed mx-auto max-w-3xl mt-3">
                         <span className="inline-flex items-center gap-1.5 bg-emerald-500 text-obsidian px-3 py-1 rounded-full font-sans text-xs font-black uppercase tracking-widest shadow-[0_0_15px_rgba(16,185,129,0.6)] animate-pulse mr-2">NEU</span>

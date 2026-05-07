@@ -11,7 +11,7 @@ export default {
         obsidian: '#0D0D12',
         accent: '#4DB292',
         'accent-glow': '#2ce09a',
-        champagne: '#4DB292',
+        champagne: '#C9A96E',
         ivory: '#FAF8F5',
         slate: '#2A2A35',
         bronze: { DEFAULT: '#8B6914', light: '#C4943A', dark: '#6B4F0E' },

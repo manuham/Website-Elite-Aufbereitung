@@ -76,26 +76,27 @@ export default function Protocol() {
             <div className="relative w-full mx-auto px-4 sm:px-8 lg:px-12 xl:px-16">
                 {steps.map((step, i) => (
                     <div key={i} className="protocol-card w-full h-screen flex items-center justify-center top-0">
-                        <div className="card-content w-full h-[70vh] max-h-[650px] bg-obsidian rounded-[3rem] border border-slate/50 shadow-2xl flex flex-col md:flex-row overflow-hidden relative group">
+                        <div className="card-content w-full h-[85vh] sm:h-[70vh] max-h-[650px] bg-obsidian rounded-[2rem] sm:rounded-[3rem] border border-slate/50 shadow-2xl flex flex-col md:flex-row overflow-hidden relative group">
 
                             {/* Text Content */}
-                            <div className="flex-1 flex flex-col gap-6 justify-center p-10 sm:p-14 lg:p-16 relative z-10">
-                                <div className="font-mono text-xl sm:text-2xl text-champagne">{step.num}</div>
-                                <h3 className="font-drama italic text-3xl sm:text-4xl lg:text-5xl text-ivory leading-tight">{step.title}</h3>
-                                <p className="font-sans text-base sm:text-lg text-ivory/60 max-w-lg leading-relaxed text-balance">
+                            <div className="flex-1 flex flex-col gap-4 sm:gap-6 justify-center p-6 sm:p-14 lg:p-16 relative z-10">
+                                <div className="font-mono text-lg sm:text-2xl text-champagne">{step.num}</div>
+                                <h3 className="font-drama italic text-2xl sm:text-4xl lg:text-5xl text-ivory leading-tight">{step.title}</h3>
+                                <p className="font-sans text-sm sm:text-lg text-ivory/60 max-w-lg leading-relaxed text-balance">
                                     {step.desc}
                                 </p>
                             </div>
 
                             {/* Image */}
-                            <div className="flex-1 w-full h-full relative overflow-hidden">
+                            <div className="flex-1 w-full min-h-[200px] md:h-full relative overflow-hidden">
                                 <img
                                     src={step.image}
                                     alt={step.title}
                                     className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
                                     loading="lazy"
                                 />
-                                <div className="absolute inset-0 bg-gradient-to-r from-obsidian via-obsidian/40 to-transparent" />
+                                <div className="absolute inset-0 bg-gradient-to-r from-obsidian via-obsidian/40 to-transparent hidden md:block" />
+                                <div className="absolute inset-0 bg-gradient-to-t from-obsidian via-obsidian/40 to-transparent md:hidden" />
                             </div>
 
                         </div>

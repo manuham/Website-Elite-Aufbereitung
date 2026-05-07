@@ -22,9 +22,19 @@ import MobilerService from './pages/MobilerService';
 gsap.registerPlugin(ScrollTrigger);
 
 function HomePage() {
+    const location = useLocation();
+
     useEffect(() => {
         ScrollTrigger.refresh();
     }, []);
+
+    useEffect(() => {
+        if (location.state?.scrollTo) {
+            setTimeout(() => {
+                document.getElementById(location.state.scrollTo)?.scrollIntoView({ behavior: 'smooth' });
+            }, 100);
+        }
+    }, [location.state]);
 
     return (
         <div className="min-h-screen font-sans bg-obsidian text-ivory selection:bg-champagne selection:text-obsidian overflow-hidden">

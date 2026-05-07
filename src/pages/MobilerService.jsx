@@ -1,5 +1,7 @@
 import { Link } from 'react-router-dom';
-import { ArrowLeft, Truck, Clock, ShieldCheck, MapPin, Wrench, Sparkles, ArrowRight, Phone, CheckCircle } from 'lucide-react';
+import { Truck, Clock, ShieldCheck, MapPin, Wrench, Sparkles, ArrowRight, Phone, CheckCircle } from 'lucide-react';
+import Navbar from '../components/Navbar';
+import Footer from '../components/Footer';
 
 const steps = [
     { num: '01', title: 'Termin buchen', desc: 'Wählen Sie online Ihren Wunschtermin und die gewünschten Services aus.', icon: Clock },
@@ -24,18 +26,8 @@ const benefits = [
 
 export default function MobilerService() {
     return (
-        <div className="min-h-screen bg-obsidian text-ivory font-sans">
-
-            {/* Back nav */}
-            <div className="px-6 sm:px-12 lg:px-24 pt-10">
-                <Link
-                    to="/"
-                    className="inline-flex items-center gap-2 text-ivory/50 hover:text-champagne transition-colors text-sm"
-                >
-                    <ArrowLeft className="w-4 h-4" />
-                    Zurück zur Startseite
-                </Link>
-            </div>
+        <div className="min-h-screen bg-obsidian text-ivory font-sans overflow-hidden">
+            <Navbar />
 
             {/* Hero */}
             <div className="relative min-h-[70vh] sm:min-h-[80vh] flex items-center overflow-hidden">
@@ -156,7 +148,7 @@ export default function MobilerService() {
                         {/* Main — spans 2 cols & 2 rows */}
                         <div className="lg:col-span-2 lg:row-span-2 rounded-[1.75rem] overflow-hidden relative group h-[360px] lg:h-full">
                             <img
-                                src="/assets/VAN.png"
+                                src="/assets/VAN/VAN.png"
                                 alt="Der Elité Aufbereitungs-Van"
                                 className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105"
                                 loading="lazy"
@@ -256,11 +248,7 @@ export default function MobilerService() {
                 </Link>
             </div>
 
-            {/* Footer strip */}
-            <div className="border-t border-ivory/10 px-6 sm:px-12 lg:px-24 py-8 text-center font-sans text-xs text-ivory/30">
-                © 2026 Elité Auto Aufbereitung. Alle Rechte vorbehalten.
-            </div>
-
+            <Footer />
         </div>
     );
 }

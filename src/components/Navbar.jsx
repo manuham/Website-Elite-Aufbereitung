@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { X, Menu } from 'lucide-react';
 
 const navLinks = [
@@ -14,6 +14,8 @@ export default function Navbar() {
     const [menuOpen, setMenuOpen] = useState(false);
     const [visible, setVisible] = useState(true);
     const hideTimer = useRef(null);
+    const navigate = useNavigate();
+    const location = useLocation();
 
     useEffect(() => {
         const handleScroll = () => {
@@ -43,10 +45,13 @@ export default function Navbar() {
 
     const scrollTo = (id) => {
         setMenuOpen(false);
-        setTimeout(() => {
-            const el = document.getElementById(id);
-            if (el) el.scrollIntoView({ behavior: 'smooth' });
-        }, 50);
+        if (location.pathname !== '/') {
+            navigate('/', { state: { scrollTo: id } });
+        } else {
+            setTimeout(() => {
+                document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' });
+            }, 50);
+        }
     };
 
     return (

@@ -59,7 +59,7 @@ export default function Philosophy() {
             <div className="absolute inset-0 z-0">
                 <div className="parallax-bg absolute -top-[10vh] left-0 w-full h-[120vh]">
                     <img
-                        src="/assets/ueberuns-background.jpg"
+                        src="/assets/Außenreinigung/P1334666.jpg"
                         alt="Elite Aufbereitung Hintergrund"
                         className="w-full h-full object-cover opacity-15 mix-blend-luminosity"
                     />
@@ -109,7 +109,7 @@ export default function Philosophy() {
                     <iframe
                         width="100%"
                         height="100%"
-                        src="https://www.youtube.com/embed/QrwdgrPwF4c?si=VzTS3_zS674CX_xt"
+                        src="https://www.youtube-nocookie.com/embed/QrwdgrPwF4c?si=VzTS3_zS674CX_xt"
                         title="Elite Auto Aufbereitung Showcase"
                         style={{ border: 'none' }}
                         allow="accelerometer; encrypted-media; gyroscope; picture-in-picture"

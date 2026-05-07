@@ -1,7 +1,18 @@
 import { Instagram, Facebook } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 
 export default function Footer() {
+    const navigate = useNavigate();
+    const location = useLocation();
+
+    const scrollToSection = (id) => {
+        if (location.pathname !== '/') {
+            navigate('/', { state: { scrollTo: id } });
+        } else {
+            document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' });
+        }
+    };
+
     return (
         <footer id="footer" className="bg-slate rounded-t-[3rem] sm:rounded-t-[4rem] px-6 sm:px-12 lg:px-24 pt-20 pb-10 flex flex-col gap-16 relative z-10 border-t border-slate/50 shadow-[0_-10px_40px_-20px_rgba(0,0,0,0.5)]">
 
@@ -30,7 +41,7 @@ export default function Footer() {
                             "Zusatzpakete (Felgen, Fenster)"
                         ].map((link, i) => (
                             <li key={i}>
-                                <a href="#pricing" className="font-sans text-sm text-ivory/60 hover:text-champagne transition-colors link-lift inline-block">{link}</a>
+                                <button onClick={() => scrollToSection('pricing')} className="font-sans text-sm text-ivory/60 hover:text-champagne transition-colors link-lift inline-block">{link}</button>
                             </li>
                         ))}
                     </ul>
@@ -43,7 +54,7 @@ export default function Footer() {
                         <li>Bundesstraße 2a</li>
                         <li>6714 Nüziders, Österreich</li>
                         <li className="mt-2"><a href="tel:+436642546078" className="hover:text-champagne transition-colors">+43 664 2546078</a></li>
-                        <li><a href="mailto:info.eliteaufbereitung@gmail.com" className="hover:text-champagne transition-colors">info.eliteaufbereitung@gmail.com</a></li>
+                        <li><a href="mailto:info.eliteaufbereitung@gmail.com" className="hover:text-champagne transition-colors break-all">info.eliteaufbereitung@gmail.com</a></li>
                         <li className="mt-2 flex items-center gap-2">
                             <span className="bg-champagne/20 text-champagne px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider">Neu</span>
                             <span className="text-ivory/60">Mobiler Service verfügbar</span>

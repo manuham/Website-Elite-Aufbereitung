@@ -68,7 +68,7 @@ export default function Hero() {
                     <h1 className="hero-element font-sans font-extrabold text-3xl sm:text-5xl lg:text-6xl text-ivory tracking-tight mb-0 sm:mb-1 text-balance">
                         Perfektion trifft
                     </h1>
-                    <h2 className="hero-element font-drama italic text-[4rem] sm:text-7xl lg:text-[8rem] leading-[1.05] text-transparent bg-clip-text bg-gradient-to-r from-ivory via-champagne to-ivory drop-shadow-2xl pr-4 relative">
+                    <h2 className="hero-element font-drama italic text-[2.75rem] sm:text-7xl lg:text-[8rem] leading-[1.05] text-transparent bg-clip-text bg-gradient-to-r from-ivory via-champagne to-ivory drop-shadow-2xl pr-4 relative">
                         Präzision.
                     </h2>
                 </div>

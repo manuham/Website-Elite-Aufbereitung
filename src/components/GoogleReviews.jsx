@@ -177,7 +177,7 @@ export default function GoogleReviews() {
                     </span>
                     <span className="text-ivory/30">|</span>
                     <span className="font-sans text-sm text-ivory/60">
-                        {totalCount ? `${totalCount}` : `${googleReviews.length}+`} Bewertungen
+                        {totalCount ? `${totalCount}` : '30'} Bewertungen
                     </span>
                 </div>
             </div>
