@@ -163,7 +163,7 @@ export default function Pricing() {
                                     {/* CTA */}
                                     <div className="px-5 pb-6">
                                         <Link
-                                            to={isElite ? '/mobiler-service' : '/buchen'}
+                                            to={isElite ? '/elite-endstufe' : '/buchen'}
                                             className={`relative w-full py-3.5 rounded-full font-sans font-bold text-[14px] transition-all duration-500 overflow-hidden text-center block ${isElite
                                                 ? 'bg-accent text-white shadow-lg hover:shadow-xl hover:scale-[1.02]'
                                                 : 'bg-transparent text-obsidian border border-obsidian/20 hover:border-obsidian/50 hover:bg-obsidian/5'

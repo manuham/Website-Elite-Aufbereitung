@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
-import { Check, ChevronLeft, ChevronRight, ArrowLeft, Phone, Mail, MapPin, Plus, X as XIcon, Sparkles, AlertTriangle, Truck } from 'lucide-react';
-import { serviceCategories, allInOnePackages } from '../data/services';
+import { Check, ChevronLeft, ChevronRight, ArrowLeft, Phone, Mail, MapPin, Plus, X as XIcon, Sparkles, AlertTriangle, Truck, Zap, Gift } from 'lucide-react';
+import { serviceCategories, tierPackages, allInOnePackages } from '../data/services';
 import { useAvailability } from '../hooks/useAvailability';
 import { useRecommendations } from '../hooks/useRecommendations';
 import { submitBooking } from '../lib/api';
@@ -160,7 +160,8 @@ function Step1({ selectedItems, toggleItem, onNext, onBack, recommendations, pac
 
     // Toggle an All-in-One package
     const toggleAIO = (pkg) => {
-        addWithDisclaimer({ id: pkg.id, name: pkg.name, price: pkg.price, priceNum: pkg.priceNum, type: 'aio' });
+        const priceNum = parseInt(pkg.price.replace(/[^\d]/g, ''));
+        addWithDisclaimer({ id: pkg.id, name: `${pkg.tier} – ${pkg.name}`, price: `${pkg.price} €`, priceNum, type: 'aio' });
     };
 
     // Toggle an individual service package
@@ -206,48 +207,64 @@ function Step1({ selectedItems, toggleItem, onNext, onBack, recommendations, pac
             {/* All-in-One grid */}
             {activeTab === 'aio' && (
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-                    {allInOnePackages.map(pkg => {
+                    {tierPackages.map(pkg => {
                         const selected = isSelected(pkg.id);
+                        const isElite = pkg.id === 'tier-elite';
+                        const textFeatures = pkg.features.filter(f => !f.section);
+                        const visibleFeatures = textFeatures.slice(0, 5);
+                        const extraCount = textFeatures.length - 5;
                         return (
                             <button
                                 key={pkg.id}
                                 onClick={() => toggleAIO(pkg)}
-                                className={`text-left p-6 rounded-[1.5rem] border transition-all duration-200 flex flex-col gap-4 relative ${selected
-                                    ? 'bg-accent/10 border-accent shadow-[0_0_24px_rgba(77,178,146,0.15)]'
-                                    : 'bg-slate/30 border-slate/50 hover:border-slate'}`}
+                                className={`text-left rounded-[1.5rem] border transition-all duration-200 flex flex-col overflow-hidden relative ${selected
+                                    ? 'border-accent shadow-[0_0_24px_rgba(77,178,146,0.15)]'
+                                    : isElite ? 'border-accent/30 hover:border-accent/60' : 'bg-slate/30 border-slate/50 hover:border-slate'}`}
                             >
-                                {pkg.badge && (
-                                    <div className="absolute -top-3 left-6 bg-accent text-obsidian px-4 py-1 rounded-full font-sans font-bold text-[10px] uppercase tracking-wider">
-                                        {pkg.badge}
+                                {/* Gradient header */}
+                                <div className="px-5 pt-4 pb-3" style={pkg.headerStyle}>
+                                    <div className="flex items-center gap-1.5 mb-1">
+                                        {pkg.dots > 0 ? (
+                                            Array.from({ length: pkg.dots }).map((_, i) => (
+                                                <span key={i} className="w-2 h-2 rounded-full bg-white/80" />
+                                            ))
+                                        ) : (
+                                            <Zap className="w-3.5 h-3.5 text-yellow-300 fill-yellow-300" />
+                                        )}
+                                        <span className="font-sans font-black text-[10px] uppercase tracking-widest text-white/90 ml-1">{pkg.tier}</span>
                                     </div>
-                                )}
+                                    <h3 className="font-drama italic text-2xl text-white leading-tight">{pkg.name}</h3>
+                                    <p className="font-sans text-xs text-white/60 mt-0.5">{pkg.subtitle}</p>
+                                </div>
 
-                                <div className="flex items-start justify-between gap-3 mt-1">
-                                    <div className="flex flex-col gap-1">
-                                        <span className="font-sans font-bold text-lg text-ivory leading-tight">{pkg.name}</span>
-                                        <div className="flex flex-wrap gap-1.5">
-                                            {pkg.includes.map(inc => (
-                                                <span key={inc} className="font-mono text-[10px] text-ivory/40 border border-slate/50 rounded-full px-2 py-0.5">{inc}</span>
-                                            ))}
+                                {/* Body */}
+                                <div className="p-5 flex flex-col gap-3 flex-1">
+                                    <div className="flex items-start justify-between gap-3">
+                                        <div className="font-mono text-2xl font-bold text-accent">{pkg.price} €</div>
+                                        <div className={`w-6 h-6 rounded-full border-2 shrink-0 mt-0.5 flex items-center justify-center transition-all ${selected ? 'bg-accent border-accent' : 'border-slate'}`}>
+                                            {selected ? <Check className="w-3.5 h-3.5 text-obsidian" strokeWidth={3} /> : <Plus className="w-3.5 h-3.5 text-ivory/30" />}
                                         </div>
                                     </div>
-                                    <div className={`w-6 h-6 rounded-full border-2 shrink-0 mt-0.5 flex items-center justify-center transition-all ${selected ? 'bg-accent border-accent' : 'border-slate'}`}>
-                                        {selected ? <Check className="w-3.5 h-3.5 text-obsidian" strokeWidth={3} /> : <Plus className="w-3.5 h-3.5 text-ivory/30" />}
-                                    </div>
-                                </div>
 
-                                <div className="flex items-end justify-between">
-                                    <div className="font-mono text-2xl font-bold text-accent">{pkg.price}</div>
-                                    <span className="font-sans text-xs text-accent/70 bg-accent/10 px-3 py-1 rounded-full">{pkg.savings}</span>
-                                </div>
+                                    <ul className="flex flex-col gap-1.5">
+                                        {visibleFeatures.map((f, fi) => (
+                                            <li key={fi} className="font-sans text-xs text-ivory/50 flex items-start gap-2">
+                                                <span className="text-accent mt-0.5 shrink-0">·</span>
+                                                <span className={f.muted ? 'text-ivory/30' : ''}>{f.text}</span>
+                                            </li>
+                                        ))}
+                                        {extraCount > 0 && (
+                                            <li className="font-sans text-xs text-ivory/30 ml-4">+{extraCount} weitere Leistungen</li>
+                                        )}
+                                    </ul>
 
-                                <ul className="flex flex-col gap-1.5">
-                                    {pkg.features.map((f, fi) => (
-                                        <li key={fi} className="font-sans text-xs text-ivory/50 flex items-start gap-2">
-                                            <span className="text-accent mt-0.5 shrink-0">·</span>{f}
-                                        </li>
-                                    ))}
-                                </ul>
+                                    {pkg.gift && (
+                                        <div className="flex items-center gap-2 bg-accent/10 rounded-lg px-3 py-2 mt-auto">
+                                            <Gift className="w-4 h-4 text-accent shrink-0" />
+                                            <span className="font-sans text-xs text-accent font-semibold">{pkg.gift.title}</span>
+                                        </div>
+                                    )}
+                                </div>
                             </button>
                         );
                     })}
@@ -894,7 +911,7 @@ export default function BookingPage() {
                 </div>
             </header>
 
-            <main className="pt-28 pb-24 px-6 sm:px-12 lg:px-24">
+            <main className="pt-32 sm:pt-36 lg:pt-40 pb-24 px-6 sm:px-12 lg:px-24">
                 <div className="max-w-4xl mx-auto">
                     {step < 5 && <StepBar step={step} />}
                     {step === 0 && <Step0 serviceMode={serviceMode} setServiceMode={setServiceMode} onNext={() => setStep(1)} />}

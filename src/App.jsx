@@ -18,6 +18,7 @@ import Impressum from './pages/Impressum';
 import Datenschutz from './pages/Datenschutz';
 import Projekte from './pages/Projekte';
 import MobilerService from './pages/MobilerService';
+import EliteEndstufe from './pages/EliteEndstufe';
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -80,6 +81,7 @@ export default function App() {
                 <Route path="/buchen" element={<BookingPage />} />
                 <Route path="/projekte" element={<Projekte />} />
                 <Route path="/mobiler-service" element={<MobilerService />} />
+                <Route path="/elite-endstufe" element={<EliteEndstufe />} />
                 <Route path="/impressum" element={<Impressum />} />
                 <Route path="/datenschutz" element={<Datenschutz />} />
                 <Route path="*" element={<NotFound />} />
