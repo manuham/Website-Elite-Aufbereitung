@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import gsap from 'gsap';
+import SplitText from './SplitText';
 const stats = [
     { value: '500+', label: 'Fahrzeuge aufbereitet' },
     { value: '60k', label: 'km Keramik-Garantie' },
@@ -36,6 +37,7 @@ export default function Philosophy() {
                 ease: 'power3.out'
             });
 
+            // Stat items fade in
             gsap.from('.stat-item', {
                 scrollTrigger: {
                     trigger: '.stats-row',
@@ -46,6 +48,33 @@ export default function Philosophy() {
                 duration: 0.8,
                 stagger: 0.12,
                 ease: 'power3.out'
+            });
+
+            // Number counter animation — counts up from 0
+            const counters = containerRef.current.querySelectorAll('.stat-counter');
+            counters.forEach(el => {
+                const target = el.getAttribute('data-target');
+                const isK = target.includes('k');
+                const isPercent = target.includes('%');
+                const numericTarget = parseInt(target.replace(/[^0-9]/g, ''));
+                const suffix = target.replace(/[0-9]/g, '');
+
+                ScrollTrigger.create({
+                    trigger: el,
+                    start: 'top 85%',
+                    once: true,
+                    onEnter: () => {
+                        const proxy = { val: 0 };
+                        gsap.to(proxy, {
+                            val: numericTarget,
+                            duration: 2,
+                            ease: 'power2.out',
+                            onUpdate: () => {
+                                el.textContent = Math.round(proxy.val) + suffix;
+                            }
+                        });
+                    }
+                });
             });
         }, containerRef);
 
@@ -75,10 +104,22 @@ export default function Philosophy() {
                         Die meisten Autowäschen setzen auf Geschwindigkeit und Masse.
                     </p>
                     <h2 className="reveal-text font-drama italic text-[2.5rem] leading-[1.1] sm:text-5xl lg:text-6xl text-ivory">
-                        Wir setzen auf{' '}
-                        <span className="text-transparent bg-clip-text bg-gradient-to-r from-accent to-accent-glow">Perfektion</span>{' '}
-                        und{' '}
-                        <span className="text-transparent bg-clip-text bg-gradient-to-r from-accent to-accent-glow">Leidenschaft.</span>
+                        <SplitText type="words" triggerStart="top 80%">
+                            Wir setzen auf
+                        </SplitText>{' '}
+                        <span className="text-transparent bg-clip-text bg-gradient-to-r from-accent to-accent-glow">
+                            <SplitText type="chars" triggerStart="top 80%" delay={0.2}>
+                                Perfektion
+                            </SplitText>
+                        </span>{' '}
+                        <SplitText type="words" triggerStart="top 80%" delay={0.3}>
+                            und
+                        </SplitText>{' '}
+                        <span className="text-transparent bg-clip-text bg-gradient-to-r from-accent to-accent-glow">
+                            <SplitText type="chars" triggerStart="top 80%" delay={0.4}>
+                                Leidenschaft.
+                            </SplitText>
+                        </span>
                     </h2>
                     <p className="reveal-text font-sans text-base text-ivory/60 max-w-xl leading-relaxed">
                         Mit Liebe zum Detail und höchstem Qualitätsanspruch setzen wir alles daran,
@@ -98,7 +139,7 @@ export default function Philosophy() {
                 <div className="stats-row grid grid-cols-3 gap-6 sm:gap-12 max-w-2xl">
                     {stats.map((s) => (
                         <div key={s.label} className="stat-item flex flex-col gap-1">
-                            <span className="font-mono text-3xl sm:text-4xl font-bold text-champagne">{s.value}</span>
+                            <span className="stat-counter font-mono text-3xl sm:text-4xl font-bold text-champagne" data-target={s.value}>0</span>
                             <span className="font-sans text-xs sm:text-sm text-ivory/80 leading-snug">{s.label}</span>
                         </div>
                     ))}

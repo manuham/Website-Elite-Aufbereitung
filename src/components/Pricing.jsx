@@ -1,9 +1,10 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { Check, Zap, Gift } from 'lucide-react';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { serviceCategories, tierPackages } from '../data/services';
+import SplitText from './SplitText';
 
 const ALL_IN_ONE_TAB = 'allinone';
 
@@ -11,18 +12,44 @@ export default function Pricing() {
     const [activeTab, setActiveTab] = useState(ALL_IN_ONE_TAB);
     const contentRef = useRef(null);
     const tabsRef = useRef(null);
+    const indicatorRef = useRef(null);
+    const tabButtonRefs = useRef({});
 
     const isAllInOne = activeTab === ALL_IN_ONE_TAB;
     const activeCategory = serviceCategories.find(cat => cat.id === activeTab);
 
-    // Animate content when tab changes
+    // Sliding tab indicator
+    const updateIndicator = useCallback(() => {
+        const btn = tabButtonRefs.current[activeTab];
+        const container = tabsRef.current;
+        const indicator = indicatorRef.current;
+        if (!btn || !container || !indicator) return;
+
+        const btnRect = btn.getBoundingClientRect();
+        const containerRect = container.getBoundingClientRect();
+
+        gsap.to(indicator, {
+            x: btnRect.left - containerRect.left + container.scrollLeft,
+            width: btnRect.width,
+            duration: 0.4,
+            ease: 'power3.out',
+        });
+    }, [activeTab]);
+
+    useEffect(() => {
+        updateIndicator();
+        window.addEventListener('resize', updateIndicator);
+        return () => window.removeEventListener('resize', updateIndicator);
+    }, [updateIndicator]);
+
+    // Animate content when tab changes — slide in from right
     useEffect(() => {
         if (!contentRef.current) return;
 
         const ctx = gsap.context(() => {
             gsap.fromTo(contentRef.current.children,
-                { opacity: 0, y: 30 },
-                { opacity: 1, y: 0, duration: 0.5, stagger: 0.1, ease: "power2.out", clearProps: "all" }
+                { opacity: 0, x: 40 },
+                { opacity: 1, x: 0, duration: 0.5, stagger: 0.08, ease: "power3.out", clearProps: "all" }
             );
         }, contentRef);
 
@@ -44,21 +71,36 @@ export default function Pricing() {
                 <div className="flex flex-col gap-4 items-center text-center">
                     <h3 className="font-sans font-bold text-lg text-ivory/60 uppercase tracking-widest">Unsere Pakete</h3>
                     <h2 className="font-drama italic text-4xl sm:text-5xl lg:text-6xl text-ivory">
-                        Services & <span className="text-accent relative inline-block">Preise<span className="absolute bottom-1 left-0 w-full h-px bg-accent" /></span>
+                        <SplitText type="words" triggerStart="top 85%">
+                            Services &
+                        </SplitText>{' '}
+                        <span className="text-accent relative inline-block">
+                            <SplitText type="chars" triggerStart="top 85%" delay={0.2}>
+                                Preise
+                            </SplitText>
+                            <span className="underline-draw bg-accent" />
+                        </span>
                     </h2>
                 </div>
 
-                {/* Tab Navigation */}
+                {/* Tab Navigation with sliding indicator */}
                 <div
                     ref={tabsRef}
-                    className="flex flex-nowrap md:flex-wrap items-center justify-start md:justify-center gap-3 w-full overflow-x-auto pb-4 md:pb-0 px-2 md:px-0 snap-x hide-scrollbar"
+                    className="relative flex flex-nowrap md:flex-wrap items-center justify-start md:justify-center gap-3 w-full overflow-x-auto pb-4 md:pb-0 px-2 md:px-0 snap-x hide-scrollbar"
                 >
+                    {/* Sliding pill indicator */}
+                    <div
+                        ref={indicatorRef}
+                        className="absolute top-0 h-[calc(100%-1rem)] md:h-full bg-accent rounded-full shadow-md pointer-events-none z-0 transition-none"
+                        style={{ width: 0 }}
+                    />
                     {tabs.map((tab) => (
                         <button
                             key={tab.id}
+                            ref={el => { tabButtonRefs.current[tab.id] = el; }}
                             onClick={() => setActiveTab(tab.id)}
-                            className={`whitespace-nowrap shrink-0 snap-center px-6 py-3 rounded-full font-sans font-bold text-sm transition-all duration-300 ${activeTab === tab.id
-                                ? 'bg-accent text-obsidian shadow-md'
+                            className={`relative z-10 whitespace-nowrap shrink-0 snap-center px-6 py-3 rounded-full font-sans font-bold text-sm transition-colors duration-300 ${activeTab === tab.id
+                                ? 'text-obsidian'
                                 : 'bg-slate/50 text-ivory/70 border border-ivory/10 hover:border-ivory/30 hover:text-ivory'
                                 }`}
                         >

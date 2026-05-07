@@ -1,6 +1,7 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { Check, ChevronLeft, ChevronRight, ArrowLeft, Phone, Mail, MapPin, Plus, X as XIcon, Sparkles, AlertTriangle, Truck, Zap, Gift } from 'lucide-react';
+import gsap from 'gsap';
 import { serviceCategories, tierPackages, allInOnePackages } from '../data/services';
 import { useAvailability } from '../hooks/useAvailability';
 import { useRecommendations } from '../hooks/useRecommendations';
@@ -615,7 +616,7 @@ function Step3({ contact, setContact, onSubmit, onBack, loading, serviceMode }) 
     const addressValid = serviceMode !== 'mobil' || (contact.address && contact.address.trim().length >= 5);
     const valid = nameValid && phoneValid && emailValid && addressValid;
 
-    const inputClass = "w-full bg-slate/30 border border-slate/60 focus:border-accent outline-none rounded-xl px-4 py-3.5 font-sans text-sm text-ivory placeholder:text-ivory/30 transition-colors";
+    const inputClass = "input-elite w-full bg-slate/30 border border-slate/60 outline-none rounded-xl px-4 py-3.5 font-sans text-sm text-ivory placeholder:text-ivory/30";
     const errorClass = "font-sans text-[11px] text-red-400 mt-1";
 
     return (
@@ -804,12 +805,46 @@ export default function BookingPage() {
     const [contact, setContact] = useState({ name: '', phone: '', email: '', notes: '', address: '' });
     const [submitError, setSubmitError] = useState(null);
 
+    const stepContentRef = useRef(null);
+    const prevStepRef = useRef(0);
+
+    // Animate step transitions
+    const animateStep = useCallback((newStep) => {
+        const goingForward = newStep > prevStepRef.current;
+        const el = stepContentRef.current;
+        if (!el) {
+            setStep(newStep);
+            prevStepRef.current = newStep;
+            return;
+        }
+
+        // Animate out
+        gsap.to(el, {
+            opacity: 0,
+            x: goingForward ? -60 : 60,
+            duration: 0.25,
+            ease: 'power2.in',
+            onComplete: () => {
+                setStep(newStep);
+                prevStepRef.current = newStep;
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+
+                // Animate in from opposite side
+                gsap.fromTo(el,
+                    { opacity: 0, x: goingForward ? 60 : -60 },
+                    { opacity: 1, x: 0, duration: 0.4, ease: 'power3.out' }
+                );
+            }
+        });
+    }, []);
+
     useEffect(() => {
         window.scrollTo(0, 0);
         const preselect = searchParams.get('service');
         if (preselect === 'mobil') {
             setServiceMode('mobil');
             setStep(1);
+            prevStepRef.current = 1;
         }
     }, []);
 
@@ -878,12 +913,12 @@ export default function BookingPage() {
                 }),
             }).catch(() => {});
 
-            setStep(5);
+            animateStep(5);
         } catch (err) {
             if (err.status === 409 && err.data?.error === 'slot_taken') {
                 setSubmitError('Dieser Termin wurde soeben von jemand anderem gebucht. Bitte wählen Sie einen anderen Zeitpunkt.');
                 setDatetime(dt => ({ ...dt, time: null }));
-                setStep(3);
+                animateStep(3);
             } else {
                 setSubmitError('Anfrage konnte nicht gesendet werden. Bitte versuchen Sie es erneut oder kontaktieren Sie uns direkt.');
             }
@@ -914,24 +949,26 @@ export default function BookingPage() {
             <main className="pt-32 sm:pt-36 lg:pt-40 pb-24 px-6 sm:px-12 lg:px-24">
                 <div className="max-w-4xl mx-auto">
                     {step < 5 && <StepBar step={step} />}
-                    {step === 0 && <Step0 serviceMode={serviceMode} setServiceMode={setServiceMode} onNext={() => setStep(1)} />}
-                    {step === 1 && <Step1 selectedItems={selectedItems} toggleItem={toggleItem} onNext={() => setStep(2)} onBack={() => setStep(0)} recommendations={recommendations} packageSuggestion={packageSuggestion} onReplaceWithPackage={replaceWithPackage} />}
-                    {step === 2 && <StepVehicle vehicleCategory={vehicleCategory} setVehicleCategory={setVehicleCategory} selectedItems={selectedItems} onNext={() => setStep(3)} onBack={() => setStep(1)} />}
-                    {step === 3 && <Step2 datetime={datetime} setDatetime={setDatetime} onNext={() => setStep(4)} onBack={() => setStep(2)} serviceMode={serviceMode} />}
-                    {step === 4 && (
-                        <>
-                            <Step3 contact={contact} setContact={setContact} onSubmit={handleSubmit} onBack={() => setStep(3)} loading={loading} serviceMode={serviceMode} />
-                            {submitError && (
-                                <div className="mt-6 bg-red-500/10 border border-red-500/30 rounded-xl px-5 py-4 text-center">
-                                    <p className="font-sans text-sm text-red-400">{submitError}</p>
-                                    <a href="tel:+436642546078" className="font-sans text-sm text-accent hover:underline mt-2 inline-block">
-                                        Direkter Kontakt: +43 664 2546078
-                                    </a>
-                                </div>
-                            )}
-                        </>
-                    )}
-                    {step === 5 && <Step4 selectedItems={selectedItems} datetime={datetime} serviceMode={serviceMode} contact={contact} vehicleCategory={vehicleCategory} />}
+                    <div ref={stepContentRef}>
+                        {step === 0 && <Step0 serviceMode={serviceMode} setServiceMode={setServiceMode} onNext={() => animateStep(1)} />}
+                        {step === 1 && <Step1 selectedItems={selectedItems} toggleItem={toggleItem} onNext={() => animateStep(2)} onBack={() => animateStep(0)} recommendations={recommendations} packageSuggestion={packageSuggestion} onReplaceWithPackage={replaceWithPackage} />}
+                        {step === 2 && <StepVehicle vehicleCategory={vehicleCategory} setVehicleCategory={setVehicleCategory} selectedItems={selectedItems} onNext={() => animateStep(3)} onBack={() => animateStep(1)} />}
+                        {step === 3 && <Step2 datetime={datetime} setDatetime={setDatetime} onNext={() => animateStep(4)} onBack={() => animateStep(2)} serviceMode={serviceMode} />}
+                        {step === 4 && (
+                            <>
+                                <Step3 contact={contact} setContact={setContact} onSubmit={handleSubmit} onBack={() => animateStep(3)} loading={loading} serviceMode={serviceMode} />
+                                {submitError && (
+                                    <div className="mt-6 bg-red-500/10 border border-red-500/30 rounded-xl px-5 py-4 text-center">
+                                        <p className="font-sans text-sm text-red-400">{submitError}</p>
+                                        <a href="tel:+436642546078" className="font-sans text-sm text-accent hover:underline mt-2 inline-block">
+                                            Direkter Kontakt: +43 664 2546078
+                                        </a>
+                                    </div>
+                                )}
+                            </>
+                        )}
+                        {step === 5 && <Step4 selectedItems={selectedItems} datetime={datetime} serviceMode={serviceMode} contact={contact} vehicleCategory={vehicleCategory} />}
+                    </div>
                 </div>
             </main>
         </div>

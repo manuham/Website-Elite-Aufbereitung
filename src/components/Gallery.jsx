@@ -2,6 +2,17 @@ import { useEffect, useRef } from 'react';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { Instagram, Facebook } from 'lucide-react';
+import SplitText from './SplitText';
+import { useTilt } from '../hooks/useTilt';
+
+function TiltItem({ children, className }) {
+    const tiltRef = useTilt(5, 900, true);
+    return (
+        <div ref={tiltRef} className={className}>
+            {children}
+        </div>
+    );
+}
 
 const galleryItems = [
     {
@@ -70,16 +81,36 @@ export default function Gallery() {
                 ease: 'power3.out',
             });
 
-            gsap.from('.gallery-item', {
-                scrollTrigger: {
-                    trigger: '.gallery-grid',
-                    start: 'top 80%',
-                },
-                y: 50,
-                opacity: 0,
-                duration: 0.9,
-                stagger: 0.1,
-                ease: 'power3.out',
+            // Clip-path reveal + scale for gallery items
+            gsap.fromTo('.gallery-item',
+                { clipPath: 'inset(0 0 100% 0)', scale: 0.92, opacity: 0 },
+                {
+                    scrollTrigger: {
+                        trigger: '.gallery-grid',
+                        start: 'top 80%',
+                    },
+                    clipPath: 'inset(0 0 0% 0)',
+                    scale: 1,
+                    opacity: 1,
+                    duration: 1,
+                    stagger: { each: 0.08, from: 'random' },
+                    ease: 'power3.out',
+                    clearProps: 'clipPath',
+                }
+            );
+
+            // Parallax on gallery images — subtle depth effect
+            gsap.utils.toArray('.gallery-item img').forEach((img, i) => {
+                gsap.to(img, {
+                    scrollTrigger: {
+                        trigger: img.closest('.gallery-item'),
+                        start: 'top bottom',
+                        end: 'bottom top',
+                        scrub: true,
+                    },
+                    y: i % 2 === 0 ? -25 : -15,
+                    ease: 'none',
+                });
             });
         }, containerRef);
 
@@ -97,10 +128,14 @@ export default function Gallery() {
                             Portfolio
                         </h3>
                         <h2 className="font-drama italic text-4xl sm:text-5xl text-ivory">
-                            Unsere{' '}
+                            <SplitText type="words" triggerStart="top 85%">
+                                Unsere
+                            </SplitText>{' '}
                             <span className="text-champagne relative inline-block">
-                                Arbeit.
-                                <span className="absolute bottom-1 left-0 w-full h-px bg-champagne" />
+                                <SplitText type="chars" triggerStart="top 85%" delay={0.15}>
+                                    Arbeit.
+                                </SplitText>
+                                <span className="underline-draw bg-champagne" />
                             </span>
                         </h2>
                     </div>
@@ -127,10 +162,10 @@ export default function Gallery() {
                 </div>
 
                 {/* Masonry-style Grid */}
-                <div className="gallery-grid grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 auto-rows-[220px] sm:auto-rows-[220px]">
+                <div className="gallery-grid grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 auto-rows-[220px] sm:auto-rows-[220px]" style={{ perspective: '900px' }}>
 
                     {/* Tall featured image — left */}
-                    <div className="gallery-item col-span-1 row-span-1 sm:row-span-2 relative group rounded-[1.5rem] overflow-hidden">
+                    <TiltItem className="gallery-item col-span-1 row-span-1 sm:row-span-2 relative group rounded-[1.5rem] overflow-hidden">
                         <img
                             src={galleryItems[0].src}
                             alt={galleryItems[0].alt}
@@ -140,11 +175,11 @@ export default function Gallery() {
                         <div className="absolute inset-0 bg-gradient-to-t from-obsidian/70 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end p-5">
                             <span className="font-sans text-sm font-semibold text-ivory tracking-wide">{galleryItems[0].label}</span>
                         </div>
-                    </div>
+                    </TiltItem>
 
                     {/* Regular images */}
                     {galleryItems.slice(1).map((item, i) => (
-                        <div key={i} className="gallery-item col-span-1 row-span-1 relative group rounded-[1.5rem] overflow-hidden">
+                        <TiltItem key={i} className="gallery-item col-span-1 row-span-1 relative group rounded-[1.5rem] overflow-hidden">
                             <img
                                 src={item.src}
                                 alt={item.alt}
@@ -154,7 +189,7 @@ export default function Gallery() {
                             <div className="absolute inset-0 bg-gradient-to-t from-obsidian/70 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end p-4">
                                 <span className="font-sans text-sm font-semibold text-ivory tracking-wide">{item.label}</span>
                             </div>
-                        </div>
+                        </TiltItem>
                     ))}
 
                 </div>

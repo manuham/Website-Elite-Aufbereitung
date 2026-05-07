@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import gsap from 'gsap';
 import { googleReviews } from '../data/reviews';
+import SplitText from './SplitText';
 
 function GoogleLogo({ className = 'w-5 h-5' }) {
     return (
@@ -120,27 +121,35 @@ export default function GoogleReviews() {
         if (loading) return;
 
         const ctx = gsap.context(() => {
+            // Scale + fade for header (different from other sections)
             gsap.from('.reviews-header', {
                 scrollTrigger: {
                     trigger: containerRef.current,
                     start: 'top 85%',
                 },
-                y: 30,
+                scale: 0.95,
                 opacity: 0,
                 duration: 1,
                 ease: 'power3.out',
+                clearProps: 'transform',
             });
 
-            gsap.from('.reviews-marquee-wrapper', {
-                scrollTrigger: {
-                    trigger: containerRef.current,
-                    start: 'top 80%',
-                },
-                opacity: 0,
-                duration: 1.2,
-                delay: 0.3,
-                ease: 'power3.out',
-            });
+            // Clip-path reveal from bottom for marquee
+            gsap.fromTo('.reviews-marquee-wrapper',
+                { clipPath: 'inset(100% 0 0 0)', opacity: 0 },
+                {
+                    scrollTrigger: {
+                        trigger: containerRef.current,
+                        start: 'top 75%',
+                    },
+                    clipPath: 'inset(0% 0 0 0)',
+                    opacity: 1,
+                    duration: 1.2,
+                    delay: 0.2,
+                    ease: 'power4.out',
+                    clearProps: 'clipPath',
+                }
+            );
         }, containerRef);
 
         return () => ctx.revert();
@@ -164,10 +173,14 @@ export default function GoogleReviews() {
                     </h3>
                 </div>
                 <h2 className="font-drama italic text-4xl sm:text-5xl text-ivory">
-                    Was unsere Kunden{' '}
+                    <SplitText type="words" triggerStart="top 85%">
+                        Was unsere Kunden
+                    </SplitText>{' '}
                     <span className="text-champagne relative inline-block">
-                        sagen.
-                        <span className="absolute bottom-1 left-0 w-full h-px bg-champagne" />
+                        <SplitText type="chars" triggerStart="top 85%" delay={0.2}>
+                            sagen.
+                        </SplitText>
+                        <span className="underline-draw bg-champagne" />
                     </span>
                 </h2>
                 <div className="flex items-center gap-2 mt-2">

@@ -8,15 +8,31 @@
     color: theme('colors.ivory');
   }
 
-  /* SVG Noise Overlay */
+  /* Animated SVG Noise Overlay — cinematic film grain */
   body::before {
     content: "";
     position: fixed;
-    inset: 0;
+    inset: -50%;
+    width: 200%;
+    height: 200%;
     pointer-events: none;
     z-index: 40;
     background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.05'/%3E%3C/svg%3E");
-    opacity: 0.6; /* base opacity is 0.05 inside SVG, this adjust lightness */
+    opacity: 0.6;
+    animation: grain 8s steps(10) infinite;
+  }
+
+  @keyframes grain {
+    0%, 100% { transform: translate(0, 0); }
+    10% { transform: translate(-5%, -10%); }
+    20% { transform: translate(-15%, 5%); }
+    30% { transform: translate(7%, -25%); }
+    40% { transform: translate(-5%, 25%); }
+    50% { transform: translate(-15%, 10%); }
+    60% { transform: translate(15%, 0%); }
+    70% { transform: translate(0%, 15%); }
+    80% { transform: translate(3%, 35%); }
+    90% { transform: translate(-10%, 10%); }
   }
 }
 
@@ -37,14 +53,11 @@
     @apply bg-clip-text text-transparent bg-gradient-to-r from-ivory to-ivory/50;
   }
 
-  /* Magnetic Button Layer */
+  /* Magnetic Button Layer — actual magnetic behavior handled by useMagnetic hook.
+     CSS fallback provides scale on hover for non-JS / touch devices. */
   .btn-magnetic {
-    @apply relative overflow-hidden transition-transform duration-300;
-    transition-timing-function: cubic-bezier(0.25, 0.46, 0.45, 0.94);
-  }
-  
-  .btn-magnetic:hover {
-    transform: scale(1.03);
+    @apply relative overflow-hidden;
+    will-change: transform;
   }
 
   /* Link lift effect */
@@ -80,6 +93,66 @@
   @keyframes shimmer {
     0%, 100% { transform: translateX(-100%); }
     50%      { transform: translateX(100%); }
+  }
+
+  /* Form input focus — glowing border draws from center */
+  .input-elite {
+    position: relative;
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+  }
+
+  .input-elite:focus {
+    border-color: theme('colors.accent');
+    box-shadow: 0 0 0 1px theme('colors.accent'), 0 0 16px rgba(77, 178, 146, 0.15);
+  }
+
+  .input-elite:focus + .input-label,
+  .input-elite:not(:placeholder-shown) + .input-label {
+    transform: translateY(-1.6rem) scale(0.85);
+    color: theme('colors.accent');
+  }
+
+  /* Underline draw animation — accent underlines draw in from left on scroll */
+  .underline-draw {
+    position: absolute;
+    bottom: 0.25rem;
+    left: 0;
+    width: 100%;
+    height: 1px;
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  }
+
+  .underline-draw.is-visible {
+    transform: scaleX(1);
+  }
+
+  /* Floating dust particles */
+  @keyframes particleFloat {
+    0%, 100% {
+      transform: translateY(0) translateX(0);
+      opacity: 0;
+    }
+    10% { opacity: 1; }
+    90% { opacity: 1; }
+    50% {
+      transform: translateY(calc(var(--drift) * -1)) translateX(calc(var(--drift) * 0.5));
+    }
+  }
+
+  /* Prefers reduced motion */
+  @media (prefers-reduced-motion: reduce) {
+    body::before {
+      animation: none !important;
+    }
+    .custom-cursor-dot,
+    .custom-cursor-circle {
+      display: none !important;
+    }
+    .particle {
+      display: none !important;
+    }
   }
 
   /* Hide native scrollbar but keep scrolling */

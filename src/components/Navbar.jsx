@@ -1,6 +1,7 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { X, Menu } from 'lucide-react';
+import gsap from 'gsap';
 
 const navLinks = [
     { label: 'Leistungen', id: 'pricing' },
@@ -16,6 +17,8 @@ export default function Navbar() {
     const hideTimer = useRef(null);
     const navigate = useNavigate();
     const location = useLocation();
+    const overlayRef = useRef(null);
+    const menuTl = useRef(null);
 
     useEffect(() => {
         const handleScroll = () => {
@@ -41,6 +44,38 @@ export default function Navbar() {
     useEffect(() => {
         document.body.style.overflow = menuOpen ? 'hidden' : '';
         return () => { document.body.style.overflow = ''; };
+    }, [menuOpen]);
+
+    // GSAP timeline for mobile menu
+    useEffect(() => {
+        const overlay = overlayRef.current;
+        if (!overlay) return;
+
+        const items = overlay.querySelectorAll('.menu-item');
+        const tl = gsap.timeline({ paused: true });
+
+        tl.fromTo(overlay,
+            { clipPath: 'circle(0% at calc(100% - 2.5rem) 2.5rem)', opacity: 1 },
+            { clipPath: 'circle(150% at calc(100% - 2.5rem) 2.5rem)', duration: 0.7, ease: 'power4.inOut' }
+        )
+        .fromTo(items,
+            { y: 40, opacity: 0, scale: 0.95, filter: 'blur(8px)' },
+            { y: 0, opacity: 1, scale: 1, filter: 'blur(0px)', duration: 0.5, stagger: 0.08, ease: 'power3.out' },
+            '-=0.3'
+        );
+
+        menuTl.current = tl;
+
+        return () => { tl.kill(); };
+    }, []);
+
+    useEffect(() => {
+        if (!menuTl.current) return;
+        if (menuOpen) {
+            menuTl.current.timeScale(1).play();
+        } else {
+            menuTl.current.timeScale(1.5).reverse();
+        }
     }, [menuOpen]);
 
     const scrollTo = (id) => {
@@ -118,25 +153,25 @@ export default function Navbar() {
                 <button
                     onClick={() => setMenuOpen((o) => !o)}
                     aria-label="Menü öffnen"
-                    className="lg:hidden flex items-center justify-center w-10 h-10 rounded-full border border-slate/50 text-ivory/80 hover:text-champagne hover:border-champagne/50 transition-colors"
+                    className="lg:hidden flex items-center justify-center w-10 h-10 rounded-full border border-slate/50 text-ivory/80 hover:text-champagne hover:border-champagne/50 transition-colors relative z-[60]"
                 >
                     {menuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
                 </button>
             </nav>
 
-            {/* Mobile Menu Overlay */}
+            {/* Mobile Menu Overlay — GSAP animated */}
             <div
-                className={`fixed inset-0 z-40 bg-obsidian flex flex-col items-center justify-center gap-10 transition-all duration-500 lg:hidden ${menuOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
-                    }`}
+                ref={overlayRef}
+                className="fixed inset-0 z-40 bg-obsidian flex flex-col items-center justify-center gap-10 lg:hidden"
+                style={{ clipPath: 'circle(0% at calc(100% - 2.5rem) 2.5rem)', opacity: 1 }}
             >
-                {navLinks.map((link, i) =>
+                {navLinks.map((link) =>
                     link.href ? (
                         <Link
                             key={link.label}
                             to={link.href}
                             onClick={() => setMenuOpen(false)}
-                            style={{ transitionDelay: menuOpen ? `${i * 60}ms` : '0ms' }}
-                            className={`font-drama italic text-4xl text-ivory hover:text-champagne transition-all duration-300 ${menuOpen ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}
+                            className="menu-item font-drama italic text-4xl text-ivory hover:text-champagne transition-colors duration-300"
                         >
                             {link.label}
                         </Link>
@@ -144,8 +179,7 @@ export default function Navbar() {
                         <button
                             key={link.label}
                             onClick={() => scrollTo(link.id)}
-                            style={{ transitionDelay: menuOpen ? `${i * 60}ms` : '0ms' }}
-                            className={`font-drama italic text-4xl text-ivory hover:text-champagne transition-all duration-300 ${menuOpen ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}
+                            className="menu-item font-drama italic text-4xl text-ivory hover:text-champagne transition-colors duration-300"
                         >
                             {link.label}
                         </button>
@@ -155,8 +189,7 @@ export default function Navbar() {
                 <Link
                     to="/mobiler-service"
                     onClick={() => setMenuOpen(false)}
-                    style={{ transitionDelay: menuOpen ? `${navLinks.length * 60}ms` : '0ms' }}
-                    className={`flex items-center gap-3 font-sans text-xl font-semibold text-emerald-400 transition-all duration-300 ${menuOpen ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'} drop-shadow-[0_0_8px_rgba(16,185,129,0.3)]`}
+                    className="menu-item flex items-center gap-3 font-sans text-xl font-semibold text-emerald-400 drop-shadow-[0_0_8px_rgba(16,185,129,0.3)]"
                 >
                     <span className="bg-emerald-500 text-obsidian px-3 py-1 rounded-full text-xs font-black uppercase tracking-widest shadow-[0_0_15px_rgba(16,185,129,0.6)] animate-pulse">NEU</span>
                     Mobiler Service
@@ -165,8 +198,7 @@ export default function Navbar() {
                 <Link
                     to="/buchen"
                     onClick={() => setMenuOpen(false)}
-                    style={{ transitionDelay: menuOpen ? `${(navLinks.length + 1) * 60}ms` : '0ms' }}
-                    className={`mt-4 bg-champagne text-obsidian px-10 py-4 rounded-full font-sans font-bold text-lg transition-all duration-300 ${menuOpen ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}
+                    className="menu-item mt-4 bg-champagne text-obsidian px-10 py-4 rounded-full font-sans font-bold text-lg"
                 >
                     Jetzt Buchen
                 </Link>

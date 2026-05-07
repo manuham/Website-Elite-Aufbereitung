@@ -1,6 +1,8 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
+import gsap from 'gsap';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 
@@ -47,6 +49,7 @@ function BeforeAfterSlider({ img, label, car, tag }) {
     const [pos, setPos] = useState(50);
     const containerRef = useRef(null);
     const dragging = useRef(false);
+    const hinted = useRef(false);
 
     const updatePos = useCallback((clientX) => {
         const rect = containerRef.current?.getBoundingClientRect();
@@ -68,6 +71,38 @@ function BeforeAfterSlider({ img, label, car, tag }) {
             window.removeEventListener('mousemove', onMouseMove);
         };
     }, [onMouseUp, onMouseMove]);
+
+    // Auto-hint: slide handle from 50% -> 30% -> 50% on first scroll into view
+    useEffect(() => {
+        const el = containerRef.current;
+        if (!el || hinted.current) return;
+
+        const st = ScrollTrigger.create({
+            trigger: el,
+            start: 'top 75%',
+            once: true,
+            onEnter: () => {
+                if (hinted.current) return;
+                hinted.current = true;
+                const proxy = { val: 50 };
+                gsap.timeline({ delay: 0.3 })
+                    .to(proxy, {
+                        val: 28,
+                        duration: 0.8,
+                        ease: 'power2.inOut',
+                        onUpdate: () => setPos(proxy.val),
+                    })
+                    .to(proxy, {
+                        val: 50,
+                        duration: 0.6,
+                        ease: 'power2.inOut',
+                        onUpdate: () => setPos(proxy.val),
+                    });
+            },
+        });
+
+        return () => st.kill();
+    }, []);
 
     return (
         <div className="flex flex-col gap-4">

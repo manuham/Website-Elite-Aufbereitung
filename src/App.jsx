@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { BrowserRouter, Routes, Route, useLocation, Link } from 'react-router-dom';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
@@ -19,14 +19,75 @@ import Datenschutz from './pages/Datenschutz';
 import Projekte from './pages/Projekte';
 import MobilerService from './pages/MobilerService';
 import EliteEndstufe from './pages/EliteEndstufe';
+import Preloader from './components/Preloader';
+import CustomCursor from './components/CustomCursor';
+import ScrollProgress from './components/ScrollProgress';
+import PageTransition from './components/PageTransition';
 
 gsap.registerPlugin(ScrollTrigger);
+
+// Global magnetic button behavior — applies to all .btn-magnetic elements
+function useMagneticGlobal() {
+    useEffect(() => {
+        if ('ontouchstart' in window) return;
+
+        const handler = (e) => {
+            const el = e.target.closest('.btn-magnetic');
+            if (!el) return;
+
+            const rect = el.getBoundingClientRect();
+            const cx = rect.left + rect.width / 2;
+            const cy = rect.top + rect.height / 2;
+            const dx = e.clientX - cx;
+            const dy = e.clientY - cy;
+
+            gsap.to(el, { x: dx * 0.25, y: dy * 0.25, duration: 0.3, ease: 'power2.out' });
+        };
+
+        const resetHandler = (e) => {
+            const el = e.target.closest('.btn-magnetic');
+            if (!el) return;
+            gsap.to(el, { x: 0, y: 0, duration: 0.5, ease: 'elastic.out(1, 0.3)' });
+        };
+
+        document.addEventListener('mousemove', handler);
+        document.addEventListener('mouseleave', resetHandler, true);
+
+        // Also reset on mouseout from magnetic buttons specifically
+        const resetOnOut = (e) => {
+            if (e.target.classList?.contains('btn-magnetic')) {
+                gsap.to(e.target, { x: 0, y: 0, duration: 0.5, ease: 'elastic.out(1, 0.3)' });
+            }
+        };
+        document.addEventListener('mouseout', resetOnOut);
+
+        return () => {
+            document.removeEventListener('mousemove', handler);
+            document.removeEventListener('mouseleave', resetHandler, true);
+            document.removeEventListener('mouseout', resetOnOut);
+        };
+    }, []);
+}
 
 function HomePage() {
     const location = useLocation();
 
     useEffect(() => {
         ScrollTrigger.refresh();
+
+        // Activate underline-draw elements on scroll
+        const underlines = document.querySelectorAll('.underline-draw');
+        const triggers = [];
+        underlines.forEach(el => {
+            const st = ScrollTrigger.create({
+                trigger: el,
+                start: 'top 85%',
+                onEnter: () => el.classList.add('is-visible'),
+            });
+            triggers.push(st);
+        });
+
+        return () => triggers.forEach(st => st.kill());
     }, []);
 
     useEffect(() => {
@@ -73,8 +134,16 @@ function NotFound() {
 }
 
 export default function App() {
+    const [preloaderDone, setPreloaderDone] = useState(false);
+    const handlePreloaderComplete = useCallback(() => setPreloaderDone(true), []);
+    useMagneticGlobal();
+
     return (
         <BrowserRouter>
+            <Preloader onComplete={handlePreloaderComplete} />
+            <CustomCursor />
+            <ScrollProgress />
+            <PageTransition />
             <ScrollToTop />
             <Routes>
                 <Route path="/" element={<HomePage />} />

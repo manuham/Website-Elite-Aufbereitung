@@ -2,6 +2,7 @@ import { useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import gsap from 'gsap';
 import { Truck, Clock, ShieldCheck } from 'lucide-react';
+import SplitText from './SplitText';
 
 const benefits = [
     { icon: Truck, title: 'Wir kommen zu Ihnen', desc: 'Kein Weg, kein Stress' },
@@ -18,17 +19,36 @@ export default function MobileService() {
                 scrollTrigger: { trigger: containerRef.current, start: 'top 80%' },
                 scale: 0, opacity: 0, duration: 0.6, ease: 'back.out(2)',
             });
-            gsap.from('.mobile-image', {
-                scrollTrigger: { trigger: containerRef.current, start: 'top 80%' },
-                x: -60, opacity: 0, duration: 1.2, ease: 'power3.out',
-            });
+            // Clip-path reveal from left for image
+            gsap.fromTo('.mobile-image',
+                { clipPath: 'inset(0 100% 0 0)', opacity: 0 },
+                {
+                    scrollTrigger: { trigger: containerRef.current, start: 'top 80%' },
+                    clipPath: 'inset(0 0% 0 0)', opacity: 1, duration: 1.2, ease: 'power4.out',
+                    clearProps: 'clipPath',
+                }
+            );
             gsap.from('.mobile-text', {
                 scrollTrigger: { trigger: containerRef.current, start: 'top 75%' },
                 y: 40, opacity: 0, duration: 1, stagger: 0.12, ease: 'power3.out',
             });
+            // Benefits scale in from smaller size
             gsap.from('.mobile-benefit', {
                 scrollTrigger: { trigger: containerRef.current, start: 'top 65%' },
-                y: 30, opacity: 0, duration: 0.8, stagger: 0.1, ease: 'power3.out',
+                scale: 0.85, opacity: 0, duration: 0.7, stagger: 0.1, ease: 'back.out(1.5)',
+                clearProps: 'transform',
+            });
+
+            // Parallax on mobile service image
+            gsap.to('.mobile-image img', {
+                scrollTrigger: {
+                    trigger: containerRef.current,
+                    start: 'top bottom',
+                    end: 'bottom top',
+                    scrub: true,
+                },
+                y: -30,
+                ease: 'none',
             });
         }, containerRef);
 
@@ -70,9 +90,13 @@ export default function MobileService() {
                             Neu bei Elite
                         </span>
                         <h2 className="mobile-text font-drama italic text-4xl sm:text-5xl lg:text-6xl text-ivory">
-                            Wir kommen{' '}
+                            <SplitText type="words" triggerStart="top 75%">
+                                Wir kommen
+                            </SplitText>{' '}
                             <span className="text-transparent bg-clip-text bg-gradient-to-r from-accent to-accent-glow relative inline-block drop-shadow-lg">
-                                zu Ihnen.
+                                <SplitText type="chars" triggerStart="top 75%" delay={0.2}>
+                                    zu Ihnen.
+                                </SplitText>
                             </span>
                         </h2>
                         <p className="mobile-text font-sans text-sm sm:text-base text-ivory/60 leading-relaxed max-w-lg">

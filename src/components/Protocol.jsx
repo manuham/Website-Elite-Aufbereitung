@@ -1,6 +1,8 @@
 import { useEffect, useRef } from 'react';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
+import SplitText from './SplitText';
+import FloatingParticles from './FloatingParticles';
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -30,7 +32,35 @@ export default function Protocol() {
 
     useEffect(() => {
         const ctx = gsap.context(() => {
+            // Protocol header — horizontal slide in (different from other sections)
+            gsap.from('.protocol-header', {
+                scrollTrigger: {
+                    trigger: '.protocol-header',
+                    start: 'top 85%',
+                },
+                x: -60,
+                opacity: 0,
+                duration: 1,
+                ease: 'power3.out',
+            });
+
             const cards = gsap.utils.toArray('.protocol-card');
+
+            // Card entrance with slight rotation
+            cards.forEach((card, i) => {
+                gsap.from(card.querySelector('.card-content'), {
+                    scrollTrigger: {
+                        trigger: card,
+                        start: 'top 80%',
+                    },
+                    y: 60,
+                    rotateX: 3,
+                    opacity: 0,
+                    duration: 1,
+                    ease: 'power3.out',
+                    clearProps: 'transform,opacity',
+                });
+            });
 
             cards.forEach((card, i) => {
                 ScrollTrigger.create({
@@ -63,12 +93,20 @@ export default function Protocol() {
 
     return (
         <section id="protocol" ref={containerRef} className="relative w-full bg-slate pb-[10vh]">
+            <FloatingParticles count={12} className="opacity-40" />
 
             {/* Intro Header */}
-            <div className="w-full mx-auto px-4 sm:px-8 lg:px-12 xl:px-16 pt-32 pb-12">
+            <div className="protocol-header w-full mx-auto px-4 sm:px-8 lg:px-12 xl:px-16 pt-32 pb-12">
                 <h3 className="font-sans font-bold text-lg text-ivory/60 uppercase tracking-widest mb-4">Unser Prozess</h3>
                 <h2 className="font-drama italic text-[2.5rem] sm:text-5xl lg:text-6xl leading-[1.1] text-ivory max-w-2xl pb-4">
-                    Drei Schritte zum <span className="text-champagne">perfekten Ergebnis.</span>
+                    <SplitText type="words" triggerStart="top 85%">
+                        Drei Schritte zum
+                    </SplitText>{' '}
+                    <span className="text-champagne">
+                        <SplitText type="chars" triggerStart="top 85%" delay={0.2}>
+                            perfekten Ergebnis.
+                        </SplitText>
+                    </span>
                 </h2>
             </div>
 
