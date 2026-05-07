@@ -93,11 +93,13 @@ export default function MobileService() {
                             <SplitText type="words" triggerStart="top 75%">
                                 Wir kommen
                             </SplitText>{' '}
-                            <span className="text-transparent bg-clip-text bg-gradient-to-r from-accent to-accent-glow relative inline-block drop-shadow-lg">
-                                <SplitText type="chars" triggerStart="top 75%" delay={0.2}>
-                                    zu Ihnen.
-                                </SplitText>
-                            </span>
+                            <SplitText
+                                className="text-transparent bg-clip-text bg-gradient-to-r from-accent to-accent-glow relative inline-block drop-shadow-lg"
+                                type="chars" triggerStart="top 75%" delay={0.2}
+                                animation="clipReveal"
+                            >
+                                zu Ihnen.
+                            </SplitText>
                         </h2>
                         <p className="mobile-text font-sans text-sm sm:text-base text-ivory/60 leading-relaxed max-w-lg">
                             Ab sofort bieten wir unseren kompletten Service auch mobil an.

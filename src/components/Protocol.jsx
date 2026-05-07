@@ -32,37 +32,26 @@ export default function Protocol() {
 
     useEffect(() => {
         const ctx = gsap.context(() => {
-            // Protocol header — horizontal slide in (different from other sections)
-            gsap.from('.protocol-header', {
-                scrollTrigger: {
-                    trigger: '.protocol-header',
-                    start: 'top 85%',
-                },
-                x: -60,
-                opacity: 0,
-                duration: 1,
-                ease: 'power3.out',
-            });
+            // Protocol header — horizontal slide in, reversible
+            gsap.fromTo('.protocol-header',
+                { x: -60, opacity: 0 },
+                {
+                    scrollTrigger: {
+                        trigger: '.protocol-header',
+                        start: 'top 85%',
+                        toggleActions: 'play reverse play reverse',
+                    },
+                    x: 0,
+                    opacity: 1,
+                    duration: 1,
+                    ease: 'power3.out',
+                }
+            );
 
             const cards = gsap.utils.toArray('.protocol-card');
 
-            // Card entrance with slight rotation
             cards.forEach((card, i) => {
-                gsap.from(card.querySelector('.card-content'), {
-                    scrollTrigger: {
-                        trigger: card,
-                        start: 'top 80%',
-                    },
-                    y: 60,
-                    rotateX: 3,
-                    opacity: 0,
-                    duration: 1,
-                    ease: 'power3.out',
-                    clearProps: 'transform,opacity',
-                });
-            });
-
-            cards.forEach((card, i) => {
+                // Pin each card so they stack
                 ScrollTrigger.create({
                     trigger: card,
                     start: 'top top',
@@ -72,18 +61,22 @@ export default function Protocol() {
                     end: 'bottom bottom',
                 });
 
+                // Shrink/blur previous cards as next card scrolls over (scrub = fully reversible)
                 if (i < cards.length - 1) {
-                    gsap.to(card.querySelector('.card-content'), {
-                        scale: 0.9,
-                        opacity: 0.5,
-                        filter: 'blur(20px)',
-                        scrollTrigger: {
-                            trigger: cards[i + 1],
-                            start: 'top bottom',
-                            end: 'top top',
-                            scrub: true,
+                    gsap.fromTo(card.querySelector('.card-content'),
+                        { scale: 1, opacity: 1, filter: 'blur(0px)' },
+                        {
+                            scale: 0.92,
+                            opacity: 0.4,
+                            filter: 'blur(8px)',
+                            scrollTrigger: {
+                                trigger: cards[i + 1],
+                                start: 'top bottom',
+                                end: 'top top',
+                                scrub: true,
+                            },
                         }
-                    });
+                    );
                 }
             });
         }, containerRef);

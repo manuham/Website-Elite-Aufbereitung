@@ -366,8 +366,8 @@ function Step1({ selectedItems, toggleItem, onNext, onBack, recommendations, pac
 
             {/* Price disclaimer modal */}
             {showDisclaimer && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center px-4" onClick={confirmDisclaimer}>
-                    <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" />
+                <div className="fixed inset-0 z-[60] flex items-center justify-center px-4" onClick={confirmDisclaimer}>
+                    <div className="absolute inset-0 bg-black/70" />
                     <div className="relative bg-obsidian border border-slate/60 rounded-[2rem] p-8 max-w-md w-full shadow-[0_0_40px_rgba(0,0,0,0.5)] flex flex-col items-center gap-5 text-center" onClick={e => e.stopPropagation()}>
                         <div className="w-14 h-14 rounded-full bg-accent/15 border border-accent/30 flex items-center justify-center">
                             <AlertTriangle className="w-7 h-7 text-accent" />
@@ -936,7 +936,7 @@ export default function BookingPage() {
                 <Link to="/" className="flex items-center gap-2 font-sans text-sm text-ivory/50 hover:text-ivory transition-colors link-lift">
                     <ArrowLeft className="w-4 h-4" /> Zurück
                 </Link>
-                <img src="/assets/logo-new2.png" alt="Elité Auto Aufbereitung" className="h-[4rem] sm:h-[5rem] lg:h-[6rem] w-auto object-contain" />
+                <img src="/assets/logo-new2.png" alt="Elité Auto Aufbereitung" className="h-[5rem] sm:h-[6rem] lg:h-[7rem] w-auto object-contain" />
                 <div className="flex items-center gap-2 bg-obsidian/50 px-3 py-1.5 rounded-full border border-slate/50">
                     <span className="relative flex h-2 w-2">
                         <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75" />

@@ -150,7 +150,7 @@ export default function Features() {
             <div
                 ref={trackRef}
                 className="grid grid-cols-1 gap-6 px-4 sm:px-8 pb-24 sm:pb-32
-                           lg:flex lg:flex-nowrap lg:gap-8 lg:px-12 xl:px-16 lg:pb-24"
+                           lg:flex lg:flex-nowrap lg:justify-center lg:gap-8 lg:px-12 xl:px-16 lg:pb-24"
                 style={{ perspective: '800px' }}
             >
                 {features.map((feature) => {

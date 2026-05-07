@@ -108,19 +108,23 @@ export default function Philosophy() {
                         <SplitText type="words" triggerStart="top 80%">
                             Wir setzen auf
                         </SplitText>{' '}
-                        <span className="text-transparent bg-clip-text bg-gradient-to-r from-accent to-accent-glow">
-                            <SplitText type="chars" triggerStart="top 80%" delay={0.2}>
-                                Perfektion
-                            </SplitText>
-                        </span>{' '}
+                        <SplitText
+                            className="text-transparent bg-clip-text bg-gradient-to-r from-accent to-accent-glow"
+                            type="chars" triggerStart="top 80%" delay={0.2}
+                            animation="clipReveal"
+                        >
+                            Perfektion
+                        </SplitText>{' '}
                         <SplitText type="words" triggerStart="top 80%" delay={0.3}>
                             und
                         </SplitText>{' '}
-                        <span className="text-transparent bg-clip-text bg-gradient-to-r from-accent to-accent-glow">
-                            <SplitText type="chars" triggerStart="top 80%" delay={0.4}>
-                                Leidenschaft.
-                            </SplitText>
-                        </span>
+                        <SplitText
+                            className="text-transparent bg-clip-text bg-gradient-to-r from-accent to-accent-glow"
+                            type="chars" triggerStart="top 80%" delay={0.4}
+                            animation="clipReveal"
+                        >
+                            Leidenschaft.
+                        </SplitText>
                     </h2>
                     <p className="reveal-text font-sans text-base text-ivory/60 max-w-xl leading-relaxed">
                         Mit Liebe zum Detail und höchstem Qualitätsanspruch setzen wir alles daran,

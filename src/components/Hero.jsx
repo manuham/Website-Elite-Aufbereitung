@@ -167,7 +167,7 @@ export default function Hero() {
                         delay={0.6}
                         duration={0.9}
                         stagger={0.04}
-                        animation="slideUp"
+                        animation="clipReveal"
                     >
                         Präzision.
                     </SplitText>
