@@ -41,7 +41,7 @@ export default function MobilerService() {
             <div className="relative min-h-[70vh] sm:min-h-[80vh] flex items-center overflow-hidden">
                 {/* Background image */}
                 <img
-                    src="/assets/VAN.png"
+                    src="/assets/VAN/VAN.png"
                     alt="Mobiler Aufbereitungsservice — Elité kommt zu Ihnen"
                     className="absolute inset-0 w-full h-full object-cover object-center"
                 />
@@ -174,7 +174,7 @@ export default function MobilerService() {
                         {/* Top right */}
                         <div className="rounded-[1.75rem] overflow-hidden relative group h-[280px] lg:h-full">
                             <img
-                                src="/assets/VAN_Auto.jpg"
+                                src="/assets/VAN/VAN_Auto.jpg"
                                 alt="Fahrzeugaufbereitung vor Ort"
                                 className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105"
                                 loading="lazy"
@@ -189,7 +189,7 @@ export default function MobilerService() {
                         {/* Bottom right */}
                         <div className="rounded-[1.75rem] overflow-hidden relative group h-[280px] lg:h-full">
                             <img
-                                src="/assets/VAN_Matthias.jpg"
+                                src="/assets/VAN/VAN_Matthias.jpg"
                                 alt="Matthias — Ihr Aufbereitungsexperte"
                                 className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105"
                                 loading="lazy"
