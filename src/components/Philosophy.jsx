@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import gsap from 'gsap';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import SplitText from './SplitText';
 const stats = [
     { value: '500+', label: 'Fahrzeuge aufbereitet' },
