@@ -2,7 +2,6 @@ import { useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import gsap from 'gsap';
 import { Truck, Sparkles } from 'lucide-react';
-import SplitText from './SplitText';
 import FloatingParticles from './FloatingParticles';
 
 export default function Hero() {
@@ -148,29 +147,12 @@ export default function Hero() {
                 </div>
 
                 <div className="flex flex-col relative w-full">
-                    <SplitText
-                        as="h1"
-                        className="font-sans font-extrabold text-3xl sm:text-5xl lg:text-6xl text-ivory tracking-tight mb-0 sm:mb-1 text-balance"
-                        type="words"
-                        trigger="load"
-                        delay={0.4}
-                        duration={1}
-                        animation="slideUp"
-                    >
+                    <h1 className="hero-fade font-sans font-bold text-3xl sm:text-5xl lg:text-6xl text-ivory tracking-tight mb-1 sm:mb-2 text-balance">
                         Perfektion trifft
-                    </SplitText>
-                    <SplitText
-                        as="h2"
-                        className="font-drama italic text-[2.75rem] sm:text-7xl lg:text-[8rem] leading-[1.05] text-transparent bg-clip-text bg-gradient-to-r from-ivory via-champagne to-ivory drop-shadow-2xl pr-4 relative"
-                        type="chars"
-                        trigger="load"
-                        delay={0.6}
-                        duration={0.9}
-                        stagger={0.04}
-                        animation="clipReveal"
-                    >
+                    </h1>
+                    <h2 className="hero-fade font-drama italic text-[2.75rem] sm:text-7xl lg:text-[8rem] leading-[1.05] text-transparent bg-clip-text bg-gradient-to-r from-ivory via-champagne to-ivory drop-shadow-2xl pr-4">
                         Präzision.
-                    </SplitText>
+                    </h2>
                 </div>
 
                 <p className="hero-fade font-sans font-normal text-lg sm:text-xl text-ivory/90 max-w-xl leading-relaxed text-balance drop-shadow-md">

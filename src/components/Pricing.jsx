@@ -1,8 +1,7 @@
-import { useState, useRef, useEffect, useCallback } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Check, Zap, Gift } from 'lucide-react';
 import gsap from 'gsap';
-import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { serviceCategories, tierPackages } from '../data/services';
 import SplitText from './SplitText';
 
@@ -12,35 +11,9 @@ export default function Pricing() {
     const [activeTab, setActiveTab] = useState(ALL_IN_ONE_TAB);
     const contentRef = useRef(null);
     const tabsRef = useRef(null);
-    const indicatorRef = useRef(null);
-    const tabButtonRefs = useRef({});
 
     const isAllInOne = activeTab === ALL_IN_ONE_TAB;
     const activeCategory = serviceCategories.find(cat => cat.id === activeTab);
-
-    // Sliding tab indicator
-    const updateIndicator = useCallback(() => {
-        const btn = tabButtonRefs.current[activeTab];
-        const container = tabsRef.current;
-        const indicator = indicatorRef.current;
-        if (!btn || !container || !indicator) return;
-
-        const btnRect = btn.getBoundingClientRect();
-        const containerRect = container.getBoundingClientRect();
-
-        gsap.to(indicator, {
-            x: btnRect.left - containerRect.left + container.scrollLeft,
-            width: btnRect.width,
-            duration: 0.4,
-            ease: 'power3.out',
-        });
-    }, [activeTab]);
-
-    useEffect(() => {
-        updateIndicator();
-        window.addEventListener('resize', updateIndicator);
-        return () => window.removeEventListener('resize', updateIndicator);
-    }, [updateIndicator]);
 
     // Animate content when tab changes — slide in from right
     useEffect(() => {
@@ -86,21 +59,17 @@ export default function Pricing() {
                 {/* Tab Navigation with sliding indicator */}
                 <div
                     ref={tabsRef}
-                    className="relative flex flex-nowrap md:flex-wrap items-center justify-start md:justify-center gap-3 w-full overflow-x-auto pb-4 md:pb-0 px-2 md:px-0 snap-x hide-scrollbar"
+                    className="flex flex-nowrap items-center justify-start md:justify-center gap-3 w-full overflow-x-auto pb-2 px-2 snap-x hide-scrollbar"
                 >
-                    {/* Sliding pill indicator */}
-                    <div
-                        ref={indicatorRef}
-                        className="absolute top-0 h-[calc(100%-1rem)] md:h-full bg-accent rounded-full shadow-md pointer-events-none z-0 transition-none"
-                        style={{ width: 0 }}
-                    />
                     {tabs.map((tab) => (
                         <button
                             key={tab.id}
-                            ref={el => { tabButtonRefs.current[tab.id] = el; }}
-                            onClick={() => setActiveTab(tab.id)}
-                            className={`relative z-10 whitespace-nowrap shrink-0 snap-center px-6 py-3 rounded-full font-sans font-bold text-sm transition-colors duration-300 ${activeTab === tab.id
-                                ? 'text-obsidian'
+                            onClick={(e) => {
+                                setActiveTab(tab.id);
+                                e.currentTarget.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+                            }}
+                            className={`whitespace-nowrap shrink-0 snap-center px-6 py-3 rounded-full font-sans font-bold text-sm transition-all duration-300 ${activeTab === tab.id
+                                ? 'bg-accent text-obsidian shadow-md'
                                 : 'bg-slate/50 text-ivory/70 border border-ivory/10 hover:border-ivory/30 hover:text-ivory'
                                 }`}
                         >
