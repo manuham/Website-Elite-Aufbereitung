@@ -106,7 +106,7 @@ export default function Protocol() {
             {/* Stacking Cards */}
             <div className="relative w-full mx-auto px-4 sm:px-8 lg:px-12 xl:px-16">
                 {steps.map((step, i) => (
-                    <div key={i} className="protocol-card w-full h-screen flex items-center justify-center top-0">
+                    <div key={i} className="protocol-card w-full h-[100svh] flex items-center justify-center top-0">
                         <div className="card-content w-full h-[85vh] sm:h-[70vh] max-h-[650px] bg-obsidian rounded-[2rem] sm:rounded-[3rem] border border-slate/50 shadow-2xl flex flex-col md:flex-row overflow-hidden relative group">
 
                             {/* Text Content */}

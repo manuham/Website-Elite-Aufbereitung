@@ -92,7 +92,7 @@ export default function Navbar() {
                     <img
                         src="/assets/logo-new2.png"
                         alt="Elité Auto Aufbereitung"
-                        className="h-[6.5rem] sm:h-[8rem] lg:h-[10rem] w-auto object-contain -my-16 -ml-3 translate-y-[5px]"
+                        className="h-[5rem] sm:h-[6.5rem] lg:h-[8rem] w-auto object-contain -my-10 sm:-my-12 lg:-my-14 -ml-2 translate-y-[3px]"
                     />
                 </div>
 
@@ -149,7 +149,7 @@ export default function Navbar() {
             {/* Mobile Menu Overlay — GSAP animated */}
             <div
                 ref={overlayRef}
-                className="fixed inset-0 z-40 bg-obsidian flex flex-col items-center justify-center gap-10 lg:hidden"
+                className="fixed inset-0 z-[45] bg-obsidian flex flex-col items-center justify-center gap-10 lg:hidden"
                 style={{
                     clipPath: 'circle(0% at calc(100% - 2.5rem) 2.5rem)',
                     pointerEvents: menuOpen ? 'auto' : 'none',

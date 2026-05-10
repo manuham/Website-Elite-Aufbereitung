@@ -34,7 +34,7 @@ function StarRating({ rating }) {
 
 function ReviewCard({ review }) {
     return (
-        <div className="review-card flex-shrink-0 w-[320px] sm:w-[360px] bg-[#1a1a24] border border-slate/60 rounded-2xl p-6 flex flex-col gap-4 hover:border-champagne/30 transition-colors duration-300">
+        <div className="review-card flex-shrink-0 w-[320px] sm:w-[360px] md:w-[400px] bg-[#1a1a24] border border-slate/60 rounded-2xl p-6 flex flex-col gap-4 hover:border-champagne/30 transition-colors duration-300">
             <div className="flex items-center justify-between">
                 <div className="flex flex-col gap-1">
                     <span className="font-sans font-semibold text-sm text-ivory">
@@ -58,7 +58,7 @@ function ReviewCard({ review }) {
 
 function SkeletonCard() {
     return (
-        <div className="flex-shrink-0 w-[320px] sm:w-[360px] bg-[#1a1a24] border border-slate/60 rounded-2xl p-6 flex flex-col gap-4 animate-pulse">
+        <div className="flex-shrink-0 w-[320px] sm:w-[360px] md:w-[400px] bg-[#1a1a24] border border-slate/60 rounded-2xl p-6 flex flex-col gap-4 animate-pulse">
             <div className="flex items-center justify-between">
                 <div className="flex flex-col gap-2">
                     <div className="h-3 w-24 bg-slate/40 rounded" />

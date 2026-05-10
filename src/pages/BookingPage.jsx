@@ -859,7 +859,7 @@ function Step4({ selectedItems, datetime, serviceMode, contact, vehicleCategory,
                     </a>
                     <a href="mailto:info.eliteaufbereitung@gmail.com" className="flex-1 flex items-center gap-3 bg-slate/30 border border-slate/50 hover:border-accent/50 rounded-xl px-4 py-3 transition-colors group">
                         <Mail className="w-4 h-4 text-accent shrink-0" />
-                        <span className="font-sans text-sm text-ivory/70 group-hover:text-ivory truncate">info.eliteaufbereitung@gmail.com</span>
+                        <span className="font-sans text-sm text-ivory/70 group-hover:text-ivory break-all">info.eliteaufbereitung@gmail.com</span>
                     </a>
                 </div>
                 <div className="flex items-center gap-3 bg-slate/30 border border-slate/50 rounded-xl px-4 py-3">

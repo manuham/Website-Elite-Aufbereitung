@@ -140,7 +140,7 @@ export default function Hero() {
             <div className="hero-content-layer relative z-10 w-full max-w-3xl flex flex-col items-start gap-6 will-change-transform">
                 <div className="hero-badge">
                     <Link to="/mobiler-service" className="bg-emerald-500/90 text-obsidian px-5 py-2.5 sm:px-7 sm:py-3 rounded-full font-sans text-[13px] sm:text-[15px] font-bold tracking-wide inline-flex items-center gap-2 sm:gap-3 shadow-[0_0_20px_rgba(16,185,129,0.6)] hover:shadow-[0_0_30px_rgba(16,185,129,0.8)] hover:-translate-y-0.5 transition-all duration-300">
-                        <span className="bg-obsidian text-emerald-400 px-2.5 py-0.5 rounded-full text-[9px] sm:text-[11px] uppercase tracking-widest font-black animate-pulse shadow-[0_0_10px_rgba(16,185,129,0.3)]">NEU</span>
+                        <span className="bg-obsidian text-emerald-400 px-2.5 py-0.5 rounded-full text-[10px] sm:text-[11px] uppercase tracking-widest font-black animate-pulse shadow-[0_0_10px_rgba(16,185,129,0.3)]">NEU</span>
                         <Truck className="w-4 h-4 sm:w-5 sm:h-5" />
                         Jetzt auch mobil — wir kommen zu Ihnen!
                     </Link>
@@ -150,7 +150,7 @@ export default function Hero() {
                     <h1 className="hero-fade font-sans font-bold text-3xl sm:text-5xl lg:text-6xl text-ivory tracking-tight mb-1 sm:mb-2 text-balance">
                         Perfektion trifft
                     </h1>
-                    <h2 className="hero-fade font-drama italic text-[2.75rem] sm:text-7xl lg:text-[8rem] leading-[1.05] text-transparent bg-clip-text bg-gradient-to-r from-ivory via-champagne to-ivory drop-shadow-2xl pr-4">
+                    <h2 className="hero-fade font-drama italic text-[2.75rem] sm:text-7xl lg:text-[6rem] xl:text-[8rem] leading-[1.05] text-transparent bg-clip-text bg-gradient-to-r from-ivory via-champagne to-ivory drop-shadow-2xl pr-4">
                         Präzision.
                     </h2>
                 </div>

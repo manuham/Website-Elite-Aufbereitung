@@ -94,7 +94,7 @@ export default function Pricing() {
                 {isAllInOne && (
                     <div
                         ref={contentRef}
-                        className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6 lg:gap-5 w-full items-start mt-4"
+                        className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 lg:gap-5 w-full items-start mt-4"
                     >
                         {tierPackages.map((pkg) => {
                             const isElite = pkg.id === 'tier-elite';
@@ -146,7 +146,7 @@ export default function Pricing() {
                                                         <span className={`font-sans text-[13px] leading-snug ${feat.bold ? 'font-bold text-obsidian' : feat.muted ? 'text-obsidian/40' : 'text-obsidian/80'}`}>
                                                             {feat.text}
                                                             {feat.badge && (
-                                                                <span className="inline-block ml-2 font-mono text-[10px] font-bold bg-emerald-100 text-emerald-700 border border-emerald-200 px-2 py-0.5 rounded align-middle">
+                                                                <span className="inline-block ml-2 font-mono text-[11px] font-bold bg-emerald-100 text-emerald-700 border border-emerald-200 px-2 py-0.5 rounded align-middle">
                                                                     {feat.badge}
                                                                 </span>
                                                             )}
@@ -204,12 +204,12 @@ export default function Pricing() {
                             <div
                                 key={`${activeTab}-${i}`}
                                 className={`relative flex flex-col gap-8 rounded-[2rem] p-6 sm:p-8 md:p-10 transition-all duration-700 ease-out hover:-translate-y-2 group ${isPremium
-                                    ? 'bg-gradient-to-b from-slate/60 to-obsidian border border-accent/40 shadow-xl lg:scale-105 z-10 hover:shadow-2xl hover:border-accent'
+                                    ? 'bg-gradient-to-b from-slate/60 to-obsidian border border-accent/40 shadow-xl z-10 hover:shadow-2xl hover:border-accent'
                                     : 'glass-card border-slate/50 hover:border-ivory/20 hover:bg-slate/30 z-0'
                                     }`}
                             >
                                 {isPremium && (
-                                    <div className="absolute -top-4 sm:-top-5 left-1/2 -translate-x-1/2 bg-accent/10 border border-accent/30 backdrop-blur-md text-accent px-5 py-1.5 rounded-full font-sans font-black text-[10px] sm:text-xs uppercase tracking-widest whitespace-nowrap shadow-sm">
+                                    <div className="absolute -top-4 sm:-top-5 left-1/2 -translate-x-1/2 bg-accent/10 border border-accent/30 backdrop-blur-md text-accent px-5 py-1.5 rounded-full font-sans font-black text-[11px] sm:text-xs uppercase tracking-widest whitespace-nowrap shadow-sm">
                                         {pkg.popular ? 'Beliebtestes Paket' : pkg.badge}
                                     </div>
                                 )}

@@ -131,7 +131,7 @@ export default function EliteEndstufe() {
 
                 {/* Scroll indicator */}
                 <div className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 animate-bounce">
-                    <span className="font-mono text-[10px] text-ivory/30 uppercase tracking-widest">Entdecken</span>
+                    <span className="font-mono text-[11px] text-ivory/30 uppercase tracking-widest">Entdecken</span>
                     <div className="w-px h-8 bg-gradient-to-b from-champagne/60 to-transparent" />
                 </div>
             </section>
@@ -180,7 +180,7 @@ export default function EliteEndstufe() {
                                         <p className="font-sans text-sm text-ivory/50 leading-relaxed">{feat.sub}</p>
                                     )}
                                     {feat.badge && (
-                                        <span className="inline-flex items-center gap-1.5 font-mono text-[10px] font-bold bg-champagne/10 text-champagne border border-champagne/30 px-3 py-1 rounded-full w-fit">
+                                        <span className="inline-flex items-center gap-1.5 font-mono text-[11px] font-bold bg-champagne/10 text-champagne border border-champagne/30 px-3 py-1 rounded-full w-fit">
                                             <Shield className="w-3 h-3" /> {feat.badge}
                                         </span>
                                     )}
@@ -201,17 +201,18 @@ export default function EliteEndstufe() {
                         </h2>
                     </div>
 
-                    <div className="reveal grid grid-cols-1 lg:grid-cols-3 lg:grid-rows-2 gap-4 lg:h-[600px]">
+                    <div className="reveal grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 lg:grid-rows-2 gap-4 lg:h-[600px]">
                         {/* Main large image */}
                         <div className="lg:col-span-2 lg:row-span-2 rounded-[1.75rem] overflow-hidden relative group">
                             <img
                                 src="/assets/Ergebnisse/P1345324.jpg"
                                 alt="Elite Aufbereitung Ergebnis"
                                 className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105"
+                                loading="lazy"
                             />
                             <div className="absolute inset-0 bg-gradient-to-t from-obsidian/80 via-obsidian/10 to-transparent" />
                             <div className="absolute bottom-6 left-6">
-                                <span className="font-mono text-[10px] text-champagne uppercase tracking-widest">3-Gang Politur</span>
+                                <span className="font-mono text-[11px] text-champagne uppercase tracking-widest">3-Gang Politur</span>
                                 <p className="font-sans font-bold text-xl text-ivory mt-1">Maximaler Glanz, maximaler Schutz</p>
                             </div>
                         </div>
@@ -222,10 +223,11 @@ export default function EliteEndstufe() {
                                 src="/assets/Ergebnisse/P1345330.jpg"
                                 alt="Keramikbeschichtung Ergebnis"
                                 className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105"
+                                loading="lazy"
                             />
                             <div className="absolute inset-0 bg-gradient-to-t from-obsidian/80 via-obsidian/10 to-transparent" />
                             <div className="absolute bottom-4 left-4">
-                                <span className="font-mono text-[10px] text-champagne uppercase tracking-widest">FIREBALL Keramik</span>
+                                <span className="font-mono text-[11px] text-champagne uppercase tracking-widest">FIREBALL Keramik</span>
                             </div>
                         </div>
 
@@ -235,10 +237,11 @@ export default function EliteEndstufe() {
                                 src="/assets/Produkte/P1345425.jpg"
                                 alt="Premium Produkte"
                                 className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105"
+                                loading="lazy"
                             />
                             <div className="absolute inset-0 bg-gradient-to-t from-obsidian/80 via-obsidian/10 to-transparent" />
                             <div className="absolute bottom-4 left-4">
-                                <span className="font-mono text-[10px] text-champagne uppercase tracking-widest">Premium Produkte</span>
+                                <span className="font-mono text-[11px] text-champagne uppercase tracking-widest">Premium Produkte</span>
                             </div>
                         </div>
                     </div>
@@ -256,9 +259,10 @@ export default function EliteEndstufe() {
                                     src={img.src}
                                     alt={img.label}
                                     className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105"
+                                    loading="lazy"
                                 />
                                 <div className="absolute inset-0 bg-gradient-to-t from-obsidian/70 to-transparent" />
-                                <span className="absolute bottom-3 left-3 font-mono text-[10px] text-champagne uppercase tracking-widest">{img.label}</span>
+                                <span className="absolute bottom-3 left-3 font-mono text-[11px] text-champagne uppercase tracking-widest">{img.label}</span>
                             </div>
                         ))}
                     </div>
@@ -301,6 +305,7 @@ export default function EliteEndstufe() {
                                     src="/assets/Produkte/P1345517.jpg"
                                     alt="Pflegegeschenk"
                                     className="w-full h-full object-cover"
+                                    loading="lazy"
                                 />
                                 <div className="absolute inset-0 bg-gradient-to-r from-transparent to-obsidian/30 md:bg-gradient-to-l md:from-transparent md:to-transparent" />
                             </div>
@@ -319,7 +324,7 @@ export default function EliteEndstufe() {
                                 </p>
                                 <div className="flex flex-wrap gap-3 mt-2">
                                     {['Shampoo', 'Quickdetailer', 'Mikrofasertücher', 'Pflegeanleitung'].map(item => (
-                                        <span key={item} className="font-mono text-[10px] text-champagne border border-champagne/30 rounded-full px-3 py-1 uppercase tracking-widest">
+                                        <span key={item} className="font-mono text-[11px] text-champagne border border-champagne/30 rounded-full px-3 py-1 uppercase tracking-widest">
                                             {item}
                                         </span>
                                     ))}

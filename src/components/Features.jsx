@@ -168,6 +168,7 @@ export default function Features() {
                                     src={feature.image}
                                     alt={feature.title}
                                     className="feature-card-img absolute inset-0 w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110 will-change-transform"
+                                    loading="lazy"
                                 />
                                 <div className="absolute inset-0 bg-gradient-to-t from-obsidian via-obsidian/60 to-transparent z-10" />
 
