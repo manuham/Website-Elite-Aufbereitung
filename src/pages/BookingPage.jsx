@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
-import { Check, ChevronLeft, ChevronRight, ArrowLeft, Phone, Mail, MapPin, Plus, X as XIcon, Sparkles, AlertTriangle, Truck, Zap, Gift } from 'lucide-react';
+import { Check, ChevronLeft, ChevronRight, ArrowLeft, Phone, Mail, MapPin, Plus, X as XIcon, Sparkles, AlertTriangle, Truck, Zap, Gift, Construction } from 'lucide-react';
 import gsap from 'gsap';
 import { serviceCategories, tierPackages, allInOnePackages } from '../data/services';
 import { useAvailability } from '../hooks/useAvailability';
@@ -60,7 +60,19 @@ function StepBar({ step }) {
 
 // ─── Step 0: Service Location Choice ─────────────────────────────────────────
 
-function Step0({ serviceMode, setServiceMode, onNext }) {
+function Step0({ serviceMode, setServiceMode, studioLocation, setStudioLocation, onNext }) {
+    const [showLocationModal, setShowLocationModal] = useState(false);
+
+    const handleStudioClick = () => {
+        setShowLocationModal(true);
+    };
+
+    const selectLocation = (loc) => {
+        setStudioLocation(loc);
+        setServiceMode('studio');
+        setShowLocationModal(false);
+    };
+
     return (
         <div className="flex flex-col gap-10 w-full">
             <div>
@@ -68,9 +80,61 @@ function Step0({ serviceMode, setServiceMode, onNext }) {
                 <p className="font-sans text-sm text-ivory/50">Wählen Sie, ob Sie zu uns kommen oder wir zu Ihnen kommen sollen.</p>
             </div>
 
+            {/* Studio Location Selection Modal */}
+            {showLocationModal && (
+                <div className="fixed inset-0 z-[60] flex items-center justify-center px-4" onClick={() => setShowLocationModal(false)}>
+                    <div className="absolute inset-0 bg-black/70" />
+                    <div className="relative bg-obsidian border border-slate/60 rounded-[2rem] p-8 max-w-lg w-full shadow-[0_0_40px_rgba(0,0,0,0.5)] flex flex-col gap-6" onClick={e => e.stopPropagation()}>
+                        <div className="flex items-center justify-between">
+                            <h3 className="font-drama italic text-2xl text-ivory">Standort wählen</h3>
+                            <button onClick={() => setShowLocationModal(false)} className="w-8 h-8 rounded-full border border-slate/50 flex items-center justify-center text-ivory/50 hover:text-ivory hover:border-ivory/30 transition-colors">
+                                <XIcon className="w-4 h-4" />
+                            </button>
+                        </div>
+
+                        <div className="flex flex-col gap-4">
+                            {/* Feldkirch — available */}
+                            <button
+                                onClick={() => selectLocation('feldkirch')}
+                                className={`text-left p-5 rounded-[1.5rem] border-2 transition-all duration-300 flex flex-col gap-3 group ${studioLocation === 'feldkirch'
+                                    ? 'bg-accent/10 border-accent shadow-[0_0_20px_rgba(77,178,146,0.15)]'
+                                    : 'bg-slate/30 border-slate/50 hover:border-accent/50'}`}
+                            >
+                                <div className="flex items-center justify-between">
+                                    <div className="flex items-center gap-3">
+                                        <MapPin className="w-5 h-5 text-accent" strokeWidth={1.5} />
+                                        <span className="font-sans font-bold text-lg text-ivory">Feldkirch</span>
+                                    </div>
+                                    <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-colors ${studioLocation === 'feldkirch' ? 'bg-accent border-accent' : 'border-slate/60'}`}>
+                                        {studioLocation === 'feldkirch' && <Check className="w-3.5 h-3.5 text-obsidian" strokeWidth={3} />}
+                                    </div>
+                                </div>
+                                <span className="font-sans text-sm text-ivory/60">Ketschenstraße 1, 6800 Feldkirch</span>
+                            </button>
+
+                            {/* Nüziders — gesperrt */}
+                            <div className="relative p-5 rounded-[1.5rem] border-2 border-slate/30 bg-slate/20 flex flex-col gap-3 opacity-60 cursor-not-allowed">
+                                <div className="flex items-center justify-between">
+                                    <div className="flex items-center gap-3">
+                                        <Construction className="w-5 h-5 text-amber-500" strokeWidth={1.5} />
+                                        <span className="font-sans font-bold text-lg text-ivory/60">Nüziders</span>
+                                    </div>
+                                    <span className="font-sans text-[10px] font-bold uppercase tracking-wider text-amber-500 bg-amber-500/10 border border-amber-500/30 px-2.5 py-1 rounded-full">Gesperrt</span>
+                                </div>
+                                <span className="font-sans text-sm text-ivory/40">Bundesstraße 2a, 6714 Nüziders</span>
+                                <div className="flex items-center gap-2 mt-1">
+                                    <AlertTriangle className="w-3.5 h-3.5 text-amber-500/70" />
+                                    <span className="font-sans text-xs text-amber-500/70">Wegen Bauarbeiten gesperrt bis September 2026</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
+
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                 <button
-                    onClick={() => setServiceMode('studio')}
+                    onClick={handleStudioClick}
                     className={`text-left p-8 rounded-[2rem] border-2 transition-all duration-300 flex flex-col gap-5 group relative overflow-hidden ${serviceMode === 'studio'
                         ? 'bg-accent/10 border-accent shadow-[0_0_30px_rgba(77,178,146,0.2)]'
                         : 'bg-slate/30 border-slate/50 hover:border-ivory/30'}`}
@@ -84,7 +148,9 @@ function Step0({ serviceMode, setServiceMode, onNext }) {
                     </div>
                     <div className="flex items-center gap-2 mt-auto pt-2">
                         <MapPin className="w-4 h-4 text-ivory/40" />
-                        <span className="font-sans text-xs text-ivory/40">Bundesstraße 2a, 6714 Nüziders</span>
+                        <span className="font-sans text-xs text-ivory/40">
+                            {studioLocation === 'feldkirch' ? 'Ketschenstraße 1, 6800 Feldkirch' : '2 Standorte verfügbar'}
+                        </span>
                     </div>
                     {serviceMode === 'studio' && (
                         <div className="absolute top-4 right-4 w-7 h-7 rounded-full bg-accent flex items-center justify-center">
@@ -692,7 +758,12 @@ function Step3({ contact, setContact, onSubmit, onBack, loading, serviceMode }) 
 
 // ─── Step 4: Confirmation ─────────────────────────────────────────────────────
 
-function Step4({ selectedItems, datetime, serviceMode, contact, vehicleCategory }) {
+const STUDIO_ADDRESSES = {
+    feldkirch: 'Ketschenstraße 1, 6800 Feldkirch',
+    nueziders: 'Bundesstraße 2a, 6714 Nüziders',
+};
+
+function Step4({ selectedItems, datetime, serviceMode, contact, vehicleCategory, studioLocation }) {
     const serviceTotal = selectedItems.reduce((s, i) => s + i.priceNum, 0);
     const aufpreis = vehicleCategory?.aufpreis ?? 0;
     const mobileSurcharge = serviceMode === 'mobil' ? MOBILE_SURCHARGE : 0;
@@ -805,7 +876,7 @@ function Step4({ selectedItems, datetime, serviceMode, contact, vehicleCategory 
                             <MapPin className="w-4 h-4 text-accent shrink-0" />
                             <div className="flex flex-col">
                                 <span className="font-sans text-xs text-ivory/40 uppercase tracking-wider">Im Studio</span>
-                                <span className="font-sans text-sm text-ivory/70">Bundesstraße 2a, 6714 Nüziders</span>
+                                <span className="font-sans text-sm text-ivory/70">{STUDIO_ADDRESSES[studioLocation] || STUDIO_ADDRESSES.feldkirch}</span>
                             </div>
                         </>
                     )}
@@ -826,6 +897,7 @@ export default function BookingPage() {
     const [step, setStep] = useState(0);
     const [loading, setLoading] = useState(false);
     const [serviceMode, setServiceMode] = useState(null);
+    const [studioLocation, setStudioLocation] = useState(null);
 
     const [selectedItems, setSelectedItems] = useState([]);
     const [vehicleCategory, setVehicleCategory] = useState(null);
@@ -927,7 +999,7 @@ export default function BookingPage() {
                     _captcha: 'false',
                     _template: 'table',
                     'Service-Art': serviceMode === 'mobil' ? 'Mobiler Service' : 'Im Studio',
-                    ...(serviceMode === 'mobil' ? { Einsatzort: contact.address } : { Standort: 'Bundesstraße 2a, 6714 Nüziders' }),
+                    ...(serviceMode === 'mobil' ? { Einsatzort: contact.address } : { Standort: STUDIO_ADDRESSES[studioLocation] || STUDIO_ADDRESSES.feldkirch }),
                     Name: contact.name,
                     Telefon: contact.phone,
                     'E-Mail': contact.email,
@@ -972,7 +1044,7 @@ export default function BookingPage() {
                         <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75" />
                         <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500" />
                     </span>
-                    <span className="font-mono text-[10px] text-ivory/60 uppercase tracking-widest">{serviceMode === 'mobil' ? 'Mobiler Service' : 'Studio Offen'}</span>
+                    <span className="font-mono text-[10px] text-ivory/60 uppercase tracking-widest">{serviceMode === 'mobil' ? 'Mobiler Service' : serviceMode === 'studio' ? `Studio ${studioLocation === 'feldkirch' ? 'Feldkirch' : 'Offen'}` : 'Studio Offen'}</span>
                 </div>
             </header>
 
@@ -980,7 +1052,7 @@ export default function BookingPage() {
                 <div className="max-w-4xl mx-auto">
                     {step < 5 && <StepBar step={step} />}
                     <div ref={stepContentRef}>
-                        {step === 0 && <Step0 serviceMode={serviceMode} setServiceMode={setServiceMode} onNext={() => animateStep(1)} />}
+                        {step === 0 && <Step0 serviceMode={serviceMode} setServiceMode={setServiceMode} studioLocation={studioLocation} setStudioLocation={setStudioLocation} onNext={() => animateStep(1)} />}
                         {step === 1 && <Step1 selectedItems={selectedItems} toggleItem={toggleItem} onNext={() => animateStep(2)} onBack={() => animateStep(0)} recommendations={recommendations} packageSuggestion={packageSuggestion} onReplaceWithPackage={replaceWithPackage} serviceMode={serviceMode} />}
                         {step === 2 && <StepVehicle vehicleCategory={vehicleCategory} setVehicleCategory={setVehicleCategory} selectedItems={selectedItems} onNext={() => animateStep(3)} onBack={() => animateStep(1)} serviceMode={serviceMode} />}
                         {step === 3 && <Step2 datetime={datetime} setDatetime={setDatetime} onNext={() => animateStep(4)} onBack={() => animateStep(2)} serviceMode={serviceMode} />}
@@ -997,7 +1069,7 @@ export default function BookingPage() {
                                 )}
                             </>
                         )}
-                        {step === 5 && <Step4 selectedItems={selectedItems} datetime={datetime} serviceMode={serviceMode} contact={contact} vehicleCategory={vehicleCategory} />}
+                        {step === 5 && <Step4 selectedItems={selectedItems} datetime={datetime} serviceMode={serviceMode} contact={contact} vehicleCategory={vehicleCategory} studioLocation={studioLocation} />}
                     </div>
                 </div>
             </main>
