@@ -6,7 +6,7 @@ export const tierPackages = [
         name: 'Wash & Clean',
         subtitle: 'Premium Handwäsche & Innenreinigung',
         price: 'ab 230,–',
-        headerStyle: { background: 'linear-gradient(135deg, #6B4F0E, #8B6914, #C4943A)' },
+        headerStyle: { background: 'linear-gradient(135deg, #A0522D, #CD7F32, #D4945A)' },
         features: [
             { section: 'Aussen' },
             { text: 'Kratzfreie Handwäsche (2-Eimer-Methode)' },
@@ -47,7 +47,7 @@ export const tierPackages = [
         name: 'Deep Polish',
         subtitle: 'Silber + 2-stufige Politur & Beschichtungen',
         price: 'ab 690,–',
-        headerStyle: { background: 'linear-gradient(135deg, #8B6914, #B8860B, #DAA520)' },
+        headerStyle: { background: 'linear-gradient(135deg, #996515, #B8860B, #DAA520)' },
         features: [
             { text: 'Alles aus Bronze & Silber', muted: true },
             { text: 'Lackvorbereitung & Entfettung', bold: true },

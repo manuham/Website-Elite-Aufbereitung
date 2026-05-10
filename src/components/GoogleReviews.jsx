@@ -93,7 +93,9 @@ export default function GoogleReviews() {
                 const mapped = (data.reviews || [])
                     .filter((r) => r.rating >= 4)
                     .map((r) => ({
-                        name: r.author_name,
+                        name: r.author_name && r.author_name.includes(' ')
+                            ? `${r.author_name.split(' ')[0]} ${r.author_name.split(' ').slice(-1)[0][0]}.`
+                            : r.author_name || 'Anonym',
                         rating: r.rating,
                         text: r.text,
                         timeAgo: r.relative_time_description,

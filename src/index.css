@@ -154,10 +154,6 @@
     body::before {
       animation: none !important;
     }
-    .custom-cursor-dot,
-    .custom-cursor-circle {
-      display: none !important;
-    }
     .particle {
       display: none !important;
     }

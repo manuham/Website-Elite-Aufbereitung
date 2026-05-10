@@ -13,8 +13,6 @@ const navLinks = [
 export default function Navbar() {
     const [scrolled, setScrolled] = useState(false);
     const [menuOpen, setMenuOpen] = useState(false);
-    const [visible, setVisible] = useState(true);
-    const hideTimer = useRef(null);
     const navigate = useNavigate();
     const location = useLocation();
     const overlayRef = useRef(null);
@@ -24,20 +22,12 @@ export default function Navbar() {
         const handleScroll = () => {
             const y = window.scrollY;
             setScrolled(y > 50);
-            setVisible(true);
-
-            if (hideTimer.current) clearTimeout(hideTimer.current);
-
-            if (y > 50) {
-                hideTimer.current = setTimeout(() => setVisible(false), 1500);
-            }
 
             if (menuOpen) setMenuOpen(false);
         };
         window.addEventListener('scroll', handleScroll, { passive: true });
         return () => {
             window.removeEventListener('scroll', handleScroll);
-            if (hideTimer.current) clearTimeout(hideTimer.current);
         };
     }, [menuOpen]);
 
@@ -92,7 +82,7 @@ export default function Navbar() {
                 className={`fixed top-6 left-1/2 -translate-x-1/2 z-50 transition-all duration-500 rounded-full px-5 sm:px-8 py-2.5 flex items-center justify-between gap-4 lg:gap-6 xl:gap-10 w-[calc(100%-2rem)] max-w-full md:max-w-3xl lg:max-w-5xl xl:max-w-6xl 2xl:max-w-7xl ${scrolled
                     ? 'bg-obsidian/70 backdrop-blur-xl border border-slate/40 shadow-xl'
                     : 'bg-transparent border border-transparent'
-                    } ${visible ? 'translate-y-0 opacity-100' : '-translate-y-[calc(100%+3rem)] opacity-0 pointer-events-none'}`}
+                    }`}
             >
                 {/* Logo */}
                 <div

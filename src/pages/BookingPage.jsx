@@ -15,6 +15,7 @@ const MONTHS = ['Januar', 'Februar', 'März', 'April', 'Mai', 'Juni',
     'Juli', 'August', 'September', 'Oktober', 'November', 'Dezember'];
 const TIME_SLOTS_WEEKDAY = ['08:00', '09:30', '11:00', '12:30', '14:00', '15:30', '17:00'];
 const TIME_SLOTS_SATURDAY = ['08:00', '09:30', '11:00', '12:30'];
+const MOBILE_SURCHARGE = 50;
 
 function getDaysInMonth(y, m) { return new Date(y, m + 1, 0).getDate(); }
 function getFirstDayOfMonth(y, m) { return (new Date(y, m, 1).getDay() + 6) % 7; }
@@ -105,6 +106,7 @@ function Step0({ serviceMode, setServiceMode, onNext }) {
                     <div className="flex flex-col gap-2">
                         <h3 className="font-sans font-bold text-2xl text-ivory">Mobiler Service</h3>
                         <p className="font-sans text-sm text-ivory/50">Wir kommen direkt zu Ihnen</p>
+                        <span className="font-mono text-xs text-champagne mt-1">+€{MOBILE_SURCHARGE},- Anfahrtspauschale</span>
                     </div>
                     <div className="flex items-center gap-2 mt-auto pt-2">
                         <Truck className="w-4 h-4 text-ivory/40" />
@@ -133,14 +135,16 @@ function Step0({ serviceMode, setServiceMode, onNext }) {
 
 // ─── Step 1: Service Selection (multi-select) ─────────────────────────────────
 
-function Step1({ selectedItems, toggleItem, onNext, onBack, recommendations, packageSuggestion, onReplaceWithPackage }) {
+function Step1({ selectedItems, toggleItem, onNext, onBack, recommendations, packageSuggestion, onReplaceWithPackage, serviceMode }) {
     const [activeTab, setActiveTab] = useState(serviceCategories[0].id);
     const [showDisclaimer, setShowDisclaimer] = useState(false);
     const [pendingItem, setPendingItem] = useState(null);
 
     const isSelected = (id) => selectedItems.some(i => i.id === id);
 
-    const totalNum = selectedItems.reduce((sum, i) => sum + i.priceNum, 0);
+    const serviceNum = selectedItems.reduce((sum, i) => sum + i.priceNum, 0);
+    const mobileSurcharge = serviceMode === 'mobil' ? MOBILE_SURCHARGE : 0;
+    const totalNum = serviceNum + mobileSurcharge;
     const totalStr = totalNum > 0 ? `ab €${totalNum.toLocaleString('de-AT')},-` : null;
 
     // Show disclaimer when adding, toggle directly when removing
@@ -340,6 +344,13 @@ function Step1({ selectedItems, toggleItem, onNext, onBack, recommendations, pac
                             </div>
                         ))}
                     </div>
+                    {serviceMode === 'mobil' && (
+                        <div className="flex items-center gap-2 bg-accent/10 border border-accent/30 rounded-full pl-4 pr-4 py-1.5">
+                            <Truck className="w-3.5 h-3.5 text-accent" />
+                            <span className="font-sans text-sm text-ivory">Anfahrtspauschale</span>
+                            <span className="font-mono text-xs text-champagne font-semibold ml-auto">+€{MOBILE_SURCHARGE},-</span>
+                        </div>
+                    )}
                     {totalStr && (
                         <div className="flex items-center justify-between pt-2 border-t border-slate/50">
                             <span className="font-sans text-sm text-ivory/50">Geschätzte Gesamtsumme</span>
@@ -399,8 +410,9 @@ const VEHICLE_CATEGORIES = [
     { id: 'gross', name: 'Großfahrzeuge / Transporter', examples: 'z. B. VW Bus, Sprinter, Transporter', description: 'Deutlich größer, gewerblich/Family Vans', aufpreis: null },
 ];
 
-function StepVehicle({ vehicleCategory, setVehicleCategory, selectedItems, onNext, onBack }) {
+function StepVehicle({ vehicleCategory, setVehicleCategory, selectedItems, onNext, onBack, serviceMode }) {
     const serviceTotal = selectedItems.reduce((sum, i) => sum + i.priceNum, 0);
+    const mobileSurcharge = serviceMode === 'mobil' ? MOBILE_SURCHARGE : 0;
 
     return (
         <div className="flex flex-col gap-10 w-full">
@@ -443,18 +455,26 @@ function StepVehicle({ vehicleCategory, setVehicleCategory, selectedItems, onNex
             </div>
 
             {vehicleCategory && serviceTotal > 0 && (
-                <div className="bg-slate/40 border border-accent/30 rounded-[1.5rem] p-5 flex items-center justify-between">
-                    <span className="font-sans text-sm text-ivory/50">Geschätzte Gesamtsumme</span>
-                    {vehicleCategory.aufpreis === null ? (
-                        <div className="flex flex-col items-end gap-0.5">
-                            <span className="font-mono text-lg font-bold text-accent">ab €{serviceTotal.toLocaleString('de-AT')},-</span>
-                            <span className="font-mono text-[10px] text-champagne">+ Aufpreis auf Anfrage</span>
+                <div className="bg-slate/40 border border-accent/30 rounded-[1.5rem] p-5 flex flex-col gap-3">
+                    {serviceMode === 'mobil' && (
+                        <div className="flex items-center justify-between">
+                            <span className="font-sans text-sm text-ivory/50 inline-flex items-center gap-2"><Truck className="w-3.5 h-3.5 text-accent" /> Anfahrtspauschale</span>
+                            <span className="font-mono text-sm text-champagne font-semibold">+€{MOBILE_SURCHARGE},-</span>
                         </div>
-                    ) : (
-                        <span className="font-mono text-xl font-bold text-accent">
-                            ab €{(serviceTotal + vehicleCategory.aufpreis).toLocaleString('de-AT')},-
-                        </span>
                     )}
+                    <div className="flex items-center justify-between">
+                        <span className="font-sans text-sm text-ivory/50">Geschätzte Gesamtsumme</span>
+                        {vehicleCategory.aufpreis === null ? (
+                            <div className="flex flex-col items-end gap-0.5">
+                                <span className="font-mono text-lg font-bold text-accent">ab €{(serviceTotal + mobileSurcharge).toLocaleString('de-AT')},-</span>
+                                <span className="font-mono text-[10px] text-champagne">+ Aufpreis auf Anfrage</span>
+                            </div>
+                        ) : (
+                            <span className="font-mono text-xl font-bold text-accent">
+                                ab €{(serviceTotal + vehicleCategory.aufpreis + mobileSurcharge).toLocaleString('de-AT')},-
+                            </span>
+                        )}
+                    </div>
                 </div>
             )}
 
@@ -675,7 +695,8 @@ function Step3({ contact, setContact, onSubmit, onBack, loading, serviceMode }) 
 function Step4({ selectedItems, datetime, serviceMode, contact, vehicleCategory }) {
     const serviceTotal = selectedItems.reduce((s, i) => s + i.priceNum, 0);
     const aufpreis = vehicleCategory?.aufpreis ?? 0;
-    const total = serviceTotal + (aufpreis || 0);
+    const mobileSurcharge = serviceMode === 'mobil' ? MOBILE_SURCHARGE : 0;
+    const total = serviceTotal + (aufpreis || 0) + mobileSurcharge;
 
     return (
         <div className="flex flex-col items-center text-center gap-10 py-8 w-full max-w-xl mx-auto">
@@ -712,12 +733,19 @@ function Step4({ selectedItems, datetime, serviceMode, contact, vehicleCategory 
                     </div>
                 )}
 
+                {serviceMode === 'mobil' && (
+                    <div className="flex justify-between items-center">
+                        <span className="font-sans text-sm text-ivory/70 inline-flex items-center gap-2"><Truck className="w-3.5 h-3.5 text-accent" /> Anfahrtspauschale</span>
+                        <span className="font-mono text-sm text-champagne font-semibold">+€{MOBILE_SURCHARGE},-</span>
+                    </div>
+                )}
+
                 <div className="h-px bg-slate/50" />
                 <div className="flex justify-between items-center">
                     <span className="font-sans text-sm font-bold text-ivory">Gesamtsumme</span>
                     {vehicleCategory?.aufpreis === null ? (
                         <div className="flex flex-col items-end gap-0.5">
-                            <span className="font-mono text-lg font-bold text-accent">ab €{serviceTotal.toLocaleString('de-AT')},-</span>
+                            <span className="font-mono text-lg font-bold text-accent">ab €{(serviceTotal + mobileSurcharge).toLocaleString('de-AT')},-</span>
                             <span className="font-mono text-[10px] text-champagne">+ Aufpreis auf Anfrage</span>
                         </div>
                     ) : (
@@ -875,7 +903,8 @@ export default function BookingPage() {
         const isoDate = `${yyyy}-${mm}-${dd}`;
         const serviceTotal = selectedItems.reduce((s, i) => s + i.priceNum, 0);
         const aufpreis = vehicleCategory?.aufpreis ?? 0;
-        const total = serviceTotal + (aufpreis || 0);
+        const mobileSurchargeVal = serviceMode === 'mobil' ? MOBILE_SURCHARGE : 0;
+        const total = serviceTotal + (aufpreis || 0) + mobileSurchargeVal;
         const aufpreisStr = vehicleCategory?.aufpreis === null ? 'auf Anfrage' : aufpreis > 0 ? `+€${aufpreis},-` : 'kein Aufpreis';
 
         try {
@@ -906,8 +935,9 @@ export default function BookingPage() {
                     Datum: dateStr,
                     Uhrzeit: `${datetime.time} Uhr`,
                     Services: selectedItems.map(i => `${i.name} (${i.price})`).join(', '),
+                    ...(serviceMode === 'mobil' ? { Anfahrtspauschale: `+€${MOBILE_SURCHARGE},-` } : {}),
                     Gesamtsumme: vehicleCategory?.aufpreis === null
-                        ? `ab €${serviceTotal.toLocaleString('de-AT')},- + Aufpreis auf Anfrage`
+                        ? `ab €${(serviceTotal + mobileSurchargeVal).toLocaleString('de-AT')},- + Aufpreis auf Anfrage`
                         : `ab €${total.toLocaleString('de-AT')},-`,
                     Anmerkungen: contact.notes || '—',
                 }),
@@ -951,8 +981,8 @@ export default function BookingPage() {
                     {step < 5 && <StepBar step={step} />}
                     <div ref={stepContentRef}>
                         {step === 0 && <Step0 serviceMode={serviceMode} setServiceMode={setServiceMode} onNext={() => animateStep(1)} />}
-                        {step === 1 && <Step1 selectedItems={selectedItems} toggleItem={toggleItem} onNext={() => animateStep(2)} onBack={() => animateStep(0)} recommendations={recommendations} packageSuggestion={packageSuggestion} onReplaceWithPackage={replaceWithPackage} />}
-                        {step === 2 && <StepVehicle vehicleCategory={vehicleCategory} setVehicleCategory={setVehicleCategory} selectedItems={selectedItems} onNext={() => animateStep(3)} onBack={() => animateStep(1)} />}
+                        {step === 1 && <Step1 selectedItems={selectedItems} toggleItem={toggleItem} onNext={() => animateStep(2)} onBack={() => animateStep(0)} recommendations={recommendations} packageSuggestion={packageSuggestion} onReplaceWithPackage={replaceWithPackage} serviceMode={serviceMode} />}
+                        {step === 2 && <StepVehicle vehicleCategory={vehicleCategory} setVehicleCategory={setVehicleCategory} selectedItems={selectedItems} onNext={() => animateStep(3)} onBack={() => animateStep(1)} serviceMode={serviceMode} />}
                         {step === 3 && <Step2 datetime={datetime} setDatetime={setDatetime} onNext={() => animateStep(4)} onBack={() => animateStep(2)} serviceMode={serviceMode} />}
                         {step === 4 && (
                             <>

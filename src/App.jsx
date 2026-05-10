@@ -20,7 +20,7 @@ import Projekte from './pages/Projekte';
 import MobilerService from './pages/MobilerService';
 import EliteEndstufe from './pages/EliteEndstufe';
 import Preloader from './components/Preloader';
-import CustomCursor from './components/CustomCursor';
+
 import ScrollProgress from './components/ScrollProgress';
 import PageTransition from './components/PageTransition';
 
@@ -141,7 +141,7 @@ export default function App() {
     return (
         <BrowserRouter>
             <Preloader onComplete={handlePreloaderComplete} />
-            <CustomCursor />
+
             <ScrollProgress />
             <PageTransition />
             <ScrollToTop />

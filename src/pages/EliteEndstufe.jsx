@@ -139,7 +139,7 @@ export default function EliteEndstufe() {
             {/* ── Gold-Paket Callout ───────────────────────────────────── */}
             <section className="px-6 sm:px-12 lg:px-24 py-16">
                 <div className="max-w-5xl mx-auto">
-                    <div className="reveal bg-gradient-to-r from-[#8B6914]/20 via-[#B8860B]/10 to-[#DAA520]/20 border border-[#B8860B]/30 rounded-[2rem] px-8 py-6 flex items-center gap-6 flex-wrap">
+                    <div className="reveal bg-gradient-to-r from-[#996515]/20 via-[#B8860B]/10 to-[#DAA520]/20 border border-[#B8860B]/30 rounded-[2rem] px-8 py-6 flex items-center gap-6 flex-wrap">
                         <div className="w-12 h-12 rounded-xl bg-[#B8860B]/20 border border-[#B8860B]/40 flex items-center justify-center shrink-0">
                             <Check className="w-6 h-6 text-[#DAA520]" strokeWidth={2.5} />
                         </div>
