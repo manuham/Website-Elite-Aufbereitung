@@ -129,8 +129,10 @@
   }
 
   /* Ensure bg-clip-text gradient propagates through SplitText nested spans */
-  .bg-clip-text .split-unit {
+  .bg-clip-text span {
     background: inherit;
+  }
+  .bg-clip-text .split-unit {
     -webkit-background-clip: text;
     background-clip: text;
     color: transparent;
