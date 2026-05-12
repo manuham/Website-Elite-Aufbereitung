@@ -932,7 +932,7 @@ export default function BookingPage() {
                 // Animate in from opposite side
                 gsap.fromTo(el,
                     { opacity: 0, x: goingForward ? 60 : -60 },
-                    { opacity: 1, x: 0, duration: 0.4, ease: 'power3.out' }
+                    { opacity: 1, x: 0, duration: 0.4, ease: 'power3.out', clearProps: 'x' }
                 );
             }
         });
