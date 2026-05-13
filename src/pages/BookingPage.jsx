@@ -7,6 +7,7 @@ import { useAvailability } from '../hooks/useAvailability';
 import { useRecommendations } from '../hooks/useRecommendations';
 import { submitBooking } from '../lib/api';
 import RecommendationPanel from '../components/booking/RecommendationPanel';
+import DayTimePickerModal from '../components/booking/DayTimePickerModal';
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
@@ -581,8 +582,20 @@ function Step2({ datetime, setDatetime, onNext, onBack, serviceMode }) {
     const today = new Date(); today.setHours(0, 0, 0, 0);
     const [viewYear, setViewYear] = useState(today.getFullYear());
     const [viewMonth, setViewMonth] = useState(today.getMonth());
+    const [modalOpen, setModalOpen] = useState(false);
+    const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
 
-    const { slots, loading: slotsLoading, isFallback } = useAvailability(datetime.date);
+    useEffect(() => {
+        const h = () => setIsMobile(window.innerWidth < 768);
+        window.addEventListener('resize', h);
+        return () => window.removeEventListener('resize', h);
+    }, []);
+
+    const { slots, loading: slotsLoading, isFallback } = useAvailability(datetime.date, true);
+
+    const allSlotsForDay = datetime.date
+        ? (datetime.date.getDay() === 6 ? TIME_SLOTS_SATURDAY : TIME_SLOTS_WEEKDAY)
+        : [];
 
     const daysInMonth = getDaysInMonth(viewYear, viewMonth);
     const firstDay = getFirstDayOfMonth(viewYear, viewMonth);
@@ -594,6 +607,7 @@ function Step2({ datetime, setDatetime, onNext, onBack, serviceMode }) {
         const d = new Date(viewYear, viewMonth, day);
         if (d < today || d.getDay() === 0) return;
         setDatetime(dt => ({ ...dt, date: d, time: null }));
+        setModalOpen(true);
     };
 
     const isDisabled = (day) => {
@@ -607,27 +621,35 @@ function Step2({ datetime, setDatetime, onNext, onBack, serviceMode }) {
         <div className="flex flex-col gap-10 w-full">
             <div>
                 <h2 className="font-drama italic text-4xl sm:text-5xl text-ivory mb-2">{serviceMode === 'mobil' ? 'Wann sollen wir kommen?' : 'Wann kommen Sie?'}</h2>
-                <p className="font-sans text-sm text-ivory/50">Wählen Sie einen verfügbaren Termin. Sonntags geschlossen.</p>
+                <p className="font-sans text-sm text-ivory/50">
+                    Wählen Sie einen Tag — alle verfügbaren Zeiten werden angezeigt.
+                    {datetime.time && <span className="text-accent ml-2">✓ {datetime.date?.toLocaleDateString('de-AT', { day: '2-digit', month: 'long' })} um {datetime.time} Uhr</span>}
+                </p>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                {/* Calendar */}
-                <div className="bg-slate/30 border border-slate/50 rounded-[2rem] p-6 flex flex-col gap-5">
+            {/* Full-width calendar */}
+            <div className="max-w-lg mx-auto w-full">
+                <div className="bg-slate/30 border border-slate/50 rounded-[2rem] p-7 flex flex-col gap-6">
+                    {/* Month navigation */}
                     <div className="flex items-center justify-between">
-                        <button onClick={prevMonth} className="w-9 h-9 rounded-full border border-slate hover:border-accent hover:text-accent transition-colors flex items-center justify-center text-ivory/60">
-                            <ChevronLeft className="w-4 h-4" />
+                        <button onClick={prevMonth} className="w-10 h-10 rounded-full border border-slate hover:border-accent hover:text-accent transition-colors flex items-center justify-center text-ivory/60">
+                            <ChevronLeft className="w-5 h-5" />
                         </button>
-                        <span className="font-sans font-semibold text-ivory text-sm tracking-wide">{MONTHS[viewMonth]} {viewYear}</span>
-                        <button onClick={nextMonth} className="w-9 h-9 rounded-full border border-slate hover:border-accent hover:text-accent transition-colors flex items-center justify-center text-ivory/60">
-                            <ChevronRight className="w-4 h-4" />
+                        <span className="font-sans font-semibold text-ivory text-base tracking-wide">{MONTHS[viewMonth]} {viewYear}</span>
+                        <button onClick={nextMonth} className="w-10 h-10 rounded-full border border-slate hover:border-accent hover:text-accent transition-colors flex items-center justify-center text-ivory/60">
+                            <ChevronRight className="w-5 h-5" />
                         </button>
                     </div>
-                    <div className="grid grid-cols-7 gap-1">
+
+                    {/* Day headers */}
+                    <div className="grid grid-cols-7 gap-2">
                         {DAYS_SHORT.map(d => (
-                            <div key={d} className={`text-center font-mono text-[10px] uppercase tracking-wider py-1 ${d === 'So' ? 'text-ivory/20' : 'text-ivory/40'}`}>{d}</div>
+                            <div key={d} className={`text-center font-mono text-[11px] uppercase tracking-wider py-1 ${d === 'So' ? 'text-ivory/20' : 'text-ivory/40'}`}>{d}</div>
                         ))}
                     </div>
-                    <div className="grid grid-cols-7 gap-1">
+
+                    {/* Day cells */}
+                    <div className="grid grid-cols-7 gap-2">
                         {Array.from({ length: firstDay }).map((_, i) => <div key={`e-${i}`} />)}
                         {Array.from({ length: daysInMonth }).map((_, i) => {
                             const day = i + 1;
@@ -636,61 +658,37 @@ function Step2({ datetime, setDatetime, onNext, onBack, serviceMode }) {
                             const todayMark = isToday(day);
                             return (
                                 <button key={day} onClick={() => selectDate(day)} disabled={disabled}
-                                    className={`aspect-square rounded-xl flex items-center justify-center font-sans text-sm font-medium transition-all duration-150
+                                    className={`aspect-square min-h-[2.75rem] rounded-2xl flex items-center justify-center font-sans text-base font-medium transition-all duration-150
                                         ${disabled ? 'text-ivory/15 cursor-not-allowed' : 'cursor-pointer hover:bg-accent/20 hover:text-accent'}
-                                        ${selected ? 'bg-accent text-obsidian font-bold shadow-[0_0_12px_rgba(77,178,146,0.4)]' : ''}
+                                        ${selected ? 'bg-accent text-obsidian font-bold shadow-[0_0_14px_rgba(77,178,146,0.45)]' : ''}
                                         ${todayMark && !selected ? 'border border-accent/40 text-accent' : ''}
                                         ${!disabled && !selected ? 'text-ivory/80' : ''}`}
                                 >{day}</button>
                             );
                         })}
                     </div>
-                    <p className="font-mono text-[10px] text-ivory/30 text-center uppercase tracking-wider">Mo – Sa geöffnet</p>
-                </div>
 
-                {/* Time slots */}
-                <div className="flex flex-col gap-5">
-                    {datetime.date ? (
-                        <>
-                            <div className="font-sans text-sm text-ivory/60">
-                                Verfügbare Zeiten am <span className="text-ivory font-semibold">{datetime.date.toLocaleDateString('de-AT', { weekday: 'long', day: '2-digit', month: 'long' })}</span>
-                            </div>
-                            {slotsLoading ? (
-                                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-2 xl:grid-cols-3 gap-3">
-                                    {Array.from({ length: 6 }).map((_, i) => (
-                                        <div key={i} className="py-3.5 rounded-xl bg-slate/30 border border-slate/50 animate-pulse" />
-                                    ))}
-                                </div>
-                            ) : slots.length > 0 ? (
-                                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-2 xl:grid-cols-3 gap-3">
-                                    {slots.map(slot => (
-                                        <button key={slot} onClick={() => setDatetime(dt => ({ ...dt, time: slot }))}
-                                            className={`py-3.5 rounded-xl font-mono text-sm font-medium border transition-all duration-150 ${datetime.time === slot
-                                                ? 'bg-accent text-obsidian border-accent shadow-[0_0_12px_rgba(77,178,146,0.3)] font-bold'
-                                                : 'bg-slate/30 border-slate/50 text-ivory/70 hover:border-accent/50 hover:text-accent'}`}
-                                        >{slot}</button>
-                                    ))}
-                                </div>
-                            ) : (
-                                <div className="flex-1 flex items-center justify-center py-8">
-                                    <p className="font-sans text-sm text-ivory/40 text-center">
-                                        An diesem Tag sind leider keine Termine mehr frei.
-                                    </p>
-                                </div>
-                            )}
-                            {isFallback && (
-                                <p className="font-mono text-[10px] text-ivory/25 text-center">
-                                    Live-Verfügbarkeit konnte nicht geladen werden — Standardzeiten werden angezeigt.
-                                </p>
-                            )}
-                        </>
-                    ) : (
-                        <div className="flex-1 flex items-center justify-center">
-                            <p className="font-sans text-sm text-ivory/30 text-center">← Wählen Sie zuerst ein Datum</p>
-                        </div>
-                    )}
+                    <p className="font-mono text-[10px] text-ivory/30 text-center uppercase tracking-wider">
+                        Tippen Sie auf einen Tag, um verfügbare Zeiten zu sehen
+                    </p>
                 </div>
             </div>
+
+            {/* Day time picker modal */}
+            {modalOpen && datetime.date && (
+                <DayTimePickerModal
+                    date={datetime.date}
+                    slots={slots}
+                    allSlots={allSlotsForDay}
+                    selectedTime={datetime.time}
+                    loading={slotsLoading}
+                    isFallback={isFallback}
+                    onSelectTime={(time) => setDatetime(dt => ({ ...dt, time }))}
+                    onConfirm={() => { setModalOpen(false); onNext(); }}
+                    onClose={() => setModalOpen(false)}
+                    isMobile={isMobile}
+                />
+            )}
 
             <div className="flex justify-between mt-2">
                 <button onClick={onBack} className="flex items-center gap-2 font-sans text-sm text-ivory/50 hover:text-ivory transition-colors link-lift">

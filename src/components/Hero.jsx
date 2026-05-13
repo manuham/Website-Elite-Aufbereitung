@@ -112,19 +112,19 @@ export default function Hero() {
     };
 
     return (
-        <section ref={containerRef} className="relative h-[100dvh] w-full flex flex-col justify-end pb-24 sm:pb-32 px-6 sm:px-12 lg:px-24">
+        <section ref={containerRef} className="relative h-[100dvh] w-full flex flex-col justify-end pb-28 sm:pb-36 lg:pb-44 px-6 sm:px-12 lg:px-24">
             {/* Background Image — depth layer (slowest parallax) */}
             <div className="hero-bg-layer absolute inset-0 z-0 overflow-hidden bg-obsidian pointer-events-none will-change-transform">
                 <img
                     ref={bgRef}
                     src="/assets/VAN/VAN.png"
                     alt="Elite Aufbereitung mobiler Service Van"
-                    className="w-full h-full object-cover opacity-60 mix-blend-luminosity will-change-transform scale-105"
+                    className="w-full h-full object-cover object-[center_35%] opacity-55 mix-blend-luminosity will-change-transform"
                     loading="eager"
                     fetchpriority="high"
                     decoding="async"
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-obsidian via-obsidian/90 to-obsidian/30" />
+                <div className="absolute inset-0 bg-gradient-to-t from-obsidian via-obsidian/85 to-obsidian/20" />
             </div>
 
             {/* Floating dust particles */}
@@ -140,7 +140,7 @@ export default function Hero() {
             </div>
 
             {/* Content — foreground layer (fades out on scroll) */}
-            <div className="hero-content-layer relative z-10 w-full max-w-3xl flex flex-col items-start gap-6 will-change-transform">
+            <div className="hero-content-layer relative z-10 w-full max-w-3xl flex flex-col items-start gap-4 will-change-transform">
                 <div className="hero-badge">
                     <Link to="/mobiler-service" className="bg-emerald-500/90 text-obsidian px-5 py-2.5 sm:px-7 sm:py-3 rounded-full font-sans text-[13px] sm:text-[15px] font-bold tracking-wide inline-flex items-center gap-2 sm:gap-3 shadow-[0_0_20px_rgba(16,185,129,0.6)] hover:shadow-[0_0_30px_rgba(16,185,129,0.8)] hover:-translate-y-0.5 transition-all duration-300">
                         <span className="bg-obsidian text-emerald-400 px-2.5 py-0.5 rounded-full text-[10px] sm:text-[11px] uppercase tracking-widest font-black animate-pulse shadow-[0_0_10px_rgba(16,185,129,0.3)]">NEU</span>
@@ -149,12 +149,20 @@ export default function Hero() {
                     </Link>
                 </div>
 
-                <div className="flex flex-col relative w-full">
-                    <h1 className="hero-fade font-sans font-bold text-3xl sm:text-5xl lg:text-6xl text-ivory tracking-tight mb-1 sm:mb-2 text-balance">
-                        Autoaufbereitung in Vorarlberg —
+                <div className="hero-fade flex items-center gap-3 w-full">
+                    <div className="h-px flex-1 bg-accent/40 max-w-[2rem]" />
+                    <span className="font-sans font-semibold text-[10px] sm:text-[11px] uppercase tracking-[0.35em] text-ivory/45">
+                        Autoaufbereitung in Vorarlberg
+                    </span>
+                    <div className="h-px bg-accent/40 w-8" />
+                </div>
+
+                <div className="flex flex-col relative w-full -mt-1">
+                    <h1 className="hero-fade font-drama italic text-2xl sm:text-4xl lg:text-5xl text-ivory/75 leading-tight mb-0">
+                        Perfektion trifft
                     </h1>
-                    <p className="hero-fade font-drama italic text-[2.75rem] sm:text-7xl lg:text-[6rem] xl:text-[8rem] leading-[1.05] text-transparent bg-clip-text bg-gradient-to-r from-ivory via-champagne to-ivory drop-shadow-2xl pr-4">
-                        Perfektion trifft Präzision.
+                    <p className="hero-fade font-drama italic text-[5.5rem] sm:text-[8rem] lg:text-[10rem] xl:text-[12rem] leading-[0.88] text-transparent bg-clip-text bg-gradient-to-br from-ivory via-ivory/95 to-ivory/70 drop-shadow-2xl -ml-1">
+                        Präzision.
                     </p>
                 </div>
 

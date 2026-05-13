@@ -26,7 +26,7 @@ export default async function handler(req, res) {
 
   try {
     const slots = await getAvailableSlots(date);
-    res.setHeader('Cache-Control', 's-maxage=120, stale-while-revalidate=60');
+    res.setHeader('Cache-Control', 's-maxage=30, stale-while-revalidate=15');
     return res.status(200).json({ date, slots, closed: false });
   } catch (error) {
     console.error('Calendar API error:', error);

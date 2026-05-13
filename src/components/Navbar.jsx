@@ -79,7 +79,7 @@ export default function Navbar() {
     return (
         <>
             <nav
-                className={`fixed top-6 left-1/2 -translate-x-1/2 z-50 transition-all duration-500 rounded-full px-5 sm:px-8 py-2.5 flex items-center justify-between gap-4 lg:gap-6 xl:gap-10 w-[calc(100%-2rem)] max-w-full md:max-w-3xl lg:max-w-5xl xl:max-w-6xl 2xl:max-w-7xl ${scrolled
+                className={`fixed top-6 left-1/2 -translate-x-1/2 z-50 transition-all duration-500 rounded-full px-5 sm:px-8 py-1.5 flex items-center justify-between gap-4 lg:gap-6 xl:gap-10 w-[calc(100%-2rem)] max-w-full md:max-w-3xl lg:max-w-5xl xl:max-w-6xl 2xl:max-w-7xl ${scrolled
                     ? 'bg-obsidian/70 backdrop-blur-xl border border-slate/40 shadow-xl'
                     : 'bg-transparent border border-transparent'
                     }`}
@@ -92,7 +92,7 @@ export default function Navbar() {
                     <img
                         src="/assets/logo-new2.png"
                         alt="Elité Auto Aufbereitung"
-                        className="h-[3rem] sm:h-[3.5rem] lg:h-[4rem] w-auto object-contain -ml-2"
+                        className="h-[4.5rem] sm:h-[5.5rem] lg:h-[7rem] w-auto object-contain -ml-2"
                     />
                 </div>
 
