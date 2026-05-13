@@ -1150,7 +1150,7 @@ export default function BookingPage() {
                 </div>
             </header>
 
-            <main className="pt-20 sm:pt-24 lg:pt-28 pb-24 px-6 sm:px-12 lg:px-24">
+            <main className="pt-28 sm:pt-32 lg:pt-36 pb-24 px-6 sm:px-12 lg:px-24">
                 <div className="max-w-4xl mx-auto">
                     {step < 5 && <StepBar step={step} />}
                     <div ref={stepContentRef}>
