@@ -45,6 +45,7 @@ export const tierPackages = [
         tier: 'Gold',
         dots: 3,
         name: 'Deep Polish',
+        phoneOnly: true,
         subtitle: 'Silber + 2-stufige Politur & Beschichtungen',
         price: 'ab 690,–',
         headerStyle: { background: 'linear-gradient(135deg, #996515, #B8860B, #DAA520)' },
@@ -209,6 +210,7 @@ export const serviceCategories = [
                 name: "Schwere Politur",
                 price: "ab €595,-",
                 popular: true,
+                phoneOnly: true,
                 features: [
                     "Dekontaminierende Handwäsche inkludiert",
                     "Mehrstufiges Polieren (für besten Glanz)",
@@ -253,6 +255,7 @@ export const serviceCategories = [
                 name: "Neuwagen Beschichtung",
                 price: "ab €795,-",
                 popular: false,
+                phoneOnly: true,
                 features: [
                     "Nur für Autos bis 3-4 Monate / 4000km",
                     "Basic-Innen und Aussenreinigung",
@@ -269,6 +272,7 @@ export const serviceCategories = [
                 name: "Beschichtungspaket",
                 price: "ab €895,-",
                 popular: true,
+                phoneOnly: true,
                 features: [
                     "Lebensdauer 2 bis 3 Jahre",
                     "Dauer: 1-2 Werktage",
@@ -285,6 +289,7 @@ export const serviceCategories = [
                 name: "Matt Beschichtung",
                 price: "ab €795,-",
                 popular: false,
+                phoneOnly: true,
                 features: [
                     "Speziell für matte Lacke",
                     "Basic-Innen und Aussenreinigung",
@@ -338,6 +343,19 @@ export const serviceCategories = [
                     "Lack polieren für glänzenden Auftritt",
                     "Frisches Ambiente im Innenraum",
                     "Fahrzeug optimal für den Verkauf vorbereiten"
+                ]
+            },
+            {
+                name: "Ozonbehandlung",
+                price: "ab €75,-",
+                popular: false,
+                features: [
+                    "Beseitigt hartnäckige Gerüche (Nikotin, Tier, Feuchtigkeit)",
+                    "Tiefendesinfektion: Bakterien, Pilze & Keime werden eliminiert",
+                    "Dringt in Polster, Teppiche & Lüftungsschächte ein",
+                    "Keine Überdeckung – Gerüche werden molekular zerstört",
+                    "Langanhaltende Wirkung über Wochen",
+                    "Empfohlen bei Schimmelbefall im Innenraum"
                 ]
             }
         ]

@@ -4,11 +4,13 @@ import { Check, Zap, Gift } from 'lucide-react';
 import gsap from 'gsap';
 import { serviceCategories, tierPackages } from '../data/services';
 import SplitText from './SplitText';
+import PhoneConsultModal from './PhoneConsultModal';
 
 const ALL_IN_ONE_TAB = 'allinone';
 
 export default function Pricing() {
     const [activeTab, setActiveTab] = useState(ALL_IN_ONE_TAB);
+    const [phoneModal, setPhoneModal] = useState(null);
     const contentRef = useRef(null);
     const tabsRef = useRef(null);
 
@@ -173,18 +175,37 @@ export default function Pricing() {
 
                                     {/* CTA */}
                                     <div className="px-5 pb-6">
-                                        <Link
-                                            to={isElite ? '/elite-endstufe' : '/buchen'}
-                                            className={`relative w-full py-3.5 rounded-full font-sans font-bold text-[14px] transition-all duration-500 overflow-hidden text-center block ${isElite
-                                                ? 'bg-accent text-white shadow-lg hover:shadow-xl hover:scale-[1.02]'
-                                                : 'bg-transparent text-obsidian border border-obsidian/20 hover:border-obsidian/50 hover:bg-obsidian/5'
-                                            } group/btn`}
-                                        >
-                                            <span className="relative z-10 flex items-center justify-center gap-2">
-                                                {pkg.ctaLabel || 'Buchen'}
-                                                <span className="group-hover/btn:translate-x-1 transition-transform">↗</span>
-                                            </span>
-                                        </Link>
+                                        {isElite ? (
+                                            <Link
+                                                to="/elite-endstufe"
+                                                className="relative w-full py-3.5 rounded-full font-sans font-bold text-[14px] transition-all duration-500 overflow-hidden text-center block bg-accent text-white shadow-lg hover:shadow-xl hover:scale-[1.02] group/btn"
+                                            >
+                                                <span className="relative z-10 flex items-center justify-center gap-2">
+                                                    {pkg.ctaLabel}
+                                                    <span className="group-hover/btn:translate-x-1 transition-transform">↗</span>
+                                                </span>
+                                            </Link>
+                                        ) : pkg.phoneOnly ? (
+                                            <button
+                                                onClick={() => setPhoneModal({ packageName: pkg.name })}
+                                                className="relative w-full py-3.5 rounded-full font-sans font-bold text-[14px] transition-all duration-500 overflow-hidden text-center block bg-transparent text-obsidian border border-obsidian/20 hover:border-obsidian/50 hover:bg-obsidian/5 group/btn"
+                                            >
+                                                <span className="relative z-10 flex items-center justify-center gap-2">
+                                                    Termin vereinbaren
+                                                    <span className="group-hover/btn:translate-x-1 transition-transform">↗</span>
+                                                </span>
+                                            </button>
+                                        ) : (
+                                            <Link
+                                                to="/buchen"
+                                                className="relative w-full py-3.5 rounded-full font-sans font-bold text-[14px] transition-all duration-500 overflow-hidden text-center block bg-transparent text-obsidian border border-obsidian/20 hover:border-obsidian/50 hover:bg-obsidian/5 group/btn"
+                                            >
+                                                <span className="relative z-10 flex items-center justify-center gap-2">
+                                                    Buchen
+                                                    <span className="group-hover/btn:translate-x-1 transition-transform">↗</span>
+                                                </span>
+                                            </Link>
+                                        )}
                                     </div>
                                 </div>
                             );
@@ -233,21 +254,39 @@ export default function Pricing() {
                                     ))}
                                 </ul>
 
-                                <Link
-                                    to="/buchen"
-                                    className={`relative mt-4 w-full py-4 rounded-full font-sans font-bold text-[15px] transition-all duration-500 overflow-hidden text-center block ${isPremium
-                                        ? 'bg-accent text-obsidian shadow-lg hover:shadow-xl hover:scale-[1.02]'
-                                        : 'bg-transparent text-ivory border border-ivory/20 hover:border-ivory/60 hover:bg-ivory/10'
-                                        } group/btn`}
-                                >
-                                    <span className="relative z-10 flex items-center justify-center gap-2">
-                                        Termin Vereinbaren
-                                        <span className="group-hover/btn:translate-x-1 transition-transform">→</span>
-                                    </span>
-                                    {isPremium && (
-                                        <div className="absolute top-0 -left-[100%] w-1/2 h-full bg-gradient-to-r from-transparent via-white/50 to-transparent skew-x-[-20deg] group-hover/btn:animate-[shimmer_1.5s_infinite]" />
-                                    )}
-                                </Link>
+                                {pkg.phoneOnly ? (
+                                    <button
+                                        onClick={() => setPhoneModal({ packageName: pkg.name })}
+                                        className={`relative mt-4 w-full py-4 rounded-full font-sans font-bold text-[15px] transition-all duration-500 overflow-hidden text-center block ${isPremium
+                                            ? 'bg-accent text-obsidian shadow-lg hover:shadow-xl hover:scale-[1.02]'
+                                            : 'bg-transparent text-ivory border border-ivory/20 hover:border-ivory/60 hover:bg-ivory/10'
+                                            } group/btn`}
+                                    >
+                                        <span className="relative z-10 flex items-center justify-center gap-2">
+                                            Termin vereinbaren
+                                            <span className="group-hover/btn:translate-x-1 transition-transform">→</span>
+                                        </span>
+                                        {isPremium && (
+                                            <div className="absolute top-0 -left-[100%] w-1/2 h-full bg-gradient-to-r from-transparent via-white/50 to-transparent skew-x-[-20deg] group-hover/btn:animate-[shimmer_1.5s_infinite]" />
+                                        )}
+                                    </button>
+                                ) : (
+                                    <Link
+                                        to="/buchen"
+                                        className={`relative mt-4 w-full py-4 rounded-full font-sans font-bold text-[15px] transition-all duration-500 overflow-hidden text-center block ${isPremium
+                                            ? 'bg-accent text-obsidian shadow-lg hover:shadow-xl hover:scale-[1.02]'
+                                            : 'bg-transparent text-ivory border border-ivory/20 hover:border-ivory/60 hover:bg-ivory/10'
+                                            } group/btn`}
+                                    >
+                                        <span className="relative z-10 flex items-center justify-center gap-2">
+                                            Buchen
+                                            <span className="group-hover/btn:translate-x-1 transition-transform">→</span>
+                                        </span>
+                                        {isPremium && (
+                                            <div className="absolute top-0 -left-[100%] w-1/2 h-full bg-gradient-to-r from-transparent via-white/50 to-transparent skew-x-[-20deg] group-hover/btn:animate-[shimmer_1.5s_infinite]" />
+                                        )}
+                                    </Link>
+                                )}
                             </div>
                         );})}
                     </div>
@@ -266,6 +305,13 @@ export default function Pricing() {
                 </div>
 
             </div>
+
+            {phoneModal && (
+                <PhoneConsultModal
+                    packageName={phoneModal.packageName}
+                    onClose={() => setPhoneModal(null)}
+                />
+            )}
         </section>
     );
 }

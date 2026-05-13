@@ -1,5 +1,6 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
+import PhoneConsultModal from '../components/PhoneConsultModal';
 import { Check, Zap, Gift, Shield, Sparkles, ArrowRight, Phone, Clock, Droplets, Star, Gem, Car, CircleDot, Handshake } from 'lucide-react';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
@@ -32,6 +33,7 @@ const processSteps = [
 ];
 
 export default function EliteEndstufe() {
+    const [phoneModal, setPhoneModal] = useState(false);
     const heroRef = useRef(null);
     const featuresRef = useRef(null);
     const galleryRef = useRef(null);
@@ -99,12 +101,12 @@ export default function EliteEndstufe() {
                         </div>
 
                         <div className="hero-anim flex flex-wrap gap-4 mt-2">
-                            <Link
-                                to="/buchen"
+                            <button
+                                onClick={() => setPhoneModal(true)}
                                 className="btn-magnetic inline-flex items-center gap-2 bg-champagne text-obsidian px-8 py-4 rounded-full font-sans font-bold text-sm shadow-[0_0_30px_rgba(77,178,146,0.3)] hover:brightness-110 transition-all"
                             >
-                                Jetzt Buchen <ArrowRight className="w-4 h-4" />
-                            </Link>
+                                Termin vereinbaren <ArrowRight className="w-4 h-4" />
+                            </button>
                             <a
                                 href="tel:+436642546078"
                                 className="inline-flex items-center gap-2 border border-ivory/30 hover:border-champagne/50 text-ivory/80 hover:text-ivory px-8 py-4 rounded-full font-sans text-sm transition-colors backdrop-blur-sm"
@@ -349,12 +351,12 @@ export default function EliteEndstufe() {
                             </p>
                         </div>
                         <div className="flex flex-col sm:flex-row gap-4 shrink-0">
-                            <Link
-                                to="/buchen"
+                            <button
+                                onClick={() => setPhoneModal(true)}
                                 className="btn-magnetic inline-flex items-center justify-center gap-2 bg-champagne text-obsidian px-10 py-4 rounded-full font-sans font-bold text-sm shadow-[0_0_30px_rgba(77,178,146,0.3)] hover:brightness-110 transition-all"
                             >
-                                Jetzt Buchen <ArrowRight className="w-4 h-4" />
-                            </Link>
+                                Termin vereinbaren <ArrowRight className="w-4 h-4" />
+                            </button>
                             <a
                                 href="tel:+436642546078"
                                 className="inline-flex items-center justify-center gap-2 border border-ivory/30 hover:border-champagne/50 text-ivory/80 hover:text-ivory px-10 py-4 rounded-full font-sans text-sm transition-colors"
@@ -367,6 +369,13 @@ export default function EliteEndstufe() {
             </section>
 
             <Footer />
+
+            {phoneModal && (
+                <PhoneConsultModal
+                    packageName="Élite Exklusiv – Endstufe"
+                    onClose={() => setPhoneModal(false)}
+                />
+            )}
         </div>
     );
 }
