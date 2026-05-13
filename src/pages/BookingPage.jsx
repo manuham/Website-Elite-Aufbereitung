@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { Link, useSearchParams } from 'react-router-dom';
-import { Check, ChevronLeft, ChevronRight, ArrowLeft, Phone, Mail, MapPin, Plus, X as XIcon, Sparkles, AlertTriangle, Truck, Zap, Gift, Construction } from 'lucide-react';
+import { Link, useSearchParams, useNavigate } from 'react-router-dom';
+import { Check, ChevronLeft, ChevronRight, ArrowLeft, Phone, Mail, MapPin, Plus, X as XIcon, Sparkles, AlertTriangle, Truck, Zap, Gift, Construction, Camera } from 'lucide-react';
 import gsap from 'gsap';
 import { serviceCategories, tierPackages, allInOnePackages } from '../data/services';
 import { useAvailability } from '../hooks/useAvailability';
@@ -23,6 +23,21 @@ function getFirstDayOfMonth(y, m) { return (new Date(y, m, 1).getDay() + 6) % 7;
 function parsePriceNum(priceStr) {
     const match = priceStr.replace(/\./g, '').match(/€(\d+)/);
     return match ? parseInt(match[1]) : 0;
+}
+
+// ─── Cloudinary photo upload ──────────────────────────────────────────────────
+
+async function uploadPhoto(file) {
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('upload_preset', 'vdrpbzfw');
+    const res = await fetch('https://api.cloudinary.com/v1_1/ddtmjszd6/image/upload', {
+        method: 'POST',
+        body: formData,
+    });
+    const data = await res.json();
+    if (!data.secure_url) throw new Error('Upload fehlgeschlagen');
+    return data.secure_url;
 }
 
 // ─── Step indicator ───────────────────────────────────────────────────────────
@@ -693,17 +708,33 @@ function Step2({ datetime, setDatetime, onNext, onBack, serviceMode }) {
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const PHONE_REGEX = /^[+\d][\d\s\-/]{6,}$/;
 
-function Step3({ contact, setContact, onSubmit, onBack, loading, serviceMode }) {
+function Step3({ contact, setContact, photos, setPhotos, photoPreviews, setPhotoPreviews, onSubmit, onBack, loading, uploadingPhotos, serviceMode }) {
     const set = (key) => (e) => setContact(c => ({ ...c, [key]: e.target.value }));
 
     const nameValid = contact.name.trim().length >= 2;
     const phoneValid = PHONE_REGEX.test(contact.phone.trim());
     const emailValid = EMAIL_REGEX.test(contact.email.trim());
     const addressValid = serviceMode !== 'mobil' || (contact.address && contact.address.trim().length >= 5);
-    const valid = nameValid && phoneValid && emailValid && addressValid;
+    const valid = nameValid && phoneValid && emailValid && addressValid && photos.length >= 1;
 
     const inputClass = "input-elite w-full bg-slate/30 border border-slate/60 outline-none rounded-xl px-4 py-3.5 font-sans text-sm text-ivory placeholder:text-ivory/30";
     const errorClass = "font-sans text-[11px] text-red-400 mt-1";
+
+    const addPhotos = (files) => {
+        const imageFiles = files.filter(f => f.type.startsWith('image/'));
+        const allowed = imageFiles.slice(0, 4 - photos.length);
+        if (allowed.length === 0) return;
+        setPhotos(prev => [...prev, ...allowed]);
+        setPhotoPreviews(prev => [...prev, ...allowed.map(f => URL.createObjectURL(f))]);
+    };
+
+    const removePhoto = (index) => {
+        URL.revokeObjectURL(photoPreviews[index]);
+        setPhotos(prev => prev.filter((_, i) => i !== index));
+        setPhotoPreviews(prev => prev.filter((_, i) => i !== index));
+    };
+
+    const buttonLabel = uploadingPhotos ? 'Fotos werden hochgeladen...' : loading ? 'Wird gesendet...' : 'Anfrage absenden';
 
     return (
         <div className="flex flex-col gap-10 w-full">
@@ -743,13 +774,61 @@ function Step3({ contact, setContact, onSubmit, onBack, loading, serviceMode }) 
                 </div>
             </div>
 
+            {/* Photo upload */}
+            <div className="flex flex-col gap-4">
+                <div>
+                    <p className="font-sans text-xs text-ivory/50 uppercase tracking-widest">
+                        Fahrzeugfotos * <span className="normal-case text-ivory/30">(1–4 Fotos)</span>
+                    </p>
+                    <p className="font-sans text-xs text-ivory/30 mt-1">
+                        Laden Sie Fotos hoch, damit wir den Zustand Ihres Fahrzeugs einschätzen können.
+                    </p>
+                </div>
+
+                {photos.length < 4 && (
+                    <label
+                        className="flex flex-col items-center justify-center gap-3 p-8 rounded-[1.5rem] border-2 border-dashed border-slate/60 hover:border-accent/50 cursor-pointer transition-colors group"
+                        onDragOver={(e) => e.preventDefault()}
+                        onDrop={(e) => { e.preventDefault(); addPhotos(Array.from(e.dataTransfer.files)); }}
+                    >
+                        <input type="file" accept="image/*" multiple className="hidden" onChange={(e) => addPhotos(Array.from(e.target.files))} />
+                        <Camera className="w-8 h-8 text-ivory/30 group-hover:text-accent/60 transition-colors" />
+                        <div className="text-center">
+                            <span className="font-sans text-sm text-ivory/50 group-hover:text-ivory/70 block">Fotos auswählen oder hierher ziehen</span>
+                            <span className="font-mono text-[10px] text-ivory/25 uppercase tracking-wider">{photos.length} / 4 Fotos</span>
+                        </div>
+                    </label>
+                )}
+
+                {photoPreviews.length > 0 && (
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                        {photoPreviews.map((src, i) => (
+                            <div key={i} className="relative aspect-square rounded-xl overflow-hidden border border-slate/60 group">
+                                <img src={src} className="w-full h-full object-cover" alt={`Foto ${i + 1}`} />
+                                <button
+                                    type="button"
+                                    onClick={() => removePhoto(i)}
+                                    className="absolute top-1.5 right-1.5 w-6 h-6 rounded-full bg-black/70 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-500/80"
+                                >
+                                    <XIcon className="w-3 h-3 text-white" />
+                                </button>
+                            </div>
+                        ))}
+                    </div>
+                )}
+
+                {photos.length === 0 && (
+                    <p className="font-sans text-[11px] text-ivory/35">Bitte laden Sie mindestens 1 Foto hoch.</p>
+                )}
+            </div>
+
             <div className="flex justify-between mt-2">
                 <button onClick={onBack} className="flex items-center gap-2 font-sans text-sm text-ivory/50 hover:text-ivory transition-colors link-lift">
                     <ChevronLeft className="w-4 h-4" /> Zurück
                 </button>
-                <button onClick={onSubmit} disabled={!valid || loading}
+                <button onClick={onSubmit} disabled={!valid || loading || uploadingPhotos}
                     className="btn-magnetic bg-accent text-obsidian px-10 py-4 rounded-full font-sans font-bold text-sm disabled:opacity-30 disabled:cursor-not-allowed">
-                    {loading ? 'Wird gesendet...' : 'Anfrage absenden'}
+                    {buttonLabel}
                 </button>
             </div>
         </div>
@@ -894,6 +973,7 @@ function Step4({ selectedItems, datetime, serviceMode, contact, vehicleCategory,
 
 export default function BookingPage() {
     const [searchParams] = useSearchParams();
+    const navigate = useNavigate();
     const [step, setStep] = useState(0);
     const [loading, setLoading] = useState(false);
     const [serviceMode, setServiceMode] = useState(null);
@@ -903,6 +983,9 @@ export default function BookingPage() {
     const [vehicleCategory, setVehicleCategory] = useState(null);
     const [datetime, setDatetime] = useState({ date: null, time: null });
     const [contact, setContact] = useState({ name: '', phone: '', email: '', notes: '', address: '' });
+    const [photos, setPhotos] = useState([]);
+    const [photoPreviews, setPhotoPreviews] = useState([]);
+    const [uploadingPhotos, setUploadingPhotos] = useState(false);
     const [submitError, setSubmitError] = useState(null);
 
     const stepContentRef = useRef(null);
@@ -968,6 +1051,19 @@ export default function BookingPage() {
         setLoading(true);
         setSubmitError(null);
 
+        // Upload photos to Cloudinary first
+        setUploadingPhotos(true);
+        let photoUrls = [];
+        try {
+            photoUrls = await Promise.all(photos.map(uploadPhoto));
+        } catch {
+            setSubmitError('Fotos konnten nicht hochgeladen werden. Bitte versuchen Sie es erneut.');
+            setUploadingPhotos(false);
+            setLoading(false);
+            return;
+        }
+        setUploadingPhotos(false);
+
         const dateStr = datetime.date?.toLocaleDateString('de-AT', { weekday: 'long', day: '2-digit', month: '2-digit', year: 'numeric' });
         const yyyy = datetime.date.getFullYear();
         const mm = String(datetime.date.getMonth() + 1).padStart(2, '0');
@@ -988,6 +1084,7 @@ export default function BookingPage() {
                 contact,
                 serviceMode,
                 vehicleCategory: vehicleCategory?.name,
+                photoUrls,
             });
 
             // Send email notification in parallel (fire-and-forget backup)
@@ -1012,6 +1109,7 @@ export default function BookingPage() {
                         ? `ab €${(serviceTotal + mobileSurchargeVal).toLocaleString('de-AT')},- + Aufpreis auf Anfrage`
                         : `ab €${total.toLocaleString('de-AT')},-`,
                     Anmerkungen: contact.notes || '—',
+                    Fahrzeugfotos: photoUrls.length > 0 ? photoUrls.join('\n') : '—',
                 }),
             }).catch(() => {});
 
@@ -1034,11 +1132,13 @@ export default function BookingPage() {
             <div className="fixed inset-0 pointer-events-none z-50 opacity-60"
                 style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.05'/%3E%3C/svg%3E")` }} />
 
-            <header className="fixed top-0 left-0 right-0 z-40 flex items-center justify-between px-6 sm:px-12 py-5 border-b border-slate/30 bg-obsidian/80 backdrop-blur-xl">
-                <Link to="/" className="flex items-center gap-2 font-sans text-sm text-ivory/50 hover:text-ivory transition-colors link-lift">
+            <header className="fixed top-0 left-0 right-0 z-40 flex items-center justify-between px-6 sm:px-12 py-2 border-b border-slate/30 bg-obsidian/80 backdrop-blur-xl">
+                <button onClick={() => navigate(-1)} className="flex items-center gap-2 font-sans text-sm text-ivory/50 hover:text-ivory transition-colors link-lift">
                     <ArrowLeft className="w-4 h-4" /> Zurück
+                </button>
+                <Link to="/">
+                    <img src="/assets/logo-new2.png" alt="Elité Auto Aufbereitung" className="h-[5rem] sm:h-[6rem] lg:h-[7.5rem] w-auto object-contain" />
                 </Link>
-                <img src="/assets/logo-new2.png" alt="Elité Auto Aufbereitung" className="h-[5rem] sm:h-[6rem] lg:h-[7rem] w-auto object-contain" />
                 <div className="flex items-center gap-2 bg-obsidian/50 px-3 py-1.5 rounded-full border border-slate/50">
                     <span className="relative flex h-2 w-2">
                         <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75" />
@@ -1048,7 +1148,7 @@ export default function BookingPage() {
                 </div>
             </header>
 
-            <main className="pt-32 sm:pt-36 lg:pt-40 pb-24 px-6 sm:px-12 lg:px-24">
+            <main className="pt-24 sm:pt-28 lg:pt-32 pb-24 px-6 sm:px-12 lg:px-24">
                 <div className="max-w-4xl mx-auto">
                     {step < 5 && <StepBar step={step} />}
                     <div ref={stepContentRef}>
@@ -1058,7 +1158,7 @@ export default function BookingPage() {
                         {step === 3 && <Step2 datetime={datetime} setDatetime={setDatetime} onNext={() => animateStep(4)} onBack={() => animateStep(2)} serviceMode={serviceMode} />}
                         {step === 4 && (
                             <>
-                                <Step3 contact={contact} setContact={setContact} onSubmit={handleSubmit} onBack={() => animateStep(3)} loading={loading} serviceMode={serviceMode} />
+                                <Step3 contact={contact} setContact={setContact} photos={photos} setPhotos={setPhotos} photoPreviews={photoPreviews} setPhotoPreviews={setPhotoPreviews} onSubmit={handleSubmit} onBack={() => animateStep(3)} loading={loading} uploadingPhotos={uploadingPhotos} serviceMode={serviceMode} />
                                 {submitError && (
                                     <div className="mt-6 bg-red-500/10 border border-red-500/30 rounded-xl px-5 py-4 text-center">
                                         <p className="font-sans text-sm text-red-400">{submitError}</p>
