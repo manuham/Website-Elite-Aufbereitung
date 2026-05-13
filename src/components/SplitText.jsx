@@ -87,7 +87,7 @@ export default function SplitText({
                             <span
                                 key={`${wi}-${ci}`}
                                 className="inline-block overflow-hidden"
-                                style={{ lineHeight: 'inherit', verticalAlign: 'top' }}
+                                style={{ lineHeight: 'inherit', verticalAlign: 'top', paddingLeft: '0.1em', marginLeft: '-0.1em', paddingRight: '0.1em', marginRight: '-0.1em' }}
                             >
                                 <span className="split-unit inline-block">
                                     {char}

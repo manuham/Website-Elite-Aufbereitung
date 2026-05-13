@@ -1132,12 +1132,12 @@ export default function BookingPage() {
             <div className="fixed inset-0 pointer-events-none z-50 opacity-60"
                 style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.05'/%3E%3C/svg%3E")` }} />
 
-            <header className="fixed top-0 left-0 right-0 z-40 flex items-center justify-between px-6 sm:px-12 py-2 border-b border-slate/30 bg-obsidian/80 backdrop-blur-xl">
+            <header className="fixed top-0 left-0 right-0 z-40 flex items-center justify-between px-6 sm:px-12 py-3 border-b border-slate/30 bg-obsidian/80 backdrop-blur-xl">
                 <button onClick={() => navigate(-1)} className="flex items-center gap-2 font-sans text-sm text-ivory/50 hover:text-ivory transition-colors link-lift">
                     <ArrowLeft className="w-4 h-4" /> Zurück
                 </button>
                 <Link to="/">
-                    <img src="/assets/logo-new2.png" alt="Elité Auto Aufbereitung" className="h-[5rem] sm:h-[6rem] lg:h-[7.5rem] w-auto object-contain" />
+                    <img src="/assets/logo-new2.png" alt="Elité Auto Aufbereitung" className="h-[4rem] sm:h-[4.5rem] lg:h-[5.5rem] w-auto object-contain" />
                 </Link>
                 <div className="flex items-center gap-2 bg-obsidian/50 px-3 py-1.5 rounded-full border border-slate/50">
                     <span className="relative flex h-2 w-2">
@@ -1148,7 +1148,7 @@ export default function BookingPage() {
                 </div>
             </header>
 
-            <main className="pt-24 sm:pt-28 lg:pt-32 pb-24 px-6 sm:px-12 lg:px-24">
+            <main className="pt-20 sm:pt-24 lg:pt-28 pb-24 px-6 sm:px-12 lg:px-24">
                 <div className="max-w-4xl mx-auto">
                     {step < 5 && <StepBar step={step} />}
                     <div ref={stepContentRef}>

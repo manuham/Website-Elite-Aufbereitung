@@ -70,11 +70,11 @@ export default function MobileService() {
             <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-center relative z-10">
 
                 {/* Left — Image */}
-                <div className="mobile-image relative rounded-[2rem] overflow-hidden h-[360px] sm:h-[420px] lg:h-[500px] shadow-2xl group transform-gpu border border-ivory/5">
+                <div className="mobile-image relative rounded-[2rem] overflow-hidden h-[420px] sm:h-[500px] lg:h-[580px] shadow-2xl group transform-gpu border border-ivory/5">
                     <img
                         src="/assets/VAN/VAN.png"
                         alt="Mobiler Aufbereitungsservice"
-                        className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105"
+                        className="w-full h-[calc(100%+80px)] -translate-y-[40px] object-cover object-center transition-transform duration-1000 group-hover:scale-105"
                         loading="lazy"
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-obsidian/90 via-obsidian/20 to-transparent mix-blend-multiply" />
