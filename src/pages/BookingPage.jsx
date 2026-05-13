@@ -260,7 +260,9 @@ function Step1({ selectedItems, toggleItem, onNext, onBack, recommendations, pac
     const activeCategory = serviceCategories.find(c => c.id === activeTab);
 
     const tabs = [
-        ...serviceCategories.map(c => ({ id: c.id, label: c.title })),
+        ...serviceCategories
+            .filter(c => c.packages.some(p => !p.phoneOnly))
+            .map(c => ({ id: c.id, label: c.title })),
         { id: 'aio', label: '✦ All-in-One' },
     ];
 
@@ -293,7 +295,7 @@ function Step1({ selectedItems, toggleItem, onNext, onBack, recommendations, pac
             {/* All-in-One grid */}
             {activeTab === 'aio' && (
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-                    {tierPackages.map(pkg => {
+                    {tierPackages.filter(pkg => !pkg.phoneOnly).map(pkg => {
                         const selected = isSelected(pkg.id);
                         const isElite = pkg.id === 'tier-elite';
                         const textFeatures = pkg.features.filter(f => !f.section);
@@ -360,7 +362,7 @@ function Step1({ selectedItems, toggleItem, onNext, onBack, recommendations, pac
             {/* Individual service packages */}
             {activeTab !== 'aio' && activeCategory && (
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-                    {activeCategory.packages.map((pkg, i) => {
+                    {activeCategory.packages.filter(p => !p.phoneOnly).map((pkg, i) => {
                         const id = `${activeCategory.id}-${i}`;
                         const selected = isSelected(id);
                         return (

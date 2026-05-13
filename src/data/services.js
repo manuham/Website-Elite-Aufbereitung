@@ -85,6 +85,7 @@ export const tierPackages = [
             description: 'Hochwertiges Pflegeset zur Heimanwendung',
         },
         ctaLabel: 'Mehr erfahren',
+        phoneOnly: true,
     },
 ];
 
