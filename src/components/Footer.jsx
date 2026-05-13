@@ -27,6 +27,9 @@ export default function Footer() {
                     <p className="font-sans text-sm text-ivory/50 leading-relaxed text-balance">
                         Professionelle Fahrzeugaufbereitung in Vorarlberg. Perfektion bis ins Detail.
                     </p>
+                    <p className="font-sans text-xs text-ivory/35 leading-relaxed text-balance">
+                        Wir betreuen Kunden aus ganz Vorarlberg — von Bludenz über Feldkirch und Dornbirn bis Bregenz, Lustenau, Hohenems, Götzis und Rankweil.
+                    </p>
                 </div>
 
                 {/* Col 2 */}
@@ -50,16 +53,18 @@ export default function Footer() {
                 {/* Col 3 */}
                 <div className="flex flex-col gap-6">
                     <h4 className="font-sans font-bold text-sm text-ivory uppercase tracking-widest">Kontakt</h4>
-                    <ul className="flex flex-col gap-3 font-sans text-sm text-ivory/60">
-                        <li>Bundesstraße 2a</li>
-                        <li>6714 Nüziders, Österreich</li>
-                        <li className="mt-2"><a href="tel:+436642546078" className="hover:text-champagne transition-colors">+43 664 2546078</a></li>
-                        <li><a href="mailto:info.eliteaufbereitung@gmail.com" className="hover:text-champagne transition-colors break-all">info.eliteaufbereitung@gmail.com</a></li>
-                        <li className="mt-2 flex items-center gap-2">
-                            <span className="bg-champagne/20 text-champagne px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider">Neu</span>
-                            <span className="text-ivory/60">Mobiler Service verfügbar</span>
-                        </li>
-                    </ul>
+                    <address className="not-italic">
+                        <ul className="flex flex-col gap-3 font-sans text-sm text-ivory/60">
+                            <li>Ketschelenstraße 1</li>
+                            <li>6800 Feldkirch, Österreich</li>
+                            <li className="mt-2"><a href="tel:+436642546078" className="hover:text-champagne transition-colors">+43 664 2546078</a></li>
+                            <li><a href="mailto:info.eliteaufbereitung@gmail.com" className="hover:text-champagne transition-colors break-all">info.eliteaufbereitung@gmail.com</a></li>
+                            <li className="mt-2 flex items-center gap-2">
+                                <span className="bg-champagne/20 text-champagne px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider">Neu</span>
+                                <span className="text-ivory/60">Mobiler Service verfügbar</span>
+                            </li>
+                        </ul>
+                    </address>
                 </div>
 
                 {/* Col 4 */}

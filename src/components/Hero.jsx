@@ -120,6 +120,9 @@ export default function Hero() {
                     src="/assets/VAN/VAN.png"
                     alt="Elite Aufbereitung mobiler Service Van"
                     className="w-full h-full object-cover opacity-60 mix-blend-luminosity will-change-transform scale-105"
+                    loading="eager"
+                    fetchpriority="high"
+                    decoding="async"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-obsidian via-obsidian/90 to-obsidian/30" />
             </div>
@@ -148,11 +151,11 @@ export default function Hero() {
 
                 <div className="flex flex-col relative w-full">
                     <h1 className="hero-fade font-sans font-bold text-3xl sm:text-5xl lg:text-6xl text-ivory tracking-tight mb-1 sm:mb-2 text-balance">
-                        Perfektion trifft
+                        Autoaufbereitung in Vorarlberg —
                     </h1>
-                    <h2 className="hero-fade font-drama italic text-[2.75rem] sm:text-7xl lg:text-[6rem] xl:text-[8rem] leading-[1.05] text-transparent bg-clip-text bg-gradient-to-r from-ivory via-champagne to-ivory drop-shadow-2xl pr-4">
-                        Präzision.
-                    </h2>
+                    <p className="hero-fade font-drama italic text-[2.75rem] sm:text-7xl lg:text-[6rem] xl:text-[8rem] leading-[1.05] text-transparent bg-clip-text bg-gradient-to-r from-ivory via-champagne to-ivory drop-shadow-2xl pr-4">
+                        Perfektion trifft Präzision.
+                    </p>
                 </div>
 
                 <p className="hero-fade font-sans font-normal text-lg sm:text-xl text-ivory/90 max-w-xl leading-relaxed text-balance drop-shadow-md">

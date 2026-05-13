@@ -124,9 +124,9 @@ export default function Gallery() {
                 {/* Header */}
                 <div className="gallery-header flex flex-col sm:flex-row sm:items-end justify-between gap-6">
                     <div className="flex flex-col gap-2">
-                        <h3 className="font-sans font-bold text-lg text-ivory/60 uppercase tracking-widest">
+                        <span className="font-sans font-bold text-lg text-ivory/60 uppercase tracking-widest">
                             Portfolio
-                        </h3>
+                        </span>
                         <h2 className="font-drama italic text-4xl sm:text-5xl text-ivory">
                             <SplitText type="words" triggerStart="top 85%">
                                 Unsere
