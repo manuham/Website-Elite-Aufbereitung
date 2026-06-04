@@ -55,8 +55,8 @@ export default function Footer() {
                     <h4 className="font-sans font-bold text-sm text-ivory uppercase tracking-widest">Kontakt</h4>
                     <address className="not-italic">
                         <ul className="flex flex-col gap-3 font-sans text-sm text-ivory/60">
-                            <li>Ketschelenstraße 1</li>
-                            <li>6800 Feldkirch, Österreich</li>
+                            <li>Bundesstraße 2a</li>
+                            <li>6714 Nüziders, Österreich</li>
                             <li className="mt-2"><a href="tel:+436642546078" className="hover:text-champagne transition-colors">+43 664 2546078</a></li>
                             <li><a href="mailto:info.eliteaufbereitung@gmail.com" className="hover:text-champagne transition-colors break-all">info.eliteaufbereitung@gmail.com</a></li>
                             <li className="mt-2 flex items-center gap-2">
@@ -92,9 +92,11 @@ export default function Footer() {
 
             <div className="max-w-7xl mx-auto w-full pt-8 border-t border-ivory/10 flex flex-col sm:flex-row justify-between items-center gap-4 font-sans text-xs text-ivory/40">
                 <p>© 2026 Elité Auto Aufbereitung. Alle Rechte vorbehalten.</p>
-                <div className="flex gap-4">
+                <div className="flex flex-wrap gap-4 justify-center">
                     <Link to="/impressum" className="hover:text-ivory transition-colors">Impressum</Link>
                     <Link to="/datenschutz" className="hover:text-ivory transition-colors">Datenschutz</Link>
+                    <Link to="/agb" className="hover:text-ivory transition-colors">AGB</Link>
+                    <Link to="/widerruf" className="hover:text-ivory transition-colors">Widerruf</Link>
                 </div>
             </div>
 

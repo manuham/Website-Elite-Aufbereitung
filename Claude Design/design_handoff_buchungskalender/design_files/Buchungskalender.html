@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Elité Aufbereitung — Buchungskalender</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;0,600;1,400;1,500;1,600&family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --obsidian: #0D0D12;
+    --obsidian-2: #14141b;
+    --slate: #2A2A35;
+    --slate-soft: #20202a;
+    --ivory: #FAF8F5;
+    --accent-h: 162;
+    --accent-s: 40%;
+    --accent-l: 50%;
+    --accent: hsl(var(--accent-h) var(--accent-s) var(--accent-l));
+    --accent-glow: hsl(var(--accent-h) 55% 53%);
+    --accent-rgb: 77, 178, 146;
+    --row-h: 64px;       /* week-grid minute scale base, overridden by density */
+    --min-px: 0.9px;     /* px per minute in week grid */
+    --radius: 22px;
+    font-synthesis: none;
+  }
+
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+
+  body {
+    background: var(--obsidian);
+    color: var(--ivory);
+    font-family: 'Inter', system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* Cinematic film grain (from the brand's index.css) */
+  body.grain::before {
+    content: "";
+    position: fixed;
+    inset: -50%;
+    width: 200%;
+    height: 200%;
+    pointer-events: none;
+    z-index: 80;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.05'/%3E%3C/svg%3E");
+    opacity: 0.28;
+    animation: grain 8s steps(10) infinite;
+  }
+  @keyframes grain {
+    0%,100%{transform:translate(0,0)}10%{transform:translate(-5%,-10%)}20%{transform:translate(-15%,5%)}
+    30%{transform:translate(7%,-25%)}40%{transform:translate(-5%,25%)}50%{transform:translate(-15%,10%)}
+    60%{transform:translate(15%,0)}70%{transform:translate(0,15%)}80%{transform:translate(3%,35%)}90%{transform:translate(-10%,10%)}
+  }
+
+  .drama { font-family: 'Playfair Display', Georgia, serif; }
+  .mono { font-family: 'JetBrains Mono', ui-monospace, monospace; }
+
+  /* Ambient atmosphere blobs behind everything */
+  .ambient {
+    position: fixed; inset: 0; z-index: 0; overflow: hidden; pointer-events: none;
+  }
+  .ambient i {
+    position: absolute; border-radius: 50%; filter: blur(120px); opacity: 0.20;
+    mix-blend-mode: screen;
+  }
+  .ambient .b1 { top: -12%; left: -8%; width: 620px; height: 620px; background: var(--accent); animation: blob 16s ease-in-out infinite; }
+  .ambient .b2 { bottom: -18%; right: -6%; width: 520px; height: 520px; background: #2b6cff; opacity: 0.12; animation: blob 20s ease-in-out infinite reverse; }
+  @keyframes blob {
+    0%,100%{transform:translate(0,0) scale(1)}33%{transform:translate(40px,-60px) scale(1.1)}66%{transform:translate(-30px,30px) scale(.9)}
+  }
+
+  ::selection { background: rgba(var(--accent-rgb), 0.3); color: var(--ivory); }
+
+  /* Scrollbars inside scroll regions */
+  .hide-scroll { scrollbar-width: thin; scrollbar-color: var(--slate) transparent; }
+  .hide-scroll::-webkit-scrollbar { width: 8px; height: 8px; }
+  .hide-scroll::-webkit-scrollbar-thumb { background: var(--slate); border-radius: 8px; }
+  .hide-scroll::-webkit-scrollbar-track { background: transparent; }
+
+  button { font-family: inherit; cursor: pointer; border: none; background: none; color: inherit; }
+
+  .glass {
+    background: rgba(42, 42, 53, 0.30);
+    backdrop-filter: blur(28px) saturate(1.2);
+    -webkit-backdrop-filter: blur(28px) saturate(1.2);
+    border: 1px solid rgba(250, 248, 245, 0.08);
+  }
+
+  /* Shared slot visual language ------------------------------------------------ */
+  .slot { transition: transform .18s cubic-bezier(.2,.7,.3,1), background-color .18s, border-color .18s, box-shadow .18s; }
+  .slot-free {
+    background: rgba(var(--accent-rgb), 0.08);
+    border: 1px solid rgba(var(--accent-rgb), 0.28);
+    color: var(--ivory);
+  }
+  .slot-free:hover {
+    background: rgba(var(--accent-rgb), 0.16);
+    border-color: rgba(var(--accent-rgb), 0.55);
+    transform: translateY(-1px);
+  }
+  .slot-selected {
+    background: var(--accent) !important;
+    border-color: var(--accent) !important;
+    color: var(--obsidian) !important;
+    box-shadow: 0 0 0 1px var(--accent), 0 8px 26px rgba(var(--accent-rgb), 0.4);
+  }
+  .slot-booked {
+    background: repeating-linear-gradient(135deg, rgba(255,255,255,0.018) 0 7px, rgba(255,255,255,0.05) 7px 8px);
+    border: 1px solid rgba(250,248,245,0.06);
+    color: rgba(250,248,245,0.28);
+    cursor: not-allowed;
+  }
+  .slot-past {
+    border: 1px dashed rgba(250,248,245,0.07);
+    color: rgba(250,248,245,0.18);
+    cursor: not-allowed;
+  }
+
+  .pill {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px; letter-spacing: .12em; text-transform: uppercase;
+    color: rgba(250,248,245,0.55);
+  }
+
+  .focus-ring:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+  /* entrance */
+  @keyframes fadeUp { from { transform: translateY(10px); } to { transform: none; } }
+  @keyframes popIn { from { transform: scale(.98); } to { transform: none; } }
+  /* Entrance animates transform only — opacity stays 1 at every frame, so content
+     is never invisible even if the iframe throttles/stalls the animation. */
+  .fade-up { animation: fadeUp .45s cubic-bezier(.2,.7,.3,1) both; }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, body.grain::before, .ambient i { animation: none !important; }
+    .fade-up { animation: none !important; }
+  }
+</style>
+</head>
+<body class="grain">
+  <div class="ambient"><i class="b1"></i><i class="b2"></i></div>
+  <div id="root"></div>
+
+  <script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+
+  <script src="js/calendar-data.js"></script>
+  <script type="text/babel" src="tweaks-panel.jsx"></script>
+  <script type="text/babel" src="js/icons.jsx"></script>
+  <script type="text/babel" src="js/WeekView.jsx"></script>
+  <script type="text/babel" src="js/app.jsx"></script>
+
+  <template id="__bundler_thumbnail">
+    <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+      <rect width="100" height="100" fill="#0D0D12"/>
+      <rect x="22" y="24" width="56" height="52" rx="8" fill="none" stroke="#4DB292" stroke-width="3"/>
+      <line x1="22" y1="38" x2="78" y2="38" stroke="#4DB292" stroke-width="3"/>
+      <rect x="30" y="46" width="12" height="9" rx="2" fill="#4DB292"/>
+      <rect x="46" y="46" width="12" height="9" rx="2" fill="#FAF8F5" opacity="0.25"/>
+      <rect x="62" y="46" width="8" height="9" rx="2" fill="#4DB292"/>
+      <rect x="30" y="60" width="12" height="9" rx="2" fill="#FAF8F5" opacity="0.25"/>
+      <rect x="46" y="60" width="12" height="9" rx="2" fill="#4DB292"/>
+    </svg>
+  </template>
+</body>
+</html>

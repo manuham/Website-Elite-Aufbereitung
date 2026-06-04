@@ -1,13 +1,19 @@
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { Link, useSearchParams, useNavigate } from 'react-router-dom';
 import { Check, ChevronLeft, ChevronRight, ArrowLeft, Phone, Mail, MapPin, Plus, X as XIcon, Sparkles, AlertTriangle, Truck, Zap, Gift, Construction, Camera } from 'lucide-react';
 import gsap from 'gsap';
 import { serviceCategories, tierPackages, allInOnePackages } from '../data/services';
-import { useAvailability } from '../hooks/useAvailability';
 import { useRecommendations } from '../hooks/useRecommendations';
+import { useWeekAvailability } from '../hooks/useWeekAvailability';
 import { submitBooking } from '../lib/api';
+import {
+    computeBookingDuration, weekDays, weekStartMonday, addDays, workingSpan,
+    sameDayPlan, multiDayStartFree, isoKey, minToTime, durLabel, daysLabel, germanFull,
+    DROPOFF_BY, PICKUP_FROM,
+} from '../lib/scheduling';
 import RecommendationPanel from '../components/booking/RecommendationPanel';
-import DayTimePickerModal from '../components/booking/DayTimePickerModal';
+import WeekCalendar from '../components/booking/WeekCalendar';
+import PhoneConsultModal from '../components/PhoneConsultModal';
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
@@ -221,6 +227,7 @@ function Step1({ selectedItems, toggleItem, onNext, onBack, recommendations, pac
     const [activeTab, setActiveTab] = useState(serviceCategories[0].id);
     const [showDisclaimer, setShowDisclaimer] = useState(false);
     const [pendingItem, setPendingItem] = useState(null);
+    const [phoneModal, setPhoneModal] = useState(null);
 
     const isSelected = (id) => selectedItems.some(i => i.id === id);
 
@@ -248,22 +255,28 @@ function Step1({ selectedItems, toggleItem, onNext, onBack, recommendations, pac
     // Toggle an All-in-One package
     const toggleAIO = (pkg) => {
         const priceNum = parseInt(pkg.price.replace(/[^\d]/g, ''));
-        addWithDisclaimer({ id: pkg.id, name: `${pkg.tier} – ${pkg.name}`, price: `${pkg.price} €`, priceNum, type: 'aio' });
+        addWithDisclaimer({
+            id: pkg.id, name: `${pkg.tier} – ${pkg.name}`, price: `${pkg.price} €`, priceNum, type: 'aio',
+            durationMin: pkg.durationMin ?? null, durationDays: pkg.durationDays ?? null,
+            mobilExtraMin: pkg.mobilExtraMin ?? 0, mobilSurcharge: pkg.mobilSurcharge ?? 0,
+        });
     };
 
     // Toggle an individual service package
     const toggleService = (cat, pkg, idx) => {
         const id = `${cat.id}-${idx}`;
         const priceNum = parsePriceNum(pkg.price);
-        addWithDisclaimer({ id, name: pkg.name, price: pkg.price, priceNum, type: 'service' });
+        addWithDisclaimer({
+            id, name: pkg.name, price: pkg.price, priceNum, type: 'service',
+            durationMin: pkg.durationMin ?? null, durationDays: pkg.durationDays ?? null,
+            mobilExtraMin: pkg.mobilExtraMin ?? 0, mobilSurcharge: pkg.mobilSurcharge ?? 0,
+        });
     };
 
     const activeCategory = serviceCategories.find(c => c.id === activeTab);
 
     const tabs = [
-        ...serviceCategories
-            .filter(c => c.packages.some(p => !p.phoneOnly))
-            .map(c => ({ id: c.id, label: c.title })),
+        ...serviceCategories.map(c => ({ id: c.id, label: c.title })),
         { id: 'aio', label: '✦ All-in-One' },
     ];
 
@@ -296,7 +309,7 @@ function Step1({ selectedItems, toggleItem, onNext, onBack, recommendations, pac
             {/* All-in-One grid */}
             {activeTab === 'aio' && (
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-                    {tierPackages.filter(pkg => !pkg.phoneOnly).map(pkg => {
+                    {tierPackages.map(pkg => {
                         const selected = isSelected(pkg.id);
                         const isElite = pkg.id === 'tier-elite';
                         const textFeatures = pkg.features.filter(f => !f.section);
@@ -305,7 +318,7 @@ function Step1({ selectedItems, toggleItem, onNext, onBack, recommendations, pac
                         return (
                             <button
                                 key={pkg.id}
-                                onClick={() => toggleAIO(pkg)}
+                                onClick={() => pkg.phoneOnly ? setPhoneModal(`${pkg.tier} – ${pkg.name}`) : toggleAIO(pkg)}
                                 className={`text-left rounded-[1.5rem] border transition-all duration-200 flex flex-col overflow-hidden relative ${selected
                                     ? 'border-accent shadow-[0_0_24px_rgba(77,178,146,0.15)]'
                                     : isElite ? 'border-accent/30 hover:border-accent/60' : 'bg-slate/30 border-slate/50 hover:border-slate'}`}
@@ -330,9 +343,15 @@ function Step1({ selectedItems, toggleItem, onNext, onBack, recommendations, pac
                                 <div className="p-5 flex flex-col gap-3 flex-1">
                                     <div className="flex items-start justify-between gap-3">
                                         <div className="font-mono text-2xl font-bold text-accent">{pkg.price} €</div>
-                                        <div className={`w-6 h-6 rounded-full border-2 shrink-0 mt-0.5 flex items-center justify-center transition-all ${selected ? 'bg-accent border-accent' : 'border-slate'}`}>
-                                            {selected ? <Check className="w-3.5 h-3.5 text-obsidian" strokeWidth={3} /> : <Plus className="w-3.5 h-3.5 text-ivory/30" />}
-                                        </div>
+                                        {pkg.phoneOnly ? (
+                                            <span className="flex items-center gap-1 shrink-0 mt-0.5 px-2.5 py-1 rounded-full border border-champagne/40 bg-champagne/10 text-champagne font-sans text-[10px] font-bold uppercase tracking-wider">
+                                                <Phone className="w-3 h-3" /> Nur auf Termin
+                                            </span>
+                                        ) : (
+                                            <div className={`w-6 h-6 rounded-full border-2 shrink-0 mt-0.5 flex items-center justify-center transition-all ${selected ? 'bg-accent border-accent' : 'border-slate'}`}>
+                                                {selected ? <Check className="w-3.5 h-3.5 text-obsidian" strokeWidth={3} /> : <Plus className="w-3.5 h-3.5 text-ivory/30" />}
+                                            </div>
+                                        )}
                                     </div>
 
                                     <ul className="flex flex-col gap-1.5">
@@ -363,22 +382,28 @@ function Step1({ selectedItems, toggleItem, onNext, onBack, recommendations, pac
             {/* Individual service packages */}
             {activeTab !== 'aio' && activeCategory && (
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-                    {activeCategory.packages.filter(p => !p.phoneOnly).map((pkg, i) => {
+                    {activeCategory.packages.map((pkg, i) => {
                         const id = `${activeCategory.id}-${i}`;
                         const selected = isSelected(id);
                         return (
                             <button
                                 key={i}
-                                onClick={() => toggleService(activeCategory, pkg, i)}
+                                onClick={() => pkg.phoneOnly ? setPhoneModal(pkg.name) : toggleService(activeCategory, pkg, i)}
                                 className={`text-left p-6 rounded-[1.5rem] border transition-all duration-200 flex flex-col gap-4 ${selected
                                     ? 'bg-accent/10 border-accent shadow-[0_0_20px_rgba(77,178,146,0.15)]'
                                     : 'bg-slate/30 border-slate/50 hover:border-slate'}`}
                             >
                                 <div className="flex items-start justify-between gap-3">
                                     <span className="font-sans font-bold text-lg text-ivory leading-tight">{pkg.name}</span>
-                                    <div className={`w-6 h-6 rounded-full border-2 shrink-0 mt-0.5 flex items-center justify-center transition-all ${selected ? 'bg-accent border-accent' : 'border-slate'}`}>
-                                        {selected ? <Check className="w-3.5 h-3.5 text-obsidian" strokeWidth={3} /> : <Plus className="w-3.5 h-3.5 text-ivory/30" />}
-                                    </div>
+                                    {pkg.phoneOnly ? (
+                                        <span className="flex items-center gap-1 shrink-0 mt-0.5 px-2.5 py-1 rounded-full border border-champagne/40 bg-champagne/10 text-champagne font-sans text-[10px] font-bold uppercase tracking-wider">
+                                            <Phone className="w-3 h-3" /> Nur auf Termin
+                                        </span>
+                                    ) : (
+                                        <div className={`w-6 h-6 rounded-full border-2 shrink-0 mt-0.5 flex items-center justify-center transition-all ${selected ? 'bg-accent border-accent' : 'border-slate'}`}>
+                                            {selected ? <Check className="w-3.5 h-3.5 text-obsidian" strokeWidth={3} /> : <Plus className="w-3.5 h-3.5 text-ivory/30" />}
+                                        </div>
+                                    )}
                                 </div>
                                 <div className="font-mono text-2xl font-bold text-accent">{pkg.price}</div>
                                 <ul className="flex flex-col gap-1.5 flex-1">
@@ -480,6 +505,11 @@ function Step1({ selectedItems, toggleItem, onNext, onBack, recommendations, pac
                     </div>
                 </div>
             )}
+
+            {/* "Nur auf Termin" services — route to phone/email instead of the cart */}
+            {phoneModal && (
+                <PhoneConsultModal packageName={phoneModal} onClose={() => setPhoneModal(null)} />
+            )}
         </div>
     );
 }
@@ -578,12 +608,16 @@ function StepVehicle({ vehicleCategory, setVehicleCategory, selectedItems, onNex
 
 // ─── Step 3: Date & Time ──────────────────────────────────────────────────────
 
-function Step2({ datetime, setDatetime, onNext, onBack, serviceMode }) {
-    const today = new Date(); today.setHours(0, 0, 0, 0);
-    const [viewYear, setViewYear] = useState(today.getFullYear());
-    const [viewMonth, setViewMonth] = useState(today.getMonth());
-    const [modalOpen, setModalOpen] = useState(false);
-    const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+function Step2({ datetime, setDatetime, onNext, onBack, serviceMode, selectedItems }) {
+    const now = useMemo(() => new Date(), []);
+    const duration = useMemo(() => computeBookingDuration(selectedItems, serviceMode), [selectedItems, serviceMode]);
+    const durKey = duration.multiDay ? `m${duration.spanDays}` : `s${duration.durationMin}`;
+
+    const currentWeekStart = useMemo(() => weekStartMonday(now), [now]);
+    const [weekStart, setWeekStart] = useState(() => weekStartMonday(datetime.date || now));
+    const [isMobile, setIsMobile] = useState(typeof window !== 'undefined' && window.innerWidth < 768);
+    const [ghostWarning, setGhostWarning] = useState(false);
+    const prevDurKey = useRef(durKey);
 
     useEffect(() => {
         const h = () => setIsMobile(window.innerWidth < 768);
@@ -591,110 +625,121 @@ function Step2({ datetime, setDatetime, onNext, onBack, serviceMode }) {
         return () => window.removeEventListener('resize', h);
     }, []);
 
-    const { slots, loading: slotsLoading, isFallback } = useAvailability(datetime.date, true);
+    const week = useMemo(() => weekDays(weekStart), [weekStart]);
+    const { busyByIso, loading, isFallback } = useWeekAvailability(weekStart, 7, true);
 
-    const allSlotsForDay = datetime.date
-        ? (datetime.date.getDay() === 6 ? TIME_SLOTS_SATURDAY : TIME_SLOTS_WEEKDAY)
-        : [];
+    const canPrev = weekStart > currentWeekStart;
+    const goPrev = () => { if (canPrev) setWeekStart(w => addDays(w, -7)); };
+    const goNext = () => setWeekStart(w => addDays(w, 7));
+    const goToday = () => setWeekStart(currentWeekStart);
 
-    const daysInMonth = getDaysInMonth(viewYear, viewMonth);
-    const firstDay = getFirstDayOfMonth(viewYear, viewMonth);
-
-    const prevMonth = () => viewMonth === 0 ? (setViewMonth(11), setViewYear(y => y - 1)) : setViewMonth(m => m - 1);
-    const nextMonth = () => viewMonth === 11 ? (setViewMonth(0), setViewYear(y => y + 1)) : setViewMonth(m => m + 1);
-
-    const selectDate = (day) => {
-        const d = new Date(viewYear, viewMonth, day);
-        if (d < today || d.getDay() === 0) return;
-        setDatetime(dt => ({ ...dt, date: d, time: null }));
-        setModalOpen(true);
+    const selectSameDay = (date, time) => {
+        setGhostWarning(false);
+        setDatetime(dt => ({ ...dt, date, time, multiDay: false, spanDays: null, endDate: null }));
+    };
+    const selectMultiDay = (date) => {
+        setGhostWarning(false);
+        const span = workingSpan(date, duration.spanDays);
+        setDatetime(dt => ({ ...dt, date, time: null, multiDay: true, spanDays: duration.spanDays, endDate: span[span.length - 1] || date }));
+    };
+    const clearPick = () => {
+        setGhostWarning(false);
+        setDatetime(dt => ({ ...dt, date: null, time: null, multiDay: duration.multiDay, spanDays: null, endDate: null }));
     };
 
-    const isDisabled = (day) => {
-        const d = new Date(viewYear, viewMonth, day);
-        return d < today || d.getDay() === 0;
-    };
-    const isSelected = (day) => datetime.date && datetime.date.getFullYear() === viewYear && datetime.date.getMonth() === viewMonth && datetime.date.getDate() === day;
-    const isToday = (day) => today.getFullYear() === viewYear && today.getMonth() === viewMonth && today.getDate() === day;
+    // Switching service (duration) invalidates the current pick.
+    useEffect(() => {
+        if (prevDurKey.current !== durKey) {
+            prevDurKey.current = durKey;
+            setDatetime(dt => ({ ...dt, date: null, time: null, multiDay: duration.multiDay, spanDays: null, endDate: null }));
+        }
+    }, [durKey, duration.multiDay, setDatetime]);
+
+    // Ghost-booking guard: if a poll shows the pick is no longer available, clear + warn.
+    useEffect(() => {
+        if (loading || !datetime.date) return;
+        if (duration.multiDay) {
+            if (!multiDayStartFree(datetime.date, duration.spanDays, busyByIso, now)) {
+                setGhostWarning(true);
+                setDatetime(dt => ({ ...dt, date: null, time: null }));
+            }
+        } else if (datetime.time) {
+            const plan = sameDayPlan(datetime.date, duration.durationMin, busyByIso[isoKey(datetime.date)] || [], now);
+            if (!plan.free.some(b => minToTime(b.start) === datetime.time)) {
+                setGhostWarning(true);
+                setDatetime(dt => ({ ...dt, time: null }));
+            }
+        }
+    }, [busyByIso]); // eslint-disable-line react-hooks/exhaustive-deps
+
+    const ready = duration.multiDay ? !!datetime.date : (!!datetime.date && !!datetime.time);
+
+    let summary = null;
+    if (duration.multiDay && datetime.date) {
+        const span = workingSpan(datetime.date, duration.spanDays);
+        summary = `Abgabe ${germanFull(span[0])} bis ${DROPOFF_BY} · Abholung ${germanFull(span[span.length - 1])} ab ${PICKUP_FROM}`;
+    } else if (!duration.multiDay && datetime.date && datetime.time) {
+        const [h, m] = datetime.time.split(':').map(Number);
+        summary = `${germanFull(datetime.date)} · ${datetime.time}–${minToTime(h * 60 + m + duration.durationMin)} Uhr`;
+    }
+
+    const subline = duration.multiDay
+        ? `Ihr Fahrzeug bleibt ${daysLabel(duration.spanDays)} im Studio — wählen Sie einen Abgabetag.`
+        : `Dauer ca. ${durLabel(duration.durationMin)} — wählen Sie einen freien Termin.`;
 
     return (
-        <div className="flex flex-col gap-10 w-full">
+        <div className="flex flex-col gap-8 w-full">
             <div>
-                <h2 className="font-drama italic text-4xl sm:text-5xl text-ivory mb-2">{serviceMode === 'mobil' ? 'Wann sollen wir kommen?' : 'Wann kommen Sie?'}</h2>
-                <p className="font-sans text-sm text-ivory/50">
-                    Wählen Sie einen Tag — alle verfügbaren Zeiten werden angezeigt.
-                    {datetime.time && <span className="text-accent ml-2">✓ {datetime.date?.toLocaleDateString('de-AT', { day: '2-digit', month: 'long' })} um {datetime.time} Uhr</span>}
-                </p>
+                <h2 className="font-drama italic text-4xl sm:text-5xl text-ivory mb-2">Wann passt es Ihnen?</h2>
+                <p className="font-sans text-sm text-ivory/50">{subline}</p>
             </div>
 
-            {/* Full-width calendar */}
-            <div className="max-w-lg mx-auto w-full">
-                <div className="bg-slate/30 border border-slate/50 rounded-[2rem] p-7 flex flex-col gap-6">
-                    {/* Month navigation */}
-                    <div className="flex items-center justify-between">
-                        <button onClick={prevMonth} className="w-10 h-10 rounded-full border border-slate hover:border-accent hover:text-accent transition-colors flex items-center justify-center text-ivory/60">
-                            <ChevronLeft className="w-5 h-5" />
-                        </button>
-                        <span className="font-sans font-semibold text-ivory text-base tracking-wide">{MONTHS[viewMonth]} {viewYear}</span>
-                        <button onClick={nextMonth} className="w-10 h-10 rounded-full border border-slate hover:border-accent hover:text-accent transition-colors flex items-center justify-center text-ivory/60">
-                            <ChevronRight className="w-5 h-5" />
-                        </button>
-                    </div>
+            <WeekCalendar
+                week={week}
+                duration={duration}
+                busyByIso={busyByIso}
+                now={now}
+                selected={datetime}
+                onSelectSameDay={selectSameDay}
+                onSelectMultiDay={selectMultiDay}
+                onPrevWeek={goPrev}
+                onNextWeek={goNext}
+                onToday={goToday}
+                canPrev={canPrev}
+                compact={isMobile}
+            />
 
-                    {/* Day headers */}
-                    <div className="grid grid-cols-7 gap-2">
-                        {DAYS_SHORT.map(d => (
-                            <div key={d} className={`text-center font-mono text-[11px] uppercase tracking-wider py-1 ${d === 'So' ? 'text-ivory/20' : 'text-ivory/40'}`}>{d}</div>
-                        ))}
-                    </div>
-
-                    {/* Day cells */}
-                    <div className="grid grid-cols-7 gap-2">
-                        {Array.from({ length: firstDay }).map((_, i) => <div key={`e-${i}`} />)}
-                        {Array.from({ length: daysInMonth }).map((_, i) => {
-                            const day = i + 1;
-                            const disabled = isDisabled(day);
-                            const selected = isSelected(day);
-                            const todayMark = isToday(day);
-                            return (
-                                <button key={day} onClick={() => selectDate(day)} disabled={disabled}
-                                    className={`aspect-square min-h-[2.75rem] rounded-2xl flex items-center justify-center font-sans text-base font-medium transition-all duration-150
-                                        ${disabled ? 'text-ivory/15 cursor-not-allowed' : 'cursor-pointer hover:bg-accent/20 hover:text-accent'}
-                                        ${selected ? 'bg-accent text-obsidian font-bold shadow-[0_0_14px_rgba(77,178,146,0.45)]' : ''}
-                                        ${todayMark && !selected ? 'border border-accent/40 text-accent' : ''}
-                                        ${!disabled && !selected ? 'text-ivory/80' : ''}`}
-                                >{day}</button>
-                            );
-                        })}
-                    </div>
-
-                    <p className="font-mono text-[10px] text-ivory/30 text-center uppercase tracking-wider">
-                        Tippen Sie auf einen Tag, um verfügbare Zeiten zu sehen
+            {ghostWarning && (
+                <p className="font-sans text-xs text-red-400 text-center">
+                    Dieser Termin wurde soeben vergeben. Bitte wählen Sie einen anderen.
+                </p>
+            )}
+            {isFallback && !loading && (
+                <div className="px-4 py-2.5 rounded-xl bg-amber-500/10 border border-amber-500/30">
+                    <p className="font-sans text-xs text-amber-300/90 text-center leading-relaxed">
+                        Live-Verfügbarkeit gerade nicht abrufbar — wir bestätigen Ihren Wunschtermin telefonisch.
                     </p>
                 </div>
-            </div>
+            )}
+            <p className="font-mono text-[10px] text-ivory/30 text-center uppercase tracking-wider">
+                Alle Zeitangaben sind Richtwerte und können je nach Fahrzeugzustand variieren.
+            </p>
 
-            {/* Day time picker modal */}
-            {modalOpen && datetime.date && (
-                <DayTimePickerModal
-                    date={datetime.date}
-                    slots={slots}
-                    allSlots={allSlotsForDay}
-                    selectedTime={datetime.time}
-                    loading={slotsLoading}
-                    isFallback={isFallback}
-                    onSelectTime={(time) => setDatetime(dt => ({ ...dt, time }))}
-                    onConfirm={() => { setModalOpen(false); onNext(); }}
-                    onClose={() => setModalOpen(false)}
-                    isMobile={isMobile}
-                />
+            {summary && (
+                <div className="bg-slate/40 border border-accent/30 rounded-2xl px-5 py-4 flex items-center justify-between gap-4 flex-wrap">
+                    <div className="flex flex-col">
+                        <span className="font-mono text-[10px] uppercase tracking-wider text-ivory/40">{duration.multiDay ? 'Ihr Zeitraum' : 'Ihr Termin'}</span>
+                        <span className="font-sans text-sm text-accent">{summary}</span>
+                    </div>
+                    <button onClick={clearPick} className="font-sans text-xs text-ivory/50 hover:text-ivory underline">ändern</button>
+                </div>
             )}
 
             <div className="flex justify-between mt-2">
                 <button onClick={onBack} className="flex items-center gap-2 font-sans text-sm text-ivory/50 hover:text-ivory transition-colors link-lift">
                     <ChevronLeft className="w-4 h-4" /> Zurück
                 </button>
-                <button onClick={onNext} disabled={!datetime.date || !datetime.time}
+                <button onClick={onNext} disabled={!ready}
                     className="btn-magnetic bg-accent text-obsidian px-10 py-4 rounded-full font-sans font-bold text-sm disabled:opacity-30 disabled:cursor-not-allowed">
                     Weiter →
                 </button>
@@ -715,7 +760,8 @@ function Step3({ contact, setContact, photos, setPhotos, photoPreviews, setPhoto
     const phoneValid = PHONE_REGEX.test(contact.phone.trim());
     const emailValid = EMAIL_REGEX.test(contact.email.trim());
     const addressValid = serviceMode !== 'mobil' || (contact.address && contact.address.trim().length >= 5);
-    const valid = nameValid && phoneValid && emailValid && addressValid && photos.length >= 1;
+    const consentValid = contact.consent === true;
+    const valid = nameValid && phoneValid && emailValid && addressValid && photos.length >= 1 && consentValid;
 
     const inputClass = "input-elite w-full bg-slate/30 border border-slate/60 outline-none rounded-xl px-4 py-3.5 font-sans text-sm text-ivory placeholder:text-ivory/30";
     const errorClass = "font-sans text-[11px] text-red-400 mt-1";
@@ -822,6 +868,23 @@ function Step3({ contact, setContact, photos, setPhotos, photoPreviews, setPhoto
                 )}
             </div>
 
+            {/* Consent */}
+            <label className="flex items-start gap-3 cursor-pointer">
+                <input
+                    type="checkbox"
+                    checked={contact.consent === true}
+                    onChange={(e) => setContact(c => ({ ...c, consent: e.target.checked }))}
+                    className="mt-0.5 w-4 h-4 shrink-0 accent-accent cursor-pointer"
+                />
+                <span className="font-sans text-xs text-ivory/50 leading-relaxed">
+                    Ich akzeptiere die{' '}
+                    <a href="/datenschutz" target="_blank" rel="noreferrer" className="text-champagne hover:underline">Datenschutzerklärung</a>,{' '}
+                    <a href="/agb" target="_blank" rel="noreferrer" className="text-champagne hover:underline">AGB</a>{' '}
+                    und{' '}
+                    <a href="/widerruf" target="_blank" rel="noreferrer" className="text-champagne hover:underline">Widerrufsbelehrung</a>.
+                </span>
+            </label>
+
             <div className="flex justify-between mt-2">
                 <button onClick={onBack} className="flex items-center gap-2 font-sans text-sm text-ivory/50 hover:text-ivory transition-colors link-lift">
                     <ChevronLeft className="w-4 h-4" /> Zurück
@@ -915,18 +978,39 @@ function Step4({ selectedItems, datetime, serviceMode, contact, vehicleCategory,
                     </span>
                 </div>
 
-                <div className="h-px bg-slate/50" />
-                <div className="flex justify-between items-center">
-                    <span className="font-sans text-sm text-ivory/60">Datum</span>
-                    <span className="font-sans text-sm font-semibold text-ivory">
-                        {datetime.date?.toLocaleDateString('de-AT', { weekday: 'short', day: '2-digit', month: '2-digit', year: 'numeric' })}
-                    </span>
-                </div>
-                <div className="h-px bg-slate/50" />
-                <div className="flex justify-between items-center">
-                    <span className="font-sans text-sm text-ivory/60">Uhrzeit</span>
-                    <span className="font-mono text-sm font-bold text-accent">{datetime.time} Uhr</span>
-                </div>
+                {datetime.multiDay ? (
+                    <>
+                        <div className="h-px bg-slate/50" />
+                        <div className="flex justify-between items-center">
+                            <span className="font-sans text-sm text-ivory/60">Abgabe</span>
+                            <span className="font-sans text-sm font-semibold text-ivory">
+                                {datetime.date?.toLocaleDateString('de-AT', { weekday: 'short', day: '2-digit', month: '2-digit', year: 'numeric' })} bis {DROPOFF_BY}
+                            </span>
+                        </div>
+                        <div className="h-px bg-slate/50" />
+                        <div className="flex justify-between items-center">
+                            <span className="font-sans text-sm text-ivory/60">Abholung</span>
+                            <span className="font-mono text-sm font-bold text-accent">
+                                {datetime.endDate?.toLocaleDateString('de-AT', { weekday: 'short', day: '2-digit', month: '2-digit', year: 'numeric' })} ab {PICKUP_FROM}
+                            </span>
+                        </div>
+                    </>
+                ) : (
+                    <>
+                        <div className="h-px bg-slate/50" />
+                        <div className="flex justify-between items-center">
+                            <span className="font-sans text-sm text-ivory/60">Datum</span>
+                            <span className="font-sans text-sm font-semibold text-ivory">
+                                {datetime.date?.toLocaleDateString('de-AT', { weekday: 'short', day: '2-digit', month: '2-digit', year: 'numeric' })}
+                            </span>
+                        </div>
+                        <div className="h-px bg-slate/50" />
+                        <div className="flex justify-between items-center">
+                            <span className="font-sans text-sm text-ivory/60">Uhrzeit</span>
+                            <span className="font-mono text-sm font-bold text-accent">{datetime.time} Uhr</span>
+                        </div>
+                    </>
+                )}
             </div>
 
             <div className="flex flex-col gap-3 w-full">
@@ -1043,7 +1127,11 @@ export default function BookingPage() {
     const replaceWithPackage = (pkg, replaceIds) => {
         setSelectedItems(prev => {
             const filtered = prev.filter(i => !replaceIds.includes(i.id));
-            return [...filtered, { id: pkg.id, name: pkg.name, price: pkg.price, priceNum: pkg.priceNum, type: 'aio' }];
+            return [...filtered, {
+                id: pkg.id, name: pkg.name, price: pkg.price, priceNum: pkg.priceNum, type: 'aio',
+                durationMin: pkg.durationMin ?? null, durationDays: pkg.durationDays ?? null,
+                mobilExtraMin: pkg.mobilExtraMin ?? 0, mobilSurcharge: pkg.mobilSurcharge ?? 0,
+            }];
         });
     };
 
@@ -1075,16 +1163,42 @@ export default function BookingPage() {
         const total = serviceTotal + (aufpreis || 0) + mobileSurchargeVal;
         const aufpreisStr = vehicleCategory?.aufpreis === null ? 'auf Anfrage' : aufpreis > 0 ? `+€${aufpreis},-` : 'kein Aufpreis';
 
+        const location = serviceMode === 'mobil'
+            ? contact.address
+            : (STUDIO_ADDRESSES[studioLocation] || STUDIO_ADDRESSES.feldkirch);
+        const totalStr = vehicleCategory?.aufpreis === null
+            ? `ab €${(serviceTotal + mobileSurchargeVal).toLocaleString('de-AT')},- + Aufpreis auf Anfrage`
+            : `ab €${total.toLocaleString('de-AT')},-`;
+
+        // Effective duration → same-day block vs. multi-day span
+        const duration = computeBookingDuration(selectedItems, serviceMode);
+        let terminLabel;
+        if (duration.multiDay) {
+            const span = workingSpan(datetime.date, duration.spanDays);
+            const fmtDay = (d) => d.toLocaleDateString('de-AT', { weekday: 'long', day: '2-digit', month: '2-digit', year: 'numeric' });
+            terminLabel = `Abgabe ${fmtDay(span[0])} bis ${DROPOFF_BY} · Abholung ${fmtDay(span[span.length - 1])} ab ${PICKUP_FROM}`;
+        } else {
+            const [hh, mmn] = datetime.time.split(':').map(Number);
+            terminLabel = `${datetime.time}–${minToTime(hh * 60 + mmn + duration.durationMin)} Uhr`;
+        }
+
         try {
-            // Create Google Calendar event (primary booking action)
+            // Create Google Calendar event (primary booking action, with double-booking guard)
             await submitBooking({
                 date: isoDate,
                 time: datetime.time,
                 services: selectedItems,
                 contact,
                 serviceMode,
+                location,
                 vehicleCategory: vehicleCategory?.name,
+                vehicleAufpreis: aufpreisStr,
+                mobileSurcharge: mobileSurchargeVal,
+                totalStr,
                 photoUrls,
+                durationMin: duration.durationMin,
+                multiDay: duration.multiDay,
+                spanDays: duration.spanDays,
             });
 
             // Send email notification in parallel (fire-and-forget backup)
@@ -1102,7 +1216,7 @@ export default function BookingPage() {
                     'E-Mail': contact.email,
                     Fahrzeug: `${vehicleCategory?.name || '—'} (${aufpreisStr})`,
                     Datum: dateStr,
-                    Uhrzeit: `${datetime.time} Uhr`,
+                    [duration.multiDay ? 'Zeitraum' : 'Uhrzeit']: terminLabel,
                     Services: selectedItems.map(i => `${i.name} (${i.price})`).join(', '),
                     ...(serviceMode === 'mobil' ? { Anfahrtspauschale: `+€${MOBILE_SURCHARGE},-` } : {}),
                     Gesamtsumme: vehicleCategory?.aufpreis === null
@@ -1117,7 +1231,7 @@ export default function BookingPage() {
         } catch (err) {
             if (err.status === 409 && err.data?.error === 'slot_taken') {
                 setSubmitError('Dieser Termin wurde soeben von jemand anderem gebucht. Bitte wählen Sie einen anderen Zeitpunkt.');
-                setDatetime(dt => ({ ...dt, time: null }));
+                setDatetime(dt => ({ ...dt, date: null, time: null }));
                 animateStep(3);
             } else {
                 setSubmitError('Anfrage konnte nicht gesendet werden. Bitte versuchen Sie es erneut oder kontaktieren Sie uns direkt.');
@@ -1155,7 +1269,7 @@ export default function BookingPage() {
                         {step === 0 && <Step0 serviceMode={serviceMode} setServiceMode={setServiceMode} studioLocation={studioLocation} setStudioLocation={setStudioLocation} onNext={() => animateStep(1)} />}
                         {step === 1 && <Step1 selectedItems={selectedItems} toggleItem={toggleItem} onNext={() => animateStep(2)} onBack={() => animateStep(0)} recommendations={recommendations} packageSuggestion={packageSuggestion} onReplaceWithPackage={replaceWithPackage} serviceMode={serviceMode} />}
                         {step === 2 && <StepVehicle vehicleCategory={vehicleCategory} setVehicleCategory={setVehicleCategory} selectedItems={selectedItems} onNext={() => animateStep(3)} onBack={() => animateStep(1)} serviceMode={serviceMode} />}
-                        {step === 3 && <Step2 datetime={datetime} setDatetime={setDatetime} onNext={() => animateStep(4)} onBack={() => animateStep(2)} serviceMode={serviceMode} />}
+                        {step === 3 && <Step2 datetime={datetime} setDatetime={setDatetime} onNext={() => animateStep(4)} onBack={() => animateStep(2)} serviceMode={serviceMode} selectedItems={selectedItems} />}
                         {step === 4 && (
                             <>
                                 <Step3 contact={contact} setContact={setContact} photos={photos} setPhotos={setPhotos} photoPreviews={photoPreviews} setPhotoPreviews={setPhotoPreviews} onSubmit={handleSubmit} onBack={() => animateStep(3)} loading={loading} uploadingPhotos={uploadingPhotos} serviceMode={serviceMode} />

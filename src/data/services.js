@@ -6,6 +6,8 @@ export const tierPackages = [
         name: 'Wash & Clean',
         subtitle: 'Premium Handwäsche & Innenreinigung',
         price: 'ab 230,–',
+        durationMin: 300,
+        mobilExtraMin: 60,
         headerStyle: { background: 'linear-gradient(135deg, #A0522D, #CD7F32, #D4945A)' },
         features: [
             { section: 'Aussen' },
@@ -31,6 +33,9 @@ export const tierPackages = [
         name: 'Deep Clean',
         subtitle: 'Bronze + Politur & Versiegelung',
         price: 'ab 390,–',
+        durationDays: 1,
+        mobilExtraMin: 60,
+        mobilSurcharge: 45,
         headerStyle: { background: 'linear-gradient(135deg, #5C5C5C, #8A8A8A, #B8B8B8)' },
         features: [
             { text: 'Alles aus Bronze', muted: true },
@@ -48,6 +53,8 @@ export const tierPackages = [
         phoneOnly: true,
         subtitle: 'Silber + 2-stufige Politur & Beschichtungen',
         price: 'ab 690,–',
+        durationDays: 2,
+        mobilSurcharge: 65,
         headerStyle: { background: 'linear-gradient(135deg, #996515, #B8860B, #DAA520)' },
         features: [
             { text: 'Alles aus Bronze & Silber', muted: true },
@@ -67,6 +74,7 @@ export const tierPackages = [
         name: 'Endstufe',
         subtitle: 'Das Ultimative. Kein Kompromiss.',
         price: 'ab 1.790,–',
+        durationDays: 5,
         headerStyle: { background: 'linear-gradient(135deg, #064E3B, #047857, #4DB292)' },
         features: [
             { text: 'Alles aus Gold', muted: true },
@@ -95,6 +103,11 @@ export const allInOnePackages = tierPackages.map(pkg => ({
     name: `${pkg.tier} – ${pkg.name}`,
     price: `${pkg.price} €`,
     priceNum: parseInt(pkg.price.replace(/[^\d]/g, '')),
+    phoneOnly: !!pkg.phoneOnly,
+    durationMin: pkg.durationMin ?? null,
+    durationDays: pkg.durationDays ?? null,
+    mobilExtraMin: pkg.mobilExtraMin ?? 0,
+    mobilSurcharge: pkg.mobilSurcharge ?? 0,
 }));
 
 export const serviceCategories = [
@@ -106,6 +119,8 @@ export const serviceCategories = [
                 name: "Basic Handwäsche",
                 price: "ab €75,-",
                 popular: false,
+                durationMin: 60,
+                mobilExtraMin: 30,
                 features: [
                     "Kratzfreies Waschen (2-Eimer-Methode)",
                     "Türpfosten und Türschwellen reinigen",
@@ -118,6 +133,8 @@ export const serviceCategories = [
                 name: "Premium Handwäsche",
                 price: "ab €115,-",
                 popular: true,
+                durationMin: 90,
+                mobilExtraMin: 30,
                 features: [
                     "Kratzfreies Waschen (2-Eimer-Methode)",
                     "Türpfosten und Türschwellen reinigen",
@@ -133,6 +150,8 @@ export const serviceCategories = [
                 name: "Premium + Basic Interieur",
                 price: "ab €175,-",
                 popular: false,
+                durationMin: 150,
+                mobilExtraMin: 30,
                 features: [
                     "Alles aus Premium Handwäsche inkl.",
                     "Staubsaugen des Innenraums",
@@ -151,6 +170,7 @@ export const serviceCategories = [
                 name: "Basic Innenreinigung",
                 price: "ab €75,-",
                 popular: false,
+                durationMin: 90,
                 features: [
                     "Staubsaugen des Innenraums und der Automatten",
                     "Abstauben des Armaturenbretts und Konsole",
@@ -163,6 +183,7 @@ export const serviceCategories = [
                 name: "Premium Innenreinigung",
                 price: "ab €155,-",
                 popular: true,
+                durationMin: 150,
                 features: [
                     "Armaturenbrett und Mittelkonsole reinigen",
                     "Türverkleidungen reinigen",
@@ -178,6 +199,7 @@ export const serviceCategories = [
                 name: "Ledersitz Beschichtung",
                 price: "ab €85,-",
                 popular: false,
+                durationMin: 60,
                 features: [
                     "Wasser- und schmutzabweisend",
                     "Schutz vor UV-Strahlung",
@@ -197,6 +219,9 @@ export const serviceCategories = [
                 name: "Leichte Politur",
                 price: "ab €395,-",
                 popular: false,
+                durationMin: 360,
+                mobilExtraMin: 30,
+                mobilSurcharge: 45,
                 features: [
                     "Dekontaminierende Handwäsche inkludiert",
                     "1-stufiges Polieren",
@@ -212,6 +237,8 @@ export const serviceCategories = [
                 price: "ab €595,-",
                 popular: true,
                 phoneOnly: true,
+                durationDays: 1.5,
+                mobilSurcharge: 65,
                 features: [
                     "Dekontaminierende Handwäsche inkludiert",
                     "Mehrstufiges Polieren (für besten Glanz)",
@@ -227,6 +254,7 @@ export const serviceCategories = [
                 name: "Spot-Politur",
                 price: "ab €45,-",
                 popular: false,
+                durationMin: 60,
                 features: [
                     "Gezielte Entfernung kleiner Kratzer",
                     "Hologramme oder Lackdefekte beheben",
@@ -236,10 +264,12 @@ export const serviceCategories = [
             },
             {
                 name: "Scheinwerfer Polieren",
-                price: "ab €45,-",
+                price: "ab €60,- (je Stück)",
                 popular: false,
+                durationMin: 180,
+                mobilExtraMin: 30,
                 features: [
-                    "Pro Scheinwerfer",
+                    "Je Scheinwerfer (Stück)",
                     "Stumpfe Scheinwerfer in Glanz zurückversetzen",
                     "Schleif- und Poliertechniken",
                     "Ideal für technische Inspektionen"
@@ -257,6 +287,7 @@ export const serviceCategories = [
                 price: "ab €795,-",
                 popular: false,
                 phoneOnly: true,
+                durationDays: 2,
                 features: [
                     "Nur für Autos bis 3-4 Monate / 4000km",
                     "Basic-Innen und Aussenreinigung",
@@ -274,6 +305,8 @@ export const serviceCategories = [
                 price: "ab €895,-",
                 popular: true,
                 phoneOnly: true,
+                durationDays: 3,
+                mobilSurcharge: 65,
                 features: [
                     "Lebensdauer 2 bis 3 Jahre",
                     "Dauer: 1-2 Werktage",
@@ -291,6 +324,8 @@ export const serviceCategories = [
                 price: "ab €795,-",
                 popular: false,
                 phoneOnly: true,
+                durationDays: 2,
+                mobilSurcharge: 85,
                 features: [
                     "Speziell für matte Lacke",
                     "Basic-Innen und Aussenreinigung",
@@ -308,55 +343,225 @@ export const serviceCategories = [
         id: "zusatz",
         title: "Zusatzpakete",
         packages: [
+            // 0 — window coatings (recommendation referent "zusatz-0")
             {
-                name: "Autofenster & Felgen",
+                name: "Autofenster beschichten",
                 price: "ab €85,-",
                 popular: false,
+                durationMin: 120,
+                mobilExtraMin: 30,
                 features: [
-                    "Windschutzscheibe Beschichtung: ab €85",
-                    "Alle Fenster Beschichtung: ab €185",
-                    "Wasser rutscht bei ±70 km/h ab",
-                    "Lebensdauer bis 12 Monate",
-                    "Felgenzergung & Reinigung: ab €245",
-                    "Verhindert haftenden Bremsstaub"
+                    "Seitenscheiben mit Beschichtung",
+                    "Wasser perlt ab ±70 km/h ab",
+                    "Haltbarkeit ca. 12 Monate / 20.000 km",
+                    "Bessere Sicht bei Regen",
                 ]
             },
+            // 1
             {
-                name: "Interieur Pflege",
-                price: "ab €25,-",
-                popular: true,
-                features: [
-                    "Textilimprägnierung: ab €25",
-                    "Türverkleidungen & Armaturen: ab €25",
-                    "Dachhimmel intensiv: ab €55",
-                    "Ozonbehandlung (Geruch/Schimmel): ab €75",
-                    "Kunststoffteile außen: ab €75",
-                    "Stellt Original-Look wieder her"
-                ]
-            },
-            {
-                name: "Verkaufsaufbereitung",
-                price: "ab €295,-",
+                name: "Windschutzscheibe beschichten",
+                price: "ab €85,-",
                 popular: false,
+                durationMin: 60,
+                mobilExtraMin: 30,
                 features: [
-                    "Gründliche Innen- und Außenreinigung",
-                    "Flecken entfernen",
-                    "Lack polieren für glänzenden Auftritt",
-                    "Frisches Ambiente im Innenraum",
-                    "Fahrzeug optimal für den Verkauf vorbereiten"
+                    "Klare Sicht bei Regen",
+                    "Wasser perlt ab ±70 km/h ab",
+                    "Haltbarkeit ca. 12 Monate",
                 ]
             },
+            // 2
+            {
+                name: "Alle Fenster beschichten",
+                price: "ab €185,-",
+                popular: true,
+                durationMin: 120,
+                mobilExtraMin: 30,
+                features: [
+                    "Rundum-Beschichtung aller Scheiben",
+                    "Wasser perlt ab ±70 km/h ab",
+                    "Haltbarkeit ca. 12 Monate / 20.000 km",
+                ]
+            },
+            // 3
+            {
+                name: "Felgen-Keramik 1 Schicht",
+                price: "ab €245,-",
+                popular: false,
+                durationMin: 240,
+                features: [
+                    "Felgen demontiert & gereinigt",
+                    "Keramikversiegelung, Haltbarkeit 2,5–3 Jahre",
+                    "Verhindert haftenden Bremsstaub",
+                    "Deutlich leichtere Reinigung",
+                ]
+            },
+            // 4
+            {
+                name: "Felgen-Keramik 2 Schichten",
+                price: "ab €345,-",
+                popular: false,
+                durationMin: 360,
+                features: [
+                    "Zwei Schichten, Haltbarkeit 3,5–4 Jahre",
+                    "Felgen demontiert & gereinigt",
+                    "Maximaler Schutz vor Bremsstaub",
+                ]
+            },
+            // 5 — interior referent ("zusatz-5" Textil)
+            {
+                name: "Textilimprägnierung (pro Sitz)",
+                price: "ab €35,-",
+                popular: false,
+                durationMin: 30,
+                features: [
+                    "Wasser- & schmutzabweisend",
+                    "Schützt Stoffsitze langfristig",
+                    "Preis pro Sitz",
+                ]
+            },
+            // 6
+            {
+                name: "Türverkleidung & Armaturen",
+                price: "ab €35,-",
+                popular: false,
+                durationMin: 30,
+                features: [
+                    "Reinigung & Pflege der Kunststoffe",
+                    "Armaturenbrett & Türverkleidungen",
+                    "Stellt den Original-Look wieder her",
+                ]
+            },
+            // 7
+            {
+                name: "Dachhimmel Intensivreinigung",
+                price: "ab €55,-",
+                popular: false,
+                durationMin: 60,
+                features: [
+                    "Entfernt Flecken & Verfärbungen",
+                    "Schonende Intensivreinigung",
+                ]
+            },
+            // 8
+            {
+                name: "Leder-Keramik versiegeln",
+                price: "ab €125,-",
+                popular: false,
+                durationMin: 90,
+                features: [
+                    "Wasser- & schmutzabweisend",
+                    "Schutz vor UV & Farbabrieb (Jeans)",
+                    "Inkl. Reinigung der Sitze",
+                ]
+            },
+            // 9
+            {
+                name: "Hundehaare entfernen",
+                price: "ab €40,-",
+                popular: false,
+                durationMin: 30,
+                features: [
+                    "Gründliche Entfernung von Tierhaaren",
+                    "Aus Polstern, Teppichen & Kofferraum",
+                ]
+            },
+            // 10
+            {
+                name: "Motorwäsche + Konservierung",
+                price: "ab €50,-",
+                popular: false,
+                durationMin: 45,
+                mobilExtraMin: 30,
+                features: [
+                    "Schonende Motorraumreinigung",
+                    "Anschließende Konservierung",
+                ]
+            },
+            // 11
+            {
+                name: "Cabrio-Verdeck imprägnieren",
+                price: "ab €70,-",
+                popular: false,
+                durationMin: 60,
+                mobilExtraMin: 30,
+                features: [
+                    "Reinigung & Imprägnierung",
+                    "Wasser- & schmutzabweisend",
+                ]
+            },
+            // 12
+            {
+                name: "Auspuffblende polieren & versiegeln",
+                price: "ab €30,-",
+                popular: false,
+                durationMin: 30,
+                mobilExtraMin: 30,
+                features: [
+                    "Politur auf Hochglanz",
+                    "Anschließende Versiegelung",
+                ]
+            },
+            // 13 — multi-day, bookable
+            {
+                name: "Kunststoffteile beschichten (außen)",
+                price: "ab €75,-",
+                popular: false,
+                durationDays: 1,
+                features: [
+                    "UV-Schutz für Außenkunststoffe",
+                    "Stellt tiefes Schwarz wieder her",
+                    "Langanhaltender Schutz",
+                ]
+            },
+            // 14 — PPF
+            {
+                name: "PPF Einstiege",
+                price: "ab €90,-",
+                popular: false,
+                durationMin: 120,
+                features: [
+                    "Lackschutzfolie für die Einstiege",
+                    "Unsichtbarer Schutz vor Kratzern",
+                ]
+            },
+            // 15 — PPF
+            {
+                name: "PPF Türgriffmulden",
+                price: "ab €80,-",
+                popular: false,
+                durationMin: 90,
+                features: [
+                    "Lackschutzfolie für die Türgriffmulden",
+                    "Schutz vor Kratzern & Lackabrieb",
+                ]
+            },
+            // 16 — Ozon (interior referent "zusatz-16")
             {
                 name: "Ozonbehandlung",
                 price: "ab €75,-",
                 popular: false,
+                durationMin: 120,
+                mobilExtraMin: 30,
                 features: [
                     "Beseitigt hartnäckige Gerüche (Nikotin, Tier, Feuchtigkeit)",
-                    "Tiefendesinfektion: Bakterien, Pilze & Keime werden eliminiert",
+                    "Tiefendesinfektion: Bakterien, Pilze & Keime",
                     "Dringt in Polster, Teppiche & Lüftungsschächte ein",
-                    "Keine Überdeckung – Gerüche werden molekular zerstört",
                     "Langanhaltende Wirkung über Wochen",
-                    "Empfohlen bei Schimmelbefall im Innenraum"
+                ]
+            },
+            // 17 — Verkaufsaufbereitung (referent "zusatz-17")
+            {
+                name: "Verkaufsaufbereitung",
+                price: "ab €295,-",
+                popular: false,
+                durationMin: 360,
+                mobilExtraMin: 60,
+                features: [
+                    "Gründliche Innen- und Außenreinigung",
+                    "Flecken entfernen",
+                    "Lack polieren für glänzenden Auftritt",
+                    "Fahrzeug optimal für den Verkauf vorbereiten",
                 ]
             }
         ]

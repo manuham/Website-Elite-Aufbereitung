@@ -1,5 +1,3 @@
-const MAKE_WEBHOOK_URL = 'https://hook.eu1.make.com/ugto7s564hkhy94gvh6ldgyjqgx7dn8x';
-
 export async function fetchAvailability(dateString, signal) {
   const API_BASE = import.meta.env.VITE_API_BASE || '';
   const res = await fetch(
@@ -10,17 +8,31 @@ export async function fetchAvailability(dateString, signal) {
   return res.json();
 }
 
+// Busy intervals for a whole week (or any range) in one call.
+// Returns { start, days, daysBusy: [{date, closed, open, close, busy:[[startMin,endMin]]}], fallback }
+export async function fetchAvailabilityRange(startString, days = 7, signal) {
+  const API_BASE = import.meta.env.VITE_API_BASE || '';
+  const res = await fetch(
+    `${API_BASE}/api/availability?start=${startString}&days=${days}`,
+    signal ? { signal } : undefined
+  );
+  if (!res.ok) throw new Error('Failed to fetch availability');
+  return res.json();
+}
+
 export async function submitBooking(bookingData) {
-  const res = await fetch(MAKE_WEBHOOK_URL, {
+  const API_BASE = import.meta.env.VITE_API_BASE || '';
+  const res = await fetch(`${API_BASE}/api/book`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(bookingData),
   });
+  const data = await res.json().catch(() => ({}));
   if (!res.ok) {
-    const err = new Error('Booking failed');
+    const err = new Error(data.message || 'Booking failed');
     err.status = res.status;
-    err.data = {};
+    err.data = data;
     throw err;
   }
-  return { success: true };
+  return data;
 }

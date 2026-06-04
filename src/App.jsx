@@ -16,6 +16,8 @@ import Footer from './components/Footer';
 import BookingPage from './pages/BookingPage';
 import Impressum from './pages/Impressum';
 import Datenschutz from './pages/Datenschutz';
+import AGB from './pages/AGB';
+import Widerruf from './pages/Widerruf';
 import Projekte from './pages/Projekte';
 import MobilerService from './pages/MobilerService';
 import EliteEndstufe from './pages/EliteEndstufe';
@@ -153,6 +155,8 @@ export default function App() {
                 <Route path="/elite-endstufe" element={<EliteEndstufe />} />
                 <Route path="/impressum" element={<Impressum />} />
                 <Route path="/datenschutz" element={<Datenschutz />} />
+                <Route path="/agb" element={<AGB />} />
+                <Route path="/widerruf" element={<Widerruf />} />
                 <Route path="*" element={<NotFound />} />
             </Routes>
         </BrowserRouter>

@@ -16,7 +16,7 @@ function parsePriceNum(priceStr) {
 function resolveService(id) {
     // AIO packages
     const aio = allInOnePackages.find(p => p.id === id);
-    if (aio) return { id: aio.id, name: aio.name, price: aio.price, priceNum: aio.priceNum, type: 'aio' };
+    if (aio) return { id: aio.id, name: aio.name, price: aio.price, priceNum: aio.priceNum, type: 'aio', phoneOnly: aio.phoneOnly };
 
     // Individual service: "{categoryId}-{index}"
     const match = id.match(/^(.+)-(\d+)$/);
@@ -27,7 +27,7 @@ function resolveService(id) {
     const pkg = category.packages[parseInt(idxStr)];
     if (!pkg) return null;
 
-    return { id, name: pkg.name, price: pkg.price, priceNum: parsePriceNum(pkg.price), type: 'service' };
+    return { id, name: pkg.name, price: pkg.price, priceNum: parsePriceNum(pkg.price), type: 'service', phoneOnly: !!pkg.phoneOnly };
 }
 
 /**
@@ -73,6 +73,7 @@ export function useRecommendations(selectedItems) {
 
                 const resolved = resolveService(rec.recommend);
                 if (!resolved) continue;
+                if (resolved.phoneOnly) continue; // appointment-only — not a one-click upsell
 
                 seen.add(rec.recommend);
                 recs.push({
@@ -107,7 +108,7 @@ export function useRecommendations(selectedItems) {
                 }, 0);
 
                 const pkg = allInOnePackages.find(p => p.id === rule.packageId);
-                if (!pkg || pkg.priceNum >= currentCost) continue;
+                if (!pkg || pkg.phoneOnly || pkg.priceNum >= currentCost) continue;
 
                 const savings = currentCost - pkg.priceNum;
                 if (!best || savings > best.savings) {

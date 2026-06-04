@@ -35,20 +35,25 @@ export default function Datenschutz() {
                         <li>Vor- und Nachname</li>
                         <li>Telefonnummer</li>
                         <li>E-Mail-Adresse</li>
-                        <li>Fahrzeugtyp und optionale Anmerkungen</li>
+                        <li>Einsatzadresse (nur bei Buchung des mobilen Service)</li>
+                        <li>Fahrzeugtyp, gewählte Leistungen und optionale Anmerkungen</li>
+                        <li>Fahrzeugfotos, die Sie zur Einschätzung des Aufwands hochladen</li>
                     </ul>
                     <p className="text-ivory/70 leading-relaxed text-sm">
-                        Diese Daten werden ausschließlich zur Bearbeitung Ihrer Terminanfrage verwendet und nicht
-                        an Dritte weitergegeben.
+                        Diese Daten verwenden wir ausschließlich zur Bearbeitung und Abwicklung Ihrer Terminanfrage.
+                        Eine Weitergabe erfolgt nur an die unter Punkt 5 genannten Auftragsverarbeiter, soweit dies
+                        zur Erbringung der Leistung erforderlich ist.
                     </p>
                 </section>
 
                 <section className="flex flex-col gap-4">
                     <h2 className="font-sans font-bold text-sm uppercase tracking-widest text-ivory/50">3. Rechtsgrundlage</h2>
                     <p className="text-ivory/70 leading-relaxed text-sm">
-                        Die Verarbeitung der von Ihnen übermittelten Daten erfolgt auf Grundlage von Art. 6 Abs. 1
-                        lit. b DSGVO (Vertragsanbahnung) sowie Ihrer ausdrücklichen Einwilligung gemäß Art. 6 Abs. 1
-                        lit. a DSGVO.
+                        Die Verarbeitung der von Ihnen übermittelten Anfragedaten erfolgt auf Grundlage von
+                        Art. 6 Abs. 1 lit. b DSGVO (Vertragsanbahnung und -erfüllung) sowie Ihrer ausdrücklichen
+                        Einwilligung gemäß Art. 6 Abs. 1 lit. a DSGVO. Die Verarbeitung von Server-Logfiles erfolgt
+                        auf Grundlage unseres berechtigten Interesses am sicheren und stabilen Betrieb der Website
+                        (Art. 6 Abs. 1 lit. f DSGVO).
                     </p>
                 </section>
 
@@ -63,16 +68,65 @@ export default function Datenschutz() {
                 </section>
 
                 <section className="flex flex-col gap-4">
-                    <h2 className="font-sans font-bold text-sm uppercase tracking-widest text-ivory/50">5. Cookies und Tracking</h2>
+                    <h2 className="font-sans font-bold text-sm uppercase tracking-widest text-ivory/50">5. Auftragsverarbeiter und externe Dienste</h2>
                     <p className="text-ivory/70 leading-relaxed text-sm">
-                        Diese Website verwendet keine Tracking-Cookies und kein Web-Analytics-Tool (z. B. Google
-                        Analytics). Es werden lediglich technisch notwendige Cookies gesetzt, die für den Betrieb
-                        der Website erforderlich sind.
+                        Zur Abwicklung Ihrer Terminanfrage setzen wir folgende Dienstleister ein, mit denen jeweils
+                        Auftragsverarbeitungsverträge bzw. Standardvertragsklauseln bestehen:
+                    </p>
+                    <ul className="list-disc list-inside text-ivory/70 text-sm leading-relaxed flex flex-col gap-2 ml-2">
+                        <li>
+                            <span className="text-ivory/90 font-semibold">Google Calendar</span> (Google Ireland Ltd.,
+                            Irland): Speicherung und Verwaltung Ihrer Terminbuchung sowie Prüfung verfügbarer Termine.
+                        </li>
+                        <li>
+                            <span className="text-ivory/90 font-semibold">Cloudinary</span> (Cloudinary Ltd., USA):
+                            Hosting der von Ihnen hochgeladenen Fahrzeugfotos.
+                        </li>
+                        <li>
+                            <span className="text-ivory/90 font-semibold">FormSubmit</span> (FormSubmit.co, USA):
+                            Versand einer E-Mail-Benachrichtigung über Ihre Terminanfrage an uns.
+                        </li>
+                        <li>
+                            <span className="text-ivory/90 font-semibold">Vercel</span> (Vercel Inc., USA): Hosting
+                            und Auslieferung dieser Website.
+                        </li>
+                    </ul>
+                </section>
+
+                <section className="flex flex-col gap-4">
+                    <h2 className="font-sans font-bold text-sm uppercase tracking-widest text-ivory/50">6. Server-Logfiles</h2>
+                    <p className="text-ivory/70 leading-relaxed text-sm">
+                        Beim Aufruf dieser Website werden durch unseren Hosting-Anbieter automatisch Informationen in
+                        Server-Logfiles erfasst, die Ihr Browser übermittelt. Dies sind insbesondere IP-Adresse,
+                        Datum und Uhrzeit des Zugriffs, verwendeter Browser und Betriebssystem. Diese Daten dienen
+                        ausschließlich der technischen Bereitstellung, Sicherheit und Stabilität der Website und
+                        werden nicht mit anderen Datenquellen zusammengeführt.
                     </p>
                 </section>
 
                 <section className="flex flex-col gap-4">
-                    <h2 className="font-sans font-bold text-sm uppercase tracking-widest text-ivory/50">6. Ihre Rechte</h2>
+                    <h2 className="font-sans font-bold text-sm uppercase tracking-widest text-ivory/50">7. Datenübermittlung in Drittländer</h2>
+                    <p className="text-ivory/70 leading-relaxed text-sm">
+                        Einige der unter Punkt 5 genannten Dienste (Cloudinary, FormSubmit, Vercel) können Daten in
+                        den USA verarbeiten. Die Übermittlung erfolgt auf Grundlage des EU-US Data Privacy Framework
+                        bzw. der Standardvertragsklauseln der Europäischen Kommission, die ein angemessenes
+                        Datenschutzniveau sicherstellen.
+                    </p>
+                </section>
+
+                <section className="flex flex-col gap-4">
+                    <h2 className="font-sans font-bold text-sm uppercase tracking-widest text-ivory/50">8. Cookies und Tracking</h2>
+                    <p className="text-ivory/70 leading-relaxed text-sm">
+                        Diese Website setzt keine Cookies zu Marketing- oder Analysezwecken und verwendet kein
+                        Web-Analytics-Tool (z. B. Google Analytics). Es werden keine einwilligungspflichtigen Cookies
+                        gesetzt. Lediglich für die reine Funktion der Website kann eine technische Information
+                        vorübergehend im Speicher Ihres Browsers (Session Storage) abgelegt werden; diese wird beim
+                        Schließen des Browser-Tabs automatisch gelöscht.
+                    </p>
+                </section>
+
+                <section className="flex flex-col gap-4">
+                    <h2 className="font-sans font-bold text-sm uppercase tracking-widest text-ivory/50">9. Ihre Rechte</h2>
                     <p className="text-ivory/70 leading-relaxed text-sm">
                         Sie haben gemäß DSGVO folgende Rechte gegenüber uns bezüglich der Sie betreffenden
                         personenbezogenen Daten:
@@ -94,7 +148,7 @@ export default function Datenschutz() {
                 </section>
 
                 <section className="flex flex-col gap-4">
-                    <h2 className="font-sans font-bold text-sm uppercase tracking-widest text-ivory/50">7. Beschwerderecht</h2>
+                    <h2 className="font-sans font-bold text-sm uppercase tracking-widest text-ivory/50">10. Beschwerderecht</h2>
                     <p className="text-ivory/70 leading-relaxed text-sm">
                         Sie haben das Recht, sich bei der österreichischen Datenschutzbehörde zu beschweren:<br /><br />
                         Österreichische Datenschutzbehörde<br />
@@ -104,11 +158,16 @@ export default function Datenschutz() {
                 </section>
 
                 <section className="flex flex-col gap-4">
-                    <h2 className="font-sans font-bold text-sm uppercase tracking-widest text-ivory/50">8. Externe Dienste</h2>
+                    <h2 className="font-sans font-bold text-sm uppercase tracking-widest text-ivory/50">11. Eingebundene Inhalte Dritter</h2>
                     <p className="text-ivory/70 leading-relaxed text-sm">
-                        Diese Website bindet YouTube-Videos über den Dienst von Google LLC ein. Beim Abspielen
-                        eines Videos können Daten (z. B. Ihre IP-Adresse) an Google übertragen werden. Weitere
-                        Informationen finden Sie in der{' '}
+                        Diese Website bindet YouTube-Videos im erweiterten Datenschutzmodus
+                        (youtube-nocookie.com) über den Dienst von Google LLC ein. Erst beim Abspielen eines
+                        Videos können Daten (z. B. Ihre IP-Adresse) an Google übertragen werden.
+                    </p>
+                    <p className="text-ivory/70 leading-relaxed text-sm">
+                        Zur einheitlichen Darstellung von Schriftarten werden Google Fonts über die Server von
+                        Google geladen. Dabei wird Ihre IP-Adresse an Google übertragen. Weitere Informationen
+                        finden Sie in der{' '}
                         <a href="https://policies.google.com/privacy" target="_blank" rel="noreferrer" className="text-champagne hover:underline">
                             Datenschutzerklärung von Google
                         </a>.
