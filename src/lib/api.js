@@ -20,19 +20,55 @@ export async function fetchAvailabilityRange(startString, days = 7, signal) {
   return res.json();
 }
 
-export async function submitBooking(bookingData) {
-  const API_BASE = import.meta.env.VITE_API_BASE || '';
-  const res = await fetch(`${API_BASE}/api/book`, {
+// Temporary fallback while the Google Calendar connection is being set up.
+// Once GOOGLE_SERVICE_ACCOUNT_KEY / GOOGLE_CALENDAR_ID are configured on the
+// server, /api/book succeeds and this fallback is never used — no code change
+// needed to switch over.
+const MAKE_WEBHOOK_URL = 'https://hook.eu1.make.com/ugto7s564hkhy94gvh6ldgyjqgx7dn8x';
+
+async function submitViaMake(bookingData) {
+  const res = await fetch(MAKE_WEBHOOK_URL, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(bookingData),
   });
-  const data = await res.json().catch(() => ({}));
   if (!res.ok) {
-    const err = new Error(data.message || 'Booking failed');
+    const err = new Error('Booking failed');
     err.status = res.status;
+    err.data = {};
+    throw err;
+  }
+  return { success: true, via: 'make' };
+}
+
+export async function submitBooking(bookingData) {
+  const API_BASE = import.meta.env.VITE_API_BASE || '';
+
+  let res;
+  try {
+    res = await fetch(`${API_BASE}/api/book`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(bookingData),
+    });
+  } catch {
+    // API unreachable → keep bookings working via Make.com
+    return submitViaMake(bookingData);
+  }
+
+  const data = await res.json().catch(() => ({}));
+
+  // Booked successfully through the guarded endpoint.
+  if (res.ok) return data;
+
+  // Slot genuinely taken — do NOT fall back (that would re-introduce double-booking).
+  if (res.status === 409) {
+    const err = new Error(data.message || 'Slot taken');
+    err.status = 409;
     err.data = data;
     throw err;
   }
-  return data;
+
+  // Any other error (e.g. Google not connected yet → 500) → Make.com fallback.
+  return submitViaMake(bookingData);
 }
