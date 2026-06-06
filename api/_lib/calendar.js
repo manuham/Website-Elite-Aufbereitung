@@ -2,12 +2,18 @@ import { google } from 'googleapis';
 
 // ─── Auth ────────────────────────────────────────────────────────────────────
 
+function loadServiceAccountCredentials() {
+  const raw = (process.env.GOOGLE_SERVICE_ACCOUNT_KEY || '').trim();
+  if (!raw) throw new Error('GOOGLE_SERVICE_ACCOUNT_KEY is not set');
+  // Accept either the raw JSON or a base64-encoded JSON, so it works no matter
+  // which form was pasted into the environment variable.
+  const text = raw.startsWith('{') ? raw : Buffer.from(raw, 'base64').toString('utf8');
+  return JSON.parse(text);
+}
+
 function getAuthClient() {
-  const keyJson = JSON.parse(
-    Buffer.from(process.env.GOOGLE_SERVICE_ACCOUNT_KEY, 'base64').toString()
-  );
   return new google.auth.GoogleAuth({
-    credentials: keyJson,
+    credentials: loadServiceAccountCredentials(),
     scopes: ['https://www.googleapis.com/auth/calendar'],
   });
 }
