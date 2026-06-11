@@ -7,6 +7,7 @@ const navLinks = [
     { label: 'Leistungen', id: 'pricing' },
     { label: 'Über Uns', id: 'philosophy' },
     { label: 'Unsere Arbeit', href: '/projekte' },
+    { label: 'FAQ', id: 'faq' },
     { label: 'Kontakt', id: 'footer' },
 ];
 

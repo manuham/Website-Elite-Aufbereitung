@@ -10,9 +10,21 @@ under `/api` (Vercel). Main flow component: `src/pages/BookingPage.jsx` (5 steps
 Step0 Location (Studio/Mobil) → Step1 Services → StepVehicle (category/Aufpreis) →
 Step2 Date & time → Step3 Contact + photos → Step4 Confirmation.
 
+## Vehicle size surcharge (StepVehicle) — conditional
+`VEHICLE_CATEGORIES` (`BookingPage.jsx`) carries `aufpreis` per size: Kleinwagen 0, Kompakt 55,
+Mittelklasse 75, SUV 95, Großfahrzeuge `null` ("auf Anfrage"). The size Aufpreis applies **only**
+when the cart contains *Deep Clean* (`tier-silber`) or *Leichte Politur* (`politur-0`) — see
+`SIZE_SURCHARGE_IDS`. For every other selection no size surcharge is added (the step still asks for
+the size so the operator knows the vehicle). The gate is recomputed identically in `StepVehicle`,
+`handleSubmit`, and the `Step4` confirmation. Both qualifying services carry `sizeSurcharge: true`
+in `src/data/services.js` (for display/intent); the booking logic keys off the ID set.
+
 ## Services: bookable vs. appointment-only
 Services live in `src/data/services.js`. Some carry `phoneOnly: true` (Gold & Élite tiers,
-*Schwere Politur*, the Keramik coatings).
+*Schwere Politur*, the Keramik coatings). The `verkauf` category ("Verkauf & Leasing") holds the
+combined **Verkaufsaufbereitung / Leasingrückläufer** card (id `verkauf-0`). The `zusatz` add-ons
+each carry a `group` (`innenraum`/`aussen`/`polieren`/`beschichten`) used by `Pricing.jsx` to render
+collapsible folders; the booking Step-1 still lists them flat.
 
 - **All** services are shown in Step1 (`BookingPage.jsx`). They are no longer filtered out.
 - Bookable services → added to the selection cart as normal.

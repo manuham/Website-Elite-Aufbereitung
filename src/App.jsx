@@ -12,6 +12,7 @@ import Protocol from './components/Protocol';
 import Gallery from './components/Gallery';
 import GoogleReviews from './components/GoogleReviews';
 import Pricing from './components/Pricing';
+import FAQ from './components/FAQ';
 import Footer from './components/Footer';
 import BookingPage from './pages/BookingPage';
 import Impressum from './pages/Impressum';
@@ -111,6 +112,7 @@ function HomePage() {
             <Protocol />
             <Gallery />
             <Pricing />
+            <FAQ />
             <Footer />
         </div>
     );

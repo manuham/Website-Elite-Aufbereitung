@@ -32,7 +32,8 @@ export const tierPackages = [
         dots: 2,
         name: 'Deep Clean',
         subtitle: 'Bronze + Politur & Versiegelung',
-        price: 'ab 390,–',
+        price: 'ab 420,–',
+        sizeSurcharge: true,
         durationDays: 1,
         mobilExtraMin: 60,
         mobilSurcharge: 45,
@@ -52,7 +53,7 @@ export const tierPackages = [
         name: 'Deep Polish',
         phoneOnly: true,
         subtitle: 'Silber + 2-stufige Politur & Beschichtungen',
-        price: 'ab 690,–',
+        price: 'ab 890,–',
         durationDays: 2,
         mobilSurcharge: 65,
         headerStyle: { background: 'linear-gradient(135deg, #996515, #B8860B, #DAA520)' },
@@ -73,7 +74,7 @@ export const tierPackages = [
         dots: 0, // uses lightning icon instead
         name: 'Endstufe',
         subtitle: 'Das Ultimative. Kein Kompromiss.',
-        price: 'ab 1.790,–',
+        price: 'ab 1.890,–',
         durationDays: 5,
         headerStyle: { background: 'linear-gradient(135deg, #064E3B, #047857, #4DB292)' },
         features: [
@@ -83,6 +84,7 @@ export const tierPackages = [
             { text: 'Felgen zerlegt, poliert & beschichtet', bold: true },
             { text: 'Bremssättel beschichtet', bold: true },
             { text: 'Einstiege poliert & beschichtet', bold: true },
+            { text: 'Motorraum gereinigt & beschichtet', bold: true },
             { text: 'Ledersitze Keramikbeschichtung', bold: true, sub: 'Schutz vor Schmutz, UV & Farbabrieb' },
             { text: 'Kunststoffteile beschichtet (UV-Schutz)', bold: true },
             { text: 'Stoff- & Textilbeschichtung', bold: true, sub: 'inkl. Fußmatten — wasser- & schmutzabweisend' },
@@ -219,6 +221,7 @@ export const serviceCategories = [
                 name: "Leichte Politur",
                 price: "ab €395,-",
                 popular: false,
+                sizeSurcharge: true,
                 durationMin: 360,
                 mobilExtraMin: 30,
                 mobilSurcharge: 45,
@@ -229,7 +232,7 @@ export const serviceCategories = [
                     "Optimaler Glanz",
                     "Inkl. Wachsbeschichtung als Lackschutz",
                     "Empfohlen für leichte Gebrauchsspuren/Neuwagen",
-                    "Für SUV/Transporter/Kombis Aufpreis 95,-"
+                    "Aufpreis je nach Fahrzeuggröße (Kompakt +55, Mittel +75, SUV +95)"
                 ]
             },
             {
@@ -340,6 +343,27 @@ export const serviceCategories = [
         ]
     },
     {
+        id: "verkauf",
+        title: "Verkauf & Leasing",
+        subtitle: "Optimal vorbereitet für den Verkauf oder die Leasingrückgabe.",
+        packages: [
+            {
+                name: "Verkaufsaufbereitung / Leasingrückläufer",
+                price: "ab €295,-",
+                popular: true,
+                durationMin: 360,
+                mobilExtraMin: 60,
+                features: [
+                    "Gründliche Innen- und Außenreinigung",
+                    "Flecken & Gebrauchsspuren entfernen",
+                    "Lack polieren für einen glänzenden Auftritt",
+                    "Optimale Präsentation für Inserate & Besichtigungen",
+                    "Leasingrückläufer rückgabefertig aufbereitet — vermeidet Nachzahlungen",
+                ]
+            }
+        ]
+    },
+    {
         id: "zusatz",
         title: "Zusatzpakete",
         packages: [
@@ -347,6 +371,7 @@ export const serviceCategories = [
             {
                 name: "Autofenster beschichten",
                 price: "ab €85,-",
+                group: "beschichten",
                 popular: false,
                 durationMin: 120,
                 mobilExtraMin: 30,
@@ -361,6 +386,7 @@ export const serviceCategories = [
             {
                 name: "Windschutzscheibe beschichten",
                 price: "ab €85,-",
+                group: "beschichten",
                 popular: false,
                 durationMin: 60,
                 mobilExtraMin: 30,
@@ -374,6 +400,7 @@ export const serviceCategories = [
             {
                 name: "Alle Fenster beschichten",
                 price: "ab €185,-",
+                group: "beschichten",
                 popular: true,
                 durationMin: 120,
                 mobilExtraMin: 30,
@@ -387,6 +414,7 @@ export const serviceCategories = [
             {
                 name: "Felgen-Keramik 1 Schicht",
                 price: "ab €245,-",
+                group: "beschichten",
                 popular: false,
                 durationMin: 240,
                 features: [
@@ -400,6 +428,7 @@ export const serviceCategories = [
             {
                 name: "Felgen-Keramik 2 Schichten",
                 price: "ab €345,-",
+                group: "beschichten",
                 popular: false,
                 durationMin: 360,
                 features: [
@@ -412,6 +441,7 @@ export const serviceCategories = [
             {
                 name: "Textilimprägnierung (pro Sitz)",
                 price: "ab €35,-",
+                group: "innenraum",
                 popular: false,
                 durationMin: 30,
                 features: [
@@ -424,6 +454,7 @@ export const serviceCategories = [
             {
                 name: "Türverkleidung & Armaturen",
                 price: "ab €35,-",
+                group: "innenraum",
                 popular: false,
                 durationMin: 30,
                 features: [
@@ -436,6 +467,7 @@ export const serviceCategories = [
             {
                 name: "Dachhimmel Intensivreinigung",
                 price: "ab €55,-",
+                group: "innenraum",
                 popular: false,
                 durationMin: 60,
                 features: [
@@ -447,6 +479,7 @@ export const serviceCategories = [
             {
                 name: "Leder-Keramik versiegeln",
                 price: "ab €125,-",
+                group: "innenraum",
                 popular: false,
                 durationMin: 90,
                 features: [
@@ -459,6 +492,7 @@ export const serviceCategories = [
             {
                 name: "Hundehaare entfernen",
                 price: "ab €40,-",
+                group: "innenraum",
                 popular: false,
                 durationMin: 30,
                 features: [
@@ -470,6 +504,7 @@ export const serviceCategories = [
             {
                 name: "Motorwäsche + Konservierung",
                 price: "ab €50,-",
+                group: "aussen",
                 popular: false,
                 durationMin: 45,
                 mobilExtraMin: 30,
@@ -482,6 +517,7 @@ export const serviceCategories = [
             {
                 name: "Cabrio-Verdeck imprägnieren",
                 price: "ab €70,-",
+                group: "aussen",
                 popular: false,
                 durationMin: 60,
                 mobilExtraMin: 30,
@@ -494,6 +530,7 @@ export const serviceCategories = [
             {
                 name: "Auspuffblende polieren & versiegeln",
                 price: "ab €30,-",
+                group: "polieren",
                 popular: false,
                 durationMin: 30,
                 mobilExtraMin: 30,
@@ -506,6 +543,7 @@ export const serviceCategories = [
             {
                 name: "Kunststoffteile beschichten (außen)",
                 price: "ab €75,-",
+                group: "beschichten",
                 popular: false,
                 durationDays: 1,
                 features: [
@@ -518,6 +556,7 @@ export const serviceCategories = [
             {
                 name: "PPF Einstiege",
                 price: "ab €90,-",
+                group: "aussen",
                 popular: false,
                 durationMin: 120,
                 features: [
@@ -529,6 +568,7 @@ export const serviceCategories = [
             {
                 name: "PPF Türgriffmulden",
                 price: "ab €80,-",
+                group: "aussen",
                 popular: false,
                 durationMin: 90,
                 features: [
@@ -540,6 +580,7 @@ export const serviceCategories = [
             {
                 name: "Ozonbehandlung",
                 price: "ab €75,-",
+                group: "innenraum",
                 popular: false,
                 durationMin: 120,
                 mobilExtraMin: 30,
@@ -548,20 +589,6 @@ export const serviceCategories = [
                     "Tiefendesinfektion: Bakterien, Pilze & Keime",
                     "Dringt in Polster, Teppiche & Lüftungsschächte ein",
                     "Langanhaltende Wirkung über Wochen",
-                ]
-            },
-            // 17 — Verkaufsaufbereitung (referent "zusatz-17")
-            {
-                name: "Verkaufsaufbereitung",
-                price: "ab €295,-",
-                popular: false,
-                durationMin: 360,
-                mobilExtraMin: 60,
-                features: [
-                    "Gründliche Innen- und Außenreinigung",
-                    "Flecken entfernen",
-                    "Lack polieren für glänzenden Auftritt",
-                    "Fahrzeug optimal für den Verkauf vorbereiten",
                 ]
             }
         ]

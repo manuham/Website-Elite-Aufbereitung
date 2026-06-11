@@ -89,7 +89,7 @@ export const serviceRecommendations = {
         { recommend: 'politur-3', reason: 'Scheinwerfer gleich mitpolieren', type: 'addon', priority: 2 },
         { recommend: 'keramik-1', reason: 'Komplettschutz: Keramikversiegelung für den Lack', type: 'protect', priority: 3 },
     ],
-    'zusatz-17': [ // Verkaufsaufbereitung
+    'verkauf-0': [ // Verkaufsaufbereitung / Leasingrückläufer
         { recommend: 'politur-3', reason: 'Scheinwerfer polieren — wertet das Auto weiter auf', type: 'addon', priority: 1 },
         { recommend: 'zusatz-0', reason: 'Fenster beschichten — beeindruckt Käufer', type: 'addon', priority: 2 },
         { recommend: 'zusatz-16', reason: 'Ozonbehandlung für frischen Duft', type: 'addon', priority: 3 },
@@ -136,8 +136,8 @@ export const exclusionRules = [
     { if: 'tier-gold', exclude: ['politur-0', 'politur-1', 'politur-2', 'keramik-1'] },
     { if: 'tier-elite', exclude: ['handwaesche-0', 'handwaesche-1', 'handwaesche-2', 'innenreinigung-0', 'innenreinigung-1', 'politur-0', 'politur-1', 'politur-2', 'keramik-0', 'keramik-1'] },
 
-    // Verkaufsaufbereitung is comprehensive
-    { if: 'zusatz-17', exclude: ['handwaesche-0', 'innenreinigung-0'] },
+    // Verkaufsaufbereitung / Leasingrückläufer is comprehensive
+    { if: 'verkauf-0', exclude: ['handwaesche-0', 'innenreinigung-0'] },
 ];
 
 /**
