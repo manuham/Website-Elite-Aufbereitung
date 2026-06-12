@@ -34,6 +34,9 @@ or added to the comma-separated list) and shared with the service account.
 - Client side: `logUnansweredQuestion()` in `src/lib/api.js`, called fire-and-forget from
   `FAQBot.jsx` on every no-match (deduped per session). localStorage
   (`elite-faq-unanswered`) keeps a local copy as fallback.
+- Ambiguous questions (bot asked back "Meinst du …?" instead of answering) are logged with
+  a `[mehrdeutig]` prefix in the question column — filter for it to spot ambiguity hot-spots
+  that may need a more specific knowledge-base entry.
 - Uses the **same service account** as the calendar integration
   (`GOOGLE_SERVICE_ACCOUNT_KEY`), with the Sheets scope requested per-request.
 - Setup required:

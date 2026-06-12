@@ -12,6 +12,11 @@ import { tierPackages, serviceCategories } from './services.js';
     - `featured: true` marks the 9 entries shown in the FAQ accordion.
     - Answers are plain text (no HTML); CTAs go into `links`:
       `{ label, to }` = router path, `{ label, href }` = tel:/mailto:/external.
+    - Each entry's intent (price/duration/definition/…) is derived from its
+      question title by faqMatcher's detectIntent(); an explicit `intent`
+      field overrides the derivation (use `intent: null` to disable it).
+    - `variants` lists alternative phrasings of the question; they match at
+      question-text weight and as exact-question hits.
 */
 
 const cat = (id) => serviceCategories.find((c) => c.id === id);
@@ -82,7 +87,7 @@ export const FAQ_KNOWLEDGE = [
         id: 'faq-termin-buchen',
         q: 'Wie buche ich einen Termin?',
         a: 'Am einfachsten online über „Jetzt buchen": Du wählst Standort oder mobilen Service, die gewünschte Leistung, deine Fahrzeuggröße und einen freien Termin und lädst 1–4 Fotos deines Fahrzeugs hoch. Wir bestätigen deine Anfrage innerhalb von 24 Stunden. Hochpreisige Premium-Leistungen (z. B. Endstufe, Keramik) stimmen wir vorab kurz telefonisch ab.',
-        keywords: ['buchen', 'buchung', 'termin', 'online', 'reservieren', 'anfrage', 'foto', 'fotos', 'bilder', 'hochladen'],
+        keywords: ['buchen', 'buchung', 'termin', 'online', 'reservieren', 'anfrage', 'foto', 'fotos', 'bilder', 'hochladen', 'ablauf', 'läuft'],
         category: 'buchung',
         links: [LINK_BUCHEN],
         featured: true,
@@ -134,7 +139,7 @@ export const FAQ_KNOWLEDGE = [
         id: 'preis-keramik',
         q: 'Was kostet eine Keramikversiegelung?',
         a: `Neuwagen Beschichtung ${price('keramik', 'Neuwagen Beschichtung', 'ab €795,-')} (für Autos bis 3–4 Monate / 4.000 km), Beschichtungspaket ${price('keramik', 'Beschichtungspaket', 'ab €895,-')} (Lebensdauer 2–3 Jahre, inkl. 3-Gang Politur), Matt Beschichtung ${price('keramik', 'Matt Beschichtung', 'ab €795,-')} für matte Lacke. Wir arbeiten mit FIREBALL – Haltbarkeit 40.000–60.000 km. Keramik-Pakete stimmen wir vorab kurz telefonisch ab.`,
-        keywords: ['keramik', 'keramikversiegelung', 'keramikbeschichtung', 'beschichtung', 'fireball', 'preis', 'kosten', 'kostet', 'teuer', 'coating'],
+        keywords: ['keramik', 'keramikversiegelung', 'keramikbeschichtung', 'versiegelung', 'beschichtung', 'fireball', 'preis', 'kosten', 'kostet', 'teuer', 'coating'],
         category: 'preise',
         links: [LINK_TEL, LINK_BUCHEN],
     },
@@ -142,7 +147,8 @@ export const FAQ_KNOWLEDGE = [
         id: 'preis-komplettpakete',
         q: 'Welche Komplettpakete gibt es?',
         a: `Vier Stufen: Bronze „Wash & Clean" (${tier('tier-bronze', 'ab 230,–')} €, Handwäsche + Innenreinigung), Silber „Deep Clean" (${tier('tier-silber', 'ab 420,–')} €, zusätzlich 1-Schritt Politur & Sprühversiegelung), Gold „Deep Polish" (${tier('tier-gold', 'ab 890,–')} €, 2-stufige Politur, Fenster- & Kunststoffbeschichtung) und Élite „Endstufe" (${tier('tier-elite', 'ab 1.890,–')} €, 3-Gang Politur + FIREBALL Keramik, das Maximum). Gold & Endstufe stimmen wir telefonisch ab.`,
-        keywords: ['komplettpaket', 'komplettpakete', 'paket', 'pakete', 'bronze', 'silber', 'gold', 'endstufe', 'deep clean', 'deep polish', 'wash', 'alles', 'teuer'],
+        keywords: ['komplettpaket', 'komplettpakete', 'paket', 'pakete', 'bronze', 'silber', 'gold', 'endstufe', 'deep clean', 'deep polish', 'wash', 'alles', 'teuer', 'kostet', 'kosten', 'preis', 'preise'],
+        intent: 'price', // "Welche … gibt es?" leitet keinen Intent ab
         category: 'preise',
         links: [LINK_BUCHEN],
     },
@@ -158,7 +164,7 @@ export const FAQ_KNOWLEDGE = [
         id: 'leistung-zusatzpakete',
         q: 'Welche Zusatzpakete gibt es?',
         a: 'Eine ganze Reihe: Fenster beschichten (ab €85,– bzw. alle Scheiben ab €185,–), Felgen-Keramik (ab €245,–), Textilimprägnierung (ab €35,–/Sitz), Dachhimmel-Reinigung (ab €55,–), Leder-Keramik (ab €125,–), Hundehaare entfernen (ab €40,–), Motorwäsche (ab €50,–), Cabrio-Verdeck imprägnieren (ab €70,–), Ozonbehandlung (ab €75,–), PPF-Lackschutzfolie (ab €80,–) u. v. m. Zusatzpakete lassen sich direkt bei der Buchung dazubuchen.',
-        keywords: ['zusatzpaket', 'zusatzpakete', 'zusatz', 'extras', 'zusätzlich', 'dazubuchen', 'optionen'],
+        keywords: ['zusatzpaket', 'zusatzpakete', 'zusatz', 'extras', 'zusätzlich', 'dazubuchen', 'optionen', 'kostet', 'kosten', 'preis'],
         category: 'leistungen',
         links: [LINK_BUCHEN],
     },
@@ -274,6 +280,7 @@ export const FAQ_KNOWLEDGE = [
         q: 'In welchem Gebiet seid ihr mobil unterwegs?',
         a: 'Mit dem mobilen Service sind wir in ganz Vorarlberg unterwegs – von Bludenz über Feldkirch, Rankweil, Götzis, Hohenems und Dornbirn bis Bregenz. Es gilt eine Anfahrtspauschale von €50,–.',
         keywords: ['einzugsgebiet', 'gebiet', 'vorarlberg', 'dornbirn', 'bregenz', 'bludenz', 'hohenems', 'lustenau', 'rankweil', 'götzis', 'umgebung', 'nähe', 'kommt', 'region'],
+        intent: 'location', // "In welchem Gebiet …?" leitet keinen Intent ab
         category: 'mobil',
         links: [LINK_MOBIL],
     },
@@ -308,7 +315,8 @@ export const FAQ_KNOWLEDGE = [
         id: 'wissen-politur-wachs',
         q: 'Was ist der Unterschied zwischen Politur, Wachs und Versiegelung?',
         a: 'Politur trägt eine hauchdünne Lackschicht ab und entfernt so Kratzer, Swirls und Oxidation – sie stellt den Glanz wieder her. Wachs und Versiegelung schützen danach: Wachs ist natürlich und hält wenige Monate, eine Sprühversiegelung ca. 12.000 km, eine Keramikversiegelung mehrere Jahre. Kurz: Politur korrigiert, Wachs/Versiegelung konserviert.',
-        keywords: ['unterschied', 'wachs', 'politur', 'versiegelung', 'wachsen', 'carnauba'],
+        // kein 'politur'-Keyword: sonst Gleichstand mit wissen-politur bei "Was ist eine Politur?"-Varianten
+        keywords: ['unterschied', 'wachs', 'versiegelung', 'wachsen', 'carnauba'],
         category: 'wissen',
     },
     {
@@ -373,6 +381,51 @@ export const FAQ_KNOWLEDGE = [
         q: 'Was ist eine Schichtdickenmessung?',
         a: 'Vor jeder Politur messen wir die Dicke des Lacks elektronisch. So sehen wir, wie viel Klarlack vorhanden ist und wie viel Material gefahrlos abgetragen werden kann – und erkennen nachlackierte Stellen oder frühere Smart-Repairs. Das schützt deinen Lack vor Durchpolieren und ist bei Deep Clean, Deep Polish & Endstufe inklusive.',
         keywords: ['schichtdicke', 'schichtdickenmessung', 'lackdicke', 'messung', 'messen', 'klarlack'],
+        category: 'wissen',
+    },
+    {
+        id: 'wissen-politur',
+        q: 'Was ist eine Politur?',
+        a: 'Eine Politur trägt eine hauchdünne Schicht des Klarlacks ab und entfernt so Kratzer, Swirls, Oxidation und Hologramme – der Glanz wird wiederhergestellt. Bei uns gibt es die Leichte Politur (1-stufig, für sehr feine Kratzer, inkl. Wachsbeschichtung, ca. ein Arbeitstag), die Schwere Politur (mehrstufig, für mittlere bis tiefe Kratzer, ca. 1,5 Tage) und die Spot-Politur für einzelne Stellen. Vor jeder Politur messen wir die Lackdicke.',
+        keywords: ['politur', 'polieren', 'lackpolitur', 'lackkorrektur', 'aufpolieren'],
+        variants: ['Was bringt eine Politur?', 'Was macht eine Politur?'],
+        category: 'wissen',
+    },
+    {
+        id: 'wissen-aufbereitung',
+        q: 'Was ist eine Autoaufbereitung?',
+        a: 'Eine Autoaufbereitung ist die professionelle Reinigung und Pflege deines Fahrzeugs innen und außen – deutlich gründlicher als eine normale Wäsche. Je nach Paket gehören kratzfreie Handwäsche, Innenreinigung, Lackpolitur und Schutz durch Versiegelung oder Keramik dazu: von der Basic Handwäsche bis zum Maximum, der Élite „Endstufe".',
+        keywords: ['aufbereitung', 'autoaufbereitung', 'fahrzeugaufbereitung', 'detailing', 'aufbereiten'],
+        variants: ['Was ist Detailing?'],
+        category: 'wissen',
+    },
+    {
+        id: 'wissen-innenreinigung',
+        q: 'Was ist eine professionelle Innenreinigung?',
+        a: 'Bei der Basic Innenreinigung saugen wir das Fahrzeug gründlich und reinigen Armaturen, Fenster und Automatten (ca. 90 Minuten). Die Premium Innenreinigung umfasst zusätzlich Lederpflege, Nassreinigung der Sitze und Kunststoffbehandlung – inklusive Tierhaar-Entfernung (ca. 2,5 Stunden).',
+        keywords: ['innenreinigung', 'innenraum', 'umfasst', 'enthalten', 'inklusive', 'beinhaltet'],
+        category: 'wissen',
+    },
+    {
+        id: 'wissen-handwaesche',
+        q: 'Was ist eine kratzfreie Handwäsche?',
+        a: 'Wir waschen ausschließlich per Hand mit der 2-Eimer-Methode: ein Eimer mit Shampoo, einer zum Auswaschen des Handschuhs – so gelangt kein Schmutz zurück auf den Lack und es entstehen keine Waschanlagen-Kratzer. Bei der Premium Handwäsche kommen Teer- & Flugrostentfernung und eine Sprühwachs-Versiegelung dazu.',
+        keywords: ['handwäsche', 'autowäsche', 'waschen', 'eimer', 'kratzfrei', 'schonend'],
+        category: 'wissen',
+    },
+    {
+        id: 'wissen-versiegelung',
+        q: 'Was ist eine Lackversiegelung?',
+        a: 'Eine Versiegelung legt eine Schutzschicht über den Lack: Sie schützt vor UV-Strahlung, Vogelkot, Streusalz und Oxidation und sorgt für einen Abperleffekt. Es gibt drei Stufen: Wachs hält wenige Monate, eine Sprühversiegelung ca. 12.000 km, unsere FIREBALL Keramikversiegelung 40.000–60.000 km.',
+        keywords: ['versiegelung', 'lackversiegelung', 'sprühversiegelung', 'versiegeln', 'lackschutz', 'schutzschicht'],
+        variants: ['Was ist eine Versiegelung?', 'Welche Versiegelungen gibt es?'],
+        category: 'wissen',
+    },
+    {
+        id: 'wissen-spot-politur',
+        q: 'Was ist eine Spot-Politur?',
+        a: `Bei der Spot-Politur polieren wir einzelne Stellen statt des ganzen Fahrzeugs – ideal bei einzelnen Kratzern, matten Flecken oder Ätzrändern von Vogelkot. Gibt es ${price('politur', 'Spot-Politur', 'ab €45,-')}.`,
+        keywords: ['spot', 'spotpolitur', 'stelle', 'stellen', 'teilpolitur'],
         category: 'wissen',
     },
 

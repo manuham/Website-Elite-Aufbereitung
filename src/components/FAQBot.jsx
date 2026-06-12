@@ -7,24 +7,29 @@ import { FAQ_KNOWLEDGE, SUGGESTED_QUESTIONS } from '../data/faqKnowledge';
 
 const GREETING = 'Hallo! Ich bin der Elité-Assistent. Frag mich alles zu Leistungen, Preisen, Terminen oder Pflege-Tipps.';
 const FALLBACK = 'Das weiß ich leider nicht – aber Matthias hilft dir gerne persönlich weiter. Ruf kurz an oder buch direkt online.';
+const CLARIFY = 'Dazu habe ich mehrere Antworten. Was genau meinst du?';
 
 // Unanswered questions go to /api/faq-log (anonymous: timestamp + text only,
 // appended to a review Google Sheet) so they can become new knowledge-base
-// entries. localStorage keeps a local copy in case the API isn't configured.
+// entries. Ambiguous questions are logged with a "[mehrdeutig]" marker to
+// surface ambiguity hot-spots; answered low-margin matches are deliberately
+// not logged (a "[knapp]" marker could be added later if needed). localStorage
+// keeps a local copy in case the API isn't configured.
 const sentThisSession = new Set();
 
-function logUnanswered(q) {
+function logUnanswered(q, type) {
+    const logged = type === 'clarify' ? `[mehrdeutig] ${q}` : q;
     try {
         const key = 'elite-faq-unanswered';
         const list = JSON.parse(localStorage.getItem(key) ?? '[]');
-        list.push({ q, ts: Date.now() });
+        list.push(type ? { q, ts: Date.now(), type } : { q, ts: Date.now() });
         localStorage.setItem(key, JSON.stringify(list.slice(-50)));
     } catch { /* private mode / storage full — best effort only */ }
 
-    const norm = q.toLowerCase();
+    const norm = logged.toLowerCase();
     if (!sentThisSession.has(norm)) {
         sentThisSession.add(norm);
-        logUnansweredQuestion(q);
+        logUnansweredQuestion(logged);
     }
 }
 
@@ -69,6 +74,15 @@ export default function FAQBot() {
                     text: result.entry.a,
                     links: result.entry.links,
                     related: result.related.map((e) => e.q),
+                }]);
+            } else if (result.clarify) {
+                logUnanswered(q, 'clarify');
+                setMessages((m) => [...m, {
+                    id: nextId(),
+                    role: 'bot',
+                    text: CLARIFY,
+                    clarify: true,
+                    related: result.clarify.map((e) => e.q),
                 }]);
             } else {
                 logUnanswered(q);
@@ -137,7 +151,7 @@ export default function FAQBot() {
                         {msg.related?.length > 0 && (
                             <div className="flex flex-col gap-1.5 max-w-[88%]">
                                 <span className="font-mono text-[10px] uppercase tracking-widest text-ivory/40">
-                                    {msg.fallback ? 'Meintest du vielleicht' : 'Verwandte Fragen'}
+                                    {msg.fallback ? 'Meintest du vielleicht' : msg.clarify ? 'Meinst du' : 'Verwandte Fragen'}
                                 </span>
                                 <div className="flex flex-wrap gap-2">
                                     {msg.related.map((q) => (
