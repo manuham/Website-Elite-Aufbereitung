@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { Link, useSearchParams, useNavigate } from 'react-router-dom';
-import { Check, ChevronLeft, ChevronRight, ArrowLeft, Phone, Mail, MapPin, Plus, X as XIcon, Sparkles, AlertTriangle, Truck, Zap, Gift, Construction, Camera } from 'lucide-react';
+import { Check, ChevronLeft, ChevronRight, ChevronDown, ArrowLeft, Phone, Mail, MapPin, Plus, X as XIcon, Sparkles, AlertTriangle, Truck, Zap, Gift, Construction, Camera } from 'lucide-react';
 import gsap from 'gsap';
 import { serviceCategories, tierPackages, allInOnePackages } from '../data/services';
 import { useRecommendations } from '../hooks/useRecommendations';
@@ -230,6 +230,9 @@ function Step1({ selectedItems, toggleItem, onNext, onBack, recommendations, pac
     const [showDisclaimer, setShowDisclaimer] = useState(false);
     const [pendingItem, setPendingItem] = useState(null);
     const [phoneModal, setPhoneModal] = useState(null);
+    // Cards whose full feature list is expanded ("+X weitere Leistungen")
+    const [expandedCards, setExpandedCards] = useState({});
+    const toggleExpanded = (id) => setExpandedCards(prev => ({ ...prev, [id]: !prev[id] }));
 
     const isSelected = (id) => selectedItems.some(i => i.id === id);
 
@@ -315,13 +318,21 @@ function Step1({ selectedItems, toggleItem, onNext, onBack, recommendations, pac
                         const selected = isSelected(pkg.id);
                         const isElite = pkg.id === 'tier-elite';
                         const textFeatures = pkg.features.filter(f => !f.section);
-                        const visibleFeatures = textFeatures.slice(0, 5);
+                        const expanded = !!expandedCards[pkg.id];
+                        const visibleFeatures = expanded ? textFeatures : textFeatures.slice(0, 5);
                         const extraCount = textFeatures.length - 5;
+                        const selectCard = () => pkg.phoneOnly ? setPhoneModal(`${pkg.tier} – ${pkg.name}`) : toggleAIO(pkg);
                         return (
-                            <button
+                            <div
                                 key={pkg.id}
-                                onClick={() => pkg.phoneOnly ? setPhoneModal(`${pkg.tier} – ${pkg.name}`) : toggleAIO(pkg)}
-                                className={`text-left rounded-[1.5rem] border transition-all duration-200 flex flex-col overflow-hidden relative ${selected
+                                role="button"
+                                tabIndex={0}
+                                onClick={selectCard}
+                                onKeyDown={(e) => {
+                                    if (e.target !== e.currentTarget) return;
+                                    if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); selectCard(); }
+                                }}
+                                className={`text-left cursor-pointer rounded-[1.5rem] border transition-all duration-200 flex flex-col overflow-hidden relative ${selected
                                     ? 'border-accent shadow-[0_0_24px_rgba(77,178,146,0.15)]'
                                     : isElite ? 'border-accent/30 hover:border-accent/60' : 'bg-slate/30 border-slate/50 hover:border-slate'}`}
                             >
@@ -364,7 +375,16 @@ function Step1({ selectedItems, toggleItem, onNext, onBack, recommendations, pac
                                             </li>
                                         ))}
                                         {extraCount > 0 && (
-                                            <li className="font-sans text-xs text-ivory/30 ml-4">+{extraCount} weitere Leistungen</li>
+                                            <li className="ml-4">
+                                                <button
+                                                    type="button"
+                                                    onClick={(e) => { e.stopPropagation(); toggleExpanded(pkg.id); }}
+                                                    className="font-sans text-xs text-ivory/40 hover:text-accent transition-colors flex items-center gap-1"
+                                                >
+                                                    {expanded ? 'Weniger anzeigen' : `+${extraCount} weitere Leistungen`}
+                                                    <ChevronDown className={`w-3 h-3 transition-transform duration-200 ${expanded ? 'rotate-180' : ''}`} />
+                                                </button>
+                                            </li>
                                         )}
                                     </ul>
 
@@ -375,7 +395,7 @@ function Step1({ selectedItems, toggleItem, onNext, onBack, recommendations, pac
                                         </div>
                                     )}
                                 </div>
-                            </button>
+                            </div>
                         );
                     })}
                 </div>
@@ -387,11 +407,20 @@ function Step1({ selectedItems, toggleItem, onNext, onBack, recommendations, pac
                     {activeCategory.packages.map((pkg, i) => {
                         const id = `${activeCategory.id}-${i}`;
                         const selected = isSelected(id);
+                        const expanded = !!expandedCards[id];
+                        const visibleFeatures = expanded ? pkg.features : pkg.features.slice(0, 4);
+                        const selectCard = () => pkg.phoneOnly ? setPhoneModal(pkg.name) : toggleService(activeCategory, pkg, i);
                         return (
-                            <button
+                            <div
                                 key={i}
-                                onClick={() => pkg.phoneOnly ? setPhoneModal(pkg.name) : toggleService(activeCategory, pkg, i)}
-                                className={`text-left p-6 rounded-[1.5rem] border transition-all duration-200 flex flex-col gap-4 ${selected
+                                role="button"
+                                tabIndex={0}
+                                onClick={selectCard}
+                                onKeyDown={(e) => {
+                                    if (e.target !== e.currentTarget) return;
+                                    if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); selectCard(); }
+                                }}
+                                className={`text-left cursor-pointer p-6 rounded-[1.5rem] border transition-all duration-200 flex flex-col gap-4 ${selected
                                     ? 'bg-accent/10 border-accent shadow-[0_0_20px_rgba(77,178,146,0.15)]'
                                     : 'bg-slate/30 border-slate/50 hover:border-slate'}`}
                             >
@@ -409,16 +438,25 @@ function Step1({ selectedItems, toggleItem, onNext, onBack, recommendations, pac
                                 </div>
                                 <div className="font-mono text-2xl font-bold text-accent">{pkg.price}</div>
                                 <ul className="flex flex-col gap-1.5 flex-1">
-                                    {pkg.features.slice(0, 4).map((f, fi) => (
+                                    {visibleFeatures.map((f, fi) => (
                                         <li key={fi} className="font-sans text-xs text-ivory/50 flex items-start gap-2">
                                             <span className="text-accent mt-0.5 shrink-0">·</span>{f}
                                         </li>
                                     ))}
                                     {pkg.features.length > 4 && (
-                                        <li className="font-sans text-xs text-ivory/30">+{pkg.features.length - 4} weitere</li>
+                                        <li>
+                                            <button
+                                                type="button"
+                                                onClick={(e) => { e.stopPropagation(); toggleExpanded(id); }}
+                                                className="font-sans text-xs text-ivory/40 hover:text-accent transition-colors flex items-center gap-1"
+                                            >
+                                                {expanded ? 'Weniger anzeigen' : `+${pkg.features.length - 4} weitere`}
+                                                <ChevronDown className={`w-3 h-3 transition-transform duration-200 ${expanded ? 'rotate-180' : ''}`} />
+                                            </button>
+                                        </li>
                                     )}
                                 </ul>
-                            </button>
+                            </div>
                         );
                     })}
                 </div>

@@ -3,10 +3,11 @@ import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { X, Menu } from 'lucide-react';
 import gsap from 'gsap';
 
+// Ordered to match the homepage section flow: Philosophy → Gallery → Pricing → FAQ → Footer
 const navLinks = [
-    { label: 'Leistungen', id: 'pricing' },
     { label: 'Über Uns', id: 'philosophy' },
     { label: 'Unsere Arbeit', href: '/projekte' },
+    { label: 'Leistungen', id: 'pricing' },
     { label: 'FAQ', id: 'faq' },
     { label: 'Kontakt', id: 'footer' },
 ];
@@ -77,6 +78,15 @@ export default function Navbar() {
         }
     };
 
+    const goHome = () => {
+        setMenuOpen(false);
+        if (location.pathname !== '/') {
+            navigate('/');
+        } else {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+    };
+
     return (
         <>
             <nav
@@ -87,13 +97,15 @@ export default function Navbar() {
             >
                 {/* Logo */}
                 <div
-                    className="flex items-center shrink-0 cursor-pointer py-1"
-                    onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+                    className="flex items-center shrink-0 cursor-pointer"
+                    onClick={goHome}
                 >
+                    {/* Negative margins collapse the PNG's transparent padding so the bar stays slim
+                        while the visible wordmark renders at full size */}
                     <img
                         src="/assets/logo-new2.png"
                         alt="Elité Auto Aufbereitung"
-                        className="h-[4.5rem] sm:h-[5.5rem] lg:h-[7rem] w-auto object-contain -ml-2"
+                        className="h-[4.5rem] -my-5 sm:h-[5.5rem] sm:-my-6 lg:h-[7rem] lg:-my-8 w-auto object-contain -ml-2"
                     />
                 </div>
 
