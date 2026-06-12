@@ -4,7 +4,7 @@ import gsap from 'gsap';
 import { Truck, Sparkles } from 'lucide-react';
 import FloatingParticles from './FloatingParticles';
 
-export default function Hero() {
+export default function Hero({ entranceReady = true }) {
     const containerRef = useRef(null);
     const bgRef = useRef(null);
 
@@ -37,33 +37,22 @@ export default function Hero() {
 
     useEffect(() => {
         const ctx = gsap.context(() => {
-            // Badge bounces in
-            gsap.from('.hero-badge', {
-                scale: 0,
-                opacity: 0,
-                duration: 0.6,
-                ease: 'back.out(2)',
-                delay: 0.3,
-            });
+            // Hide entrance elements until the preloader has lifted (see entrance effect below)
+            gsap.set('.hero-badge', { scale: 0, opacity: 0 });
+            gsap.set('.hero-fade', { y: 40, opacity: 0 });
 
-            // Subtitle + locations + buttons stagger in with clip-path
-            gsap.from('.hero-fade', {
-                y: 40,
-                opacity: 0,
-                duration: 1,
-                stagger: 0.12,
-                ease: 'power3.out',
-                delay: 0.8,
-            });
-
-            // Background breathing
-            gsap.to(bgRef.current, {
-                scale: 1.15,
-                duration: 25,
-                repeat: -1,
-                yoyo: true,
-                ease: 'sine.inOut',
-            });
+            // Background breathing — base zoom keeps the van large in frame,
+            // origin sits on the van (right-of-center, lower half)
+            gsap.fromTo(bgRef.current,
+                { scale: 1.12, transformOrigin: '60% 65%' },
+                {
+                    scale: 1.24,
+                    duration: 25,
+                    repeat: -1,
+                    yoyo: true,
+                    ease: 'sine.inOut',
+                }
+            );
 
             // --- Depth layers: multi-speed scroll parallax ---
             // Background image: moves slowest (0.3x)
@@ -107,6 +96,35 @@ export default function Hero() {
         return () => ctx.revert();
     }, []);
 
+    // Entrance — gated on the preloader finishing so the animation isn't
+    // played invisibly behind the preloader overlay on first visit
+    useEffect(() => {
+        if (!entranceReady) return;
+
+        const ctx = gsap.context(() => {
+            // Badge bounces in
+            gsap.to('.hero-badge', {
+                scale: 1,
+                opacity: 1,
+                duration: 0.6,
+                ease: 'back.out(2)',
+                delay: 0.3,
+            });
+
+            // Subtitle + locations + buttons stagger in
+            gsap.to('.hero-fade', {
+                y: 0,
+                opacity: 1,
+                duration: 1,
+                stagger: 0.12,
+                ease: 'power3.out',
+                delay: 0.8,
+            });
+        }, containerRef);
+
+        return () => ctx.revert();
+    }, [entranceReady]);
+
     const scrollToServices = () => {
         document.getElementById('pricing')?.scrollIntoView({ behavior: 'smooth' });
     };
@@ -119,12 +137,15 @@ export default function Hero() {
                     ref={bgRef}
                     src="/assets/VAN/VAN.png"
                     alt="Elite Aufbereitung mobiler Service Van"
-                    className="w-full h-full object-cover object-[center_35%] opacity-55 mix-blend-luminosity will-change-transform"
+                    className="w-full h-full object-cover object-[center_60%] opacity-70 mix-blend-luminosity brightness-110 contrast-105 will-change-transform"
                     loading="eager"
                     fetchpriority="high"
                     decoding="async"
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-obsidian via-obsidian/85 to-obsidian/20" />
+                {/* Vertical: darken the sky/houses at the top, keep the van zone open, ground the bottom for text */}
+                <div className="absolute inset-0 bg-gradient-to-t from-obsidian via-obsidian/40 to-obsidian/75" />
+                {/* Horizontal: legibility behind the bottom-left headline while the van side stays bright */}
+                <div className="absolute inset-0 bg-gradient-to-r from-obsidian/75 via-obsidian/25 to-transparent" />
             </div>
 
             {/* Floating dust particles */}

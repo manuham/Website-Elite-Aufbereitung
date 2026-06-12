@@ -25,3 +25,27 @@ Live list of things to confirm. Resolve each line and note the answer + date.
     it (≥ free/busy) with the service account.
   The code (`api/_lib/calendar.js`) already supports a comma-separated list and unions busy
   times across all of them.
+
+## FAQ-Bot Inhalte (zu bestätigen mit Matthias)
+
+The FAQ bot (`src/data/faqKnowledge.js`) has entries for these topics, but with safe
+deflection answers ("ruf uns kurz an…") because the facts are unconfirmed. Each entry is
+flagged `confirm: true`. Once Matthias answers, replace the deflection with the real answer
+and remove the flag.
+
+- [ ] **Öffnungszeiten je Standort** — booking slots in code are Mo–Fr 08:00–18:00,
+  Sa 08:00–13:00 (`src/lib/scheduling.js` HOURS), but /mobiler-service advertises
+  "auch nach Feierabend". What are the official hours? (entry `buchung-zeiten`)
+- [ ] **Zahlungsmethoden** — bar / Karte / Überweisung / Anzahlung? (entry `info-zahlung`)
+- [ ] **Keramik-Garantie** — is the 40.000–60.000 km durability a written guarantee?
+  (entry `info-garantie`)
+- [ ] **Storno-/Umbuchungsregeln** — deadline, fees? (entry `info-storno`)
+- [ ] **Geschenkgutscheine** — offered? fixed amounts or per service? (entry `info-gutschein`)
+- [ ] **Firmen-/Flottenkonditionen** — discounts, invoicing? (entry `info-firmen`)
+- [ ] **Hol- & Bringservice / Ersatzwagen** — offered, radius, price? (entry `info-holbring`)
+- [ ] **Regenwetter beim Mobilservice** — official policy? (entry `info-regen`)
+- [ ] **Motorräder / Wohnmobile / Boote** — accepted? pricing? (entry `info-andere-fahrzeuge`)
+
+Tip: unanswered visitor questions are collected in the visitors' own browsers under
+`localStorage['elite-faq-unanswered']` — check occasionally on the studio devices /
+ask Matthias to paste them, and turn frequent ones into new KB entries.

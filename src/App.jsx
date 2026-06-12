@@ -72,7 +72,7 @@ function useMagneticGlobal() {
     }, []);
 }
 
-function HomePage() {
+function HomePage({ preloaderDone }) {
     const location = useLocation();
 
     useEffect(() => {
@@ -104,7 +104,7 @@ function HomePage() {
     return (
         <div className="min-h-screen font-sans bg-obsidian text-ivory selection:bg-champagne selection:text-obsidian overflow-hidden">
             <Navbar />
-            <Hero />
+            <Hero entranceReady={preloaderDone} />
             <Features />
             <MobileService />
             <GoogleReviews />
@@ -139,7 +139,11 @@ function NotFound() {
 
 export default function App() {
     const [preloaderDone, setPreloaderDone] = useState(false);
-    const handlePreloaderComplete = useCallback(() => setPreloaderDone(true), []);
+    const handlePreloaderComplete = useCallback(() => {
+        setPreloaderDone(true);
+        // The preloader locks/unlocks body overflow — re-measure scroll positions
+        requestAnimationFrame(() => ScrollTrigger.refresh());
+    }, []);
     useMagneticGlobal();
 
     return (
@@ -150,7 +154,7 @@ export default function App() {
             <PageTransition />
             <ScrollToTop />
             <Routes>
-                <Route path="/" element={<HomePage />} />
+                <Route path="/" element={<HomePage preloaderDone={preloaderDone} />} />
                 <Route path="/buchen" element={<BookingPage />} />
                 <Route path="/projekte" element={<Projekte />} />
                 <Route path="/mobiler-service" element={<MobilerService />} />
