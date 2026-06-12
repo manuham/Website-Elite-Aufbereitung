@@ -20,6 +20,18 @@ export async function fetchAvailabilityRange(startString, days = 7, signal) {
   return res.json();
 }
 
+// Fire-and-forget: send a question the FAQ bot couldn't answer to the server,
+// which appends it to a Google Sheet for review (api/faq-log.js). Failures are
+// silently ignored — the bot UX must never depend on this.
+export function logUnansweredQuestion(q) {
+  const API_BASE = import.meta.env.VITE_API_BASE || '';
+  fetch(`${API_BASE}/api/faq-log`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ q }),
+  }).catch(() => {});
+}
+
 // Temporary fallback while the Google Calendar connection is being set up.
 // Once GOOGLE_SERVICE_ACCOUNT_KEY / GOOGLE_CALENDAR_ID are configured on the
 // server, /api/book succeeds and this fallback is never used — no code change

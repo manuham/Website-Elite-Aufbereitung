@@ -2,7 +2,7 @@ import { google } from 'googleapis';
 
 // ─── Auth ────────────────────────────────────────────────────────────────────
 
-function loadServiceAccountCredentials() {
+export function loadServiceAccountCredentials() {
   const raw = (process.env.GOOGLE_SERVICE_ACCOUNT_KEY || '').trim();
   if (!raw) throw new Error('GOOGLE_SERVICE_ACCOUNT_KEY is not set');
   // Accept either the raw JSON or a base64-encoded JSON, so it works no matter

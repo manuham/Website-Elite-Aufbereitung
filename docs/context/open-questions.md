@@ -46,6 +46,11 @@ and remove the flag.
 - [ ] **Regenwetter beim Mobilservice** — official policy? (entry `info-regen`)
 - [ ] **Motorräder / Wohnmobile / Boote** — accepted? pricing? (entry `info-andere-fahrzeuge`)
 
-Tip: unanswered visitor questions are collected in the visitors' own browsers under
-`localStorage['elite-faq-unanswered']` — check occasionally on the studio devices /
-ask Matthias to paste them, and turn frequent ones into new KB entries.
+Unanswered visitor questions are collected centrally in a **Google Sheet** via
+`api/faq-log.js` (see `integrations.md` → "Google Sheets") — review it occasionally and
+turn frequent questions into new KB entries. localStorage
+(`elite-faq-unanswered`) remains as a per-browser fallback.
+
+- [ ] **ACTION: FAQ-log sheet setup** — (a) enable the Google Sheets API in Matthias'
+  Cloud project (SETUP-ANLEITUNG Bonus-Schritt), (b) create the sheet and share it with
+  the service-account email as editor (+ Matthias), (c) set `FAQ_LOG_SHEET_ID` on Vercel.

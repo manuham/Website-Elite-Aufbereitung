@@ -41,12 +41,13 @@ export default function Hero({ entranceReady = true }) {
             gsap.set('.hero-badge', { scale: 0, opacity: 0 });
             gsap.set('.hero-fade', { y: 40, opacity: 0 });
 
-            // Background breathing — base zoom keeps the van large in frame,
-            // origin sits on the van (right-of-center, lower half)
+            // Background breathing — kept subtle: on wide viewports the visible band
+            // of the portrait photo barely fits the whole van, so a strong zoom
+            // crops it down to wheels/grille
             gsap.fromTo(bgRef.current,
-                { scale: 1.12, transformOrigin: '60% 65%' },
+                { scale: 1.02, transformOrigin: '55% 48%' },
                 {
-                    scale: 1.24,
+                    scale: 1.09,
                     duration: 25,
                     repeat: -1,
                     yoyo: true,
@@ -137,7 +138,7 @@ export default function Hero({ entranceReady = true }) {
                     ref={bgRef}
                     src="/assets/VAN/VAN.png"
                     alt="Elite Aufbereitung mobiler Service Van"
-                    className="w-full h-full object-cover object-[center_60%] opacity-70 mix-blend-luminosity brightness-110 contrast-105 will-change-transform"
+                    className="w-full h-full object-cover object-[center_48%] opacity-70 mix-blend-luminosity brightness-110 contrast-105 will-change-transform"
                     loading="eager"
                     fetchpriority="high"
                     decoding="async"

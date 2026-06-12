@@ -28,6 +28,26 @@ or added to the comma-separated list) and shared with the service account.
   Must be confirmed before deleting the scenario, to avoid losing notifications OR creating
   duplicate calendar events. See `open-questions.md`.
 
+## Google Sheets (FAQ-bot unanswered-questions log)
+- `api/faq-log.js` appends questions the FAQ bot couldn't answer to a Google Sheet
+  (columns: Vienna timestamp, question text — no visitor identity, no IP).
+- Client side: `logUnansweredQuestion()` in `src/lib/api.js`, called fire-and-forget from
+  `FAQBot.jsx` on every no-match (deduped per session). localStorage
+  (`elite-faq-unanswered`) keeps a local copy as fallback.
+- Uses the **same service account** as the calendar integration
+  (`GOOGLE_SERVICE_ACCOUNT_KEY`), with the Sheets scope requested per-request.
+- Setup required:
+  1. **Google Sheets API** enabled in the same Cloud project as the calendar bot
+     (Matthias' project — see `SETUP-ANLEITUNG.md`).
+  2. A Google Sheet (any account can own it) **shared with the service-account email as
+     editor**. Optionally also share it with Matthias so he can answer questions directly
+     in a second column.
+  3. `FAQ_LOG_SHEET_ID` env var on Vercel = the ID from the sheet URL
+     (`docs.google.com/spreadsheets/d/<THIS PART>/edit`).
+- Not configured (`FAQ_LOG_SHEET_ID` missing) → endpoint returns 503, the bot is unaffected.
+- Privacy note: visitors could type personal data into the question box; the sheet should be
+  treated as potentially containing personal data (DSG/DSGVO) — don't share it publicly.
+
 ## Cloudinary (vehicle photos)
 - `uploadPhoto()` (in `BookingPage.jsx`) uploads customer vehicle photos; URLs are attached
   to the calendar event and the notification email.

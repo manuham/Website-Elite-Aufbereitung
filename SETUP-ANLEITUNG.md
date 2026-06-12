@@ -91,6 +91,24 @@ Damit dein Apple Kalender (iPhone/Mac) automatisch die Buchungen sieht:
 
 ---
 
+## Bonus-Schritt: Google Sheets API aktivieren (fuer den FAQ-Assistenten)
+
+Auf der Website gibt es einen FAQ-Assistenten, der Kundenfragen automatisch beantwortet.
+Fragen, die er **nicht** beantworten kann, werden in einer Google-Tabelle gesammelt — so
+sehen wir, was Kunden wirklich wissen wollen, und du kannst die Antworten ergaenzen.
+
+Dafuer brauchen wir einmalig (genau wie in Schritt 2, nur fuer eine andere API):
+
+1. Oeffne https://console.cloud.google.com und waehle dein Projekt `Elite Aufbereitung Booking`
+2. Klicke links auf **"APIs und Dienste"** > **"Bibliothek"**
+3. Suche nach **"Google Sheets API"**
+4. Klicke auf das Ergebnis und dann auf **"Aktivieren"**
+
+Das war's — die Tabelle selbst erstelle ich und teile sie mit dir. Du bekommst einen Link,
+unter dem du die gesammelten Kundenfragen jederzeit ansehen (und direkt beantworten) kannst.
+
+---
+
 ## Was du mir schicken musst
 
 Damit ich alles fertig einrichten kann, schicke mir bitte:

@@ -2,13 +2,17 @@ import { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Bot, Send } from 'lucide-react';
 import { matchFaq } from '../lib/faqMatcher';
+import { logUnansweredQuestion } from '../lib/api';
 import { FAQ_KNOWLEDGE, SUGGESTED_QUESTIONS } from '../data/faqKnowledge';
 
 const GREETING = 'Hallo! Ich bin der Elité-Assistent. Frag mich alles zu Leistungen, Preisen, Terminen oder Pflege-Tipps.';
 const FALLBACK = 'Das weiß ich leider nicht – aber Matthias hilft dir gerne persönlich weiter. Ruf kurz an oder buch direkt online.';
 
-// Unanswered questions stay in the visitor's own browser (never transmitted) —
-// useful to mine real customer questions for new knowledge-base entries.
+// Unanswered questions go to /api/faq-log (anonymous: timestamp + text only,
+// appended to a review Google Sheet) so they can become new knowledge-base
+// entries. localStorage keeps a local copy in case the API isn't configured.
+const sentThisSession = new Set();
+
 function logUnanswered(q) {
     try {
         const key = 'elite-faq-unanswered';
@@ -16,6 +20,12 @@ function logUnanswered(q) {
         list.push({ q, ts: Date.now() });
         localStorage.setItem(key, JSON.stringify(list.slice(-50)));
     } catch { /* private mode / storage full — best effort only */ }
+
+    const norm = q.toLowerCase();
+    if (!sentThisSession.has(norm)) {
+        sentThisSession.add(norm);
+        logUnansweredQuestion(q);
+    }
 }
 
 function LinkPill({ label, to, href }) {
@@ -178,6 +188,7 @@ export default function FAQBot() {
                         value={input}
                         onChange={(e) => setInput(e.target.value)}
                         placeholder="Deine Frage…"
+                        maxLength={200}
                         aria-label="Deine Frage an den Elité Assistenten"
                         className="input-elite flex-1 min-w-0 bg-obsidian/60 border border-slate/60 rounded-xl px-4 py-3 font-sans text-sm text-ivory placeholder:text-ivory/40 outline-none"
                     />
