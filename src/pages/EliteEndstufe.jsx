@@ -304,7 +304,7 @@ export default function EliteEndstufe() {
                             {/* Image */}
                             <div className="aspect-square md:aspect-auto md:h-full relative overflow-hidden">
                                 <img
-                                    src="/assets/Produkte/pflegegeschenk.jpg"
+                                    src="/assets/Produkte/pflegegeschenk.jpeg"
                                     alt="Pflegegeschenk"
                                     className="w-full h-full object-cover"
                                     loading="lazy"
