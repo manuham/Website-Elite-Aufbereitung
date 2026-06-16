@@ -10,14 +10,27 @@ under `/api` (Vercel). Main flow component: `src/pages/BookingPage.jsx` (5 steps
 Step0 Location (Studio/Mobil) → Step1 Services → StepVehicle (category/Aufpreis) →
 Step2 Date & time → Step3 Contact + photos → Step4 Confirmation.
 
-## Vehicle size surcharge (StepVehicle) — conditional
-`VEHICLE_CATEGORIES` (`BookingPage.jsx`) carries `aufpreis` per size: Kleinwagen 0, Kompakt 55,
-Mittelklasse 75, SUV 95, Großfahrzeuge `null` ("auf Anfrage"). The size Aufpreis applies **only**
-when the cart contains *Deep Clean* (`tier-silber`) or *Leichte Politur* (`politur-0`) — see
-`SIZE_SURCHARGE_IDS`. For every other selection no size surcharge is added (the step still asks for
-the size so the operator knows the vehicle). The gate is recomputed identically in `StepVehicle`,
-`handleSubmit`, and the `Step4` confirmation. Both qualifying services carry `sizeSurcharge: true`
-in `src/data/services.js` (for display/intent); the booking logic keys off the ID set.
+## Vehicle size surcharge (StepVehicle) — two tiers, conditional
+`VEHICLE_CATEGORIES` (`BookingPage.jsx`) carries a per-tier `aufpreis` object per size:
+`{ full, light }`. **full** = Kompakt 55 / Mittelklasse 75 / SUV 95; **light** = Kompakt 35 /
+Mittelklasse 45 / SUV 55. Kleinwagen 0 in both; Großfahrzeuge `null` ("auf Anfrage") in both.
+
+Which tier applies is decided by the cart, via two ID sets in `BookingPage.jsx`:
+- `SURCHARGE_FULL_IDS` = `tier-silber` (Deep Clean), `politur-0` (Leichte Politur), `verkauf-0`
+  (Verkauf & Leasing).
+- `SURCHARGE_LIGHT_IDS` = `innenreinigung-0/1` (Basic/Premium Innenreinigung — **not** Ledersitz
+  `innenreinigung-2`), `handwaesche-0/1/2` (alle Handwäschen).
+
+`surchargeTier(items)` returns `'full' | 'light' | null` — **full beats light** (highest tier wins),
+and the surcharge is charged **once per booking** regardless of how many qualifying services are in
+the cart. `resolveSurcharge(items, category)` returns `{ tier, applies, amount, onRequest }` and is
+the single helper used by `Step4` and `handleSubmit`; `StepVehicle` uses `surchargeTier` directly so
+each category card can show `cat.aufpreis[tier]`. For carts with no qualifying service, no surcharge
+is added (the step still asks for the size so the operator knows the vehicle).
+
+Qualifying services also carry `sizeSurcharge: 'full' | 'light'` in `src/data/services.js` (for
+display/intent only — the booking logic keys off the ID sets, not this flag) and an
+"Aufpreis je nach Fahrzeuggröße (…)" feature line shown on the public pricing cards.
 
 ## Services: bookable vs. appointment-only
 Services live in `src/data/services.js`. Some carry `phoneOnly: true` (Gold & Élite tiers,

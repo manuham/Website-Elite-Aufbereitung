@@ -23,8 +23,30 @@ const MONTHS = ['Januar', 'Februar', 'März', 'April', 'Mai', 'Juni',
 const TIME_SLOTS_WEEKDAY = ['08:00', '09:30', '11:00', '12:30', '14:00', '15:30', '17:00'];
 const TIME_SLOTS_SATURDAY = ['08:00', '09:30', '11:00', '12:30'];
 const MOBILE_SURCHARGE = 50;
-// Size-based Aufpreis applies ONLY to these services (Deep Clean & Leichte Politur).
-const SIZE_SURCHARGE_IDS = new Set(['tier-silber', 'politur-0']);
+// Size-based Aufpreis ("Größen-Aufpreis") comes in two tiers, keyed off the service IDs in the cart.
+// full  = Deep Clean / Leichte Politur / Verkauf & Leasing → Kompakt +55, Mittel +75, SUV +95
+// light = Innenreinigung (außer Ledersitz) / Handwäsche     → Kompakt +35, Mittel +45, SUV +55
+// Großfahrzeuge: in beiden Stufen "auf Anfrage". Höchste zutreffende Stufe gewinnt, einmal pro Buchung.
+const SURCHARGE_FULL_IDS = new Set(['tier-silber', 'politur-0', 'verkauf-0']);
+const SURCHARGE_LIGHT_IDS = new Set([
+    'innenreinigung-0', 'innenreinigung-1',
+    'handwaesche-0', 'handwaesche-1', 'handwaesche-2',
+]);
+
+// Returns the applicable surcharge tier for the cart ('full' beats 'light'); null if none applies.
+function surchargeTier(items) {
+    if (items.some(i => SURCHARGE_FULL_IDS.has(i.id))) return 'full';
+    if (items.some(i => SURCHARGE_LIGHT_IDS.has(i.id))) return 'light';
+    return null;
+}
+
+// Resolve the size surcharge for a cart + chosen vehicle category.
+function resolveSurcharge(items, category) {
+    const tier = surchargeTier(items);
+    if (!tier || !category) return { tier: null, applies: false, amount: 0, onRequest: false };
+    const val = category.aufpreis?.[tier];               // number, or null for Großfahrzeuge ("auf Anfrage")
+    return { tier, applies: true, amount: val || 0, onRequest: val === null };
+}
 
 function getDaysInMonth(y, m) { return new Date(y, m + 1, 0).getDate(); }
 function getFirstDayOfMonth(y, m) { return (new Date(y, m, 1).getDay() + 6) % 7; }
@@ -557,18 +579,20 @@ function Step1({ selectedItems, toggleItem, onNext, onBack, recommendations, pac
 // ─── Step 2: Vehicle Category ────────────────────────────────────────────────
 
 const VEHICLE_CATEGORIES = [
-    { id: 'kleinwagen', name: 'Kleinwagen', examples: 'z. B. VW Polo, Ford Fiesta', description: 'Kurze Autos, 2–4 Türen', aufpreis: 0 },
-    { id: 'kompakt', name: 'Kompaktklasse', examples: 'z. B. VW Golf, Audi A3', description: 'Standardgröße, die meisten Autos', aufpreis: 55 },
-    { id: 'mittelklasse', name: 'Mittelklasse / Limousine', examples: 'z. B. BMW 3er, Mercedes C-Klasse, Audi A6', description: 'Länger, oft 4 Türen + Kofferraum', aufpreis: 75 },
-    { id: 'suv', name: 'SUV / Van', examples: 'z. B. VW Tiguan, BMW X5, Sharan', description: 'Höher, größer, mehr Innenraum', aufpreis: 95 },
-    { id: 'gross', name: 'Großfahrzeuge / Transporter', examples: 'z. B. VW Bus, Sprinter, Transporter', description: 'Deutlich größer, gewerblich/Family Vans', aufpreis: null },
+    { id: 'kleinwagen', name: 'Kleinwagen', examples: 'z. B. VW Polo, Ford Fiesta', description: 'Kurze Autos, 2–4 Türen', aufpreis: { full: 0, light: 0 } },
+    { id: 'kompakt', name: 'Kompaktklasse', examples: 'z. B. VW Golf, Audi A3', description: 'Standardgröße, die meisten Autos', aufpreis: { full: 55, light: 35 } },
+    { id: 'mittelklasse', name: 'Mittelklasse / Limousine', examples: 'z. B. BMW 3er, Mercedes C-Klasse, Audi A6', description: 'Länger, oft 4 Türen + Kofferraum', aufpreis: { full: 75, light: 45 } },
+    { id: 'suv', name: 'SUV / Van', examples: 'z. B. VW Tiguan, BMW X5, Sharan', description: 'Höher, größer, mehr Innenraum', aufpreis: { full: 95, light: 55 } },
+    { id: 'gross', name: 'Großfahrzeuge / Transporter', examples: 'z. B. VW Bus, Sprinter, Transporter', description: 'Deutlich größer, gewerblich/Family Vans', aufpreis: { full: null, light: null } },
 ];
 
 function StepVehicle({ vehicleCategory, setVehicleCategory, selectedItems, onNext, onBack, serviceMode }) {
     const serviceTotal = selectedItems.reduce((sum, i) => sum + i.priceNum, 0);
     const mobileSurcharge = serviceMode === 'mobil' ? MOBILE_SURCHARGE : 0;
-    // Size surcharge only counts when Deep Clean or Leichte Politur is in the cart.
-    const appliesSurcharge = selectedItems.some(i => SIZE_SURCHARGE_IDS.has(i.id));
+    // Surcharge tier for the cart ('full' | 'light' | null); the chosen size then sets the amount.
+    const tier = surchargeTier(selectedItems);
+    const appliesSurcharge = tier !== null;
+    const aufpreisVal = appliesSurcharge ? vehicleCategory?.aufpreis?.[tier] : null;
 
     return (
         <div className="flex flex-col gap-10 w-full">
@@ -577,7 +601,7 @@ function StepVehicle({ vehicleCategory, setVehicleCategory, selectedItems, onNex
                 <p className="font-sans text-sm text-ivory/50">
                     {appliesSurcharge
                         ? 'Der Größen-Aufpreis richtet sich nach der Fahrzeuggröße.'
-                        : 'Hilft uns bei der Planung. Ein Größen-Aufpreis fällt nur bei Deep Clean & Leichter Politur an.'}
+                        : 'Hilft uns bei der Planung. Ein Größen-Aufpreis fällt nur bei bestimmten Leistungen an.'}
                 </p>
             </div>
 
@@ -601,12 +625,12 @@ function StepVehicle({ vehicleCategory, setVehicleCategory, selectedItems, onNex
                                 <span className="font-sans text-[11px] text-ivory/25">{cat.description}</span>
                             </div>
                             <div className="shrink-0">
-                                {!appliesSurcharge ? null : cat.aufpreis === null ? (
+                                {!appliesSurcharge ? null : cat.aufpreis[tier] === null ? (
                                     <span className="font-mono text-sm text-champagne font-semibold">auf Anfrage</span>
-                                ) : cat.aufpreis === 0 ? (
+                                ) : cat.aufpreis[tier] === 0 ? (
                                     <span className="font-mono text-sm text-accent font-semibold">kein Aufpreis</span>
                                 ) : (
-                                    <span className="font-mono text-sm text-accent font-semibold">+€{cat.aufpreis},-</span>
+                                    <span className="font-mono text-sm text-accent font-semibold">+€{cat.aufpreis[tier]},-</span>
                                 )}
                             </div>
                         </button>
@@ -622,22 +646,22 @@ function StepVehicle({ vehicleCategory, setVehicleCategory, selectedItems, onNex
                             <span className="font-mono text-sm text-champagne font-semibold">+€{MOBILE_SURCHARGE},-</span>
                         </div>
                     )}
-                    {appliesSurcharge && vehicleCategory.aufpreis > 0 && (
+                    {appliesSurcharge && aufpreisVal > 0 && (
                         <div className="flex items-center justify-between">
                             <span className="font-sans text-sm text-ivory/50">Größen-Aufpreis ({vehicleCategory.name})</span>
-                            <span className="font-mono text-sm text-champagne font-semibold">+€{vehicleCategory.aufpreis},-</span>
+                            <span className="font-mono text-sm text-champagne font-semibold">+€{aufpreisVal},-</span>
                         </div>
                     )}
                     <div className="flex items-center justify-between">
                         <span className="font-sans text-sm text-ivory/50">Geschätzte Gesamtsumme</span>
-                        {appliesSurcharge && vehicleCategory.aufpreis === null ? (
+                        {appliesSurcharge && aufpreisVal === null ? (
                             <div className="flex flex-col items-end gap-0.5">
                                 <span className="font-mono text-lg font-bold text-accent">ab €{(serviceTotal + mobileSurcharge).toLocaleString('de-AT')},-</span>
                                 <span className="font-mono text-[10px] text-champagne">+ Aufpreis auf Anfrage</span>
                             </div>
                         ) : (
                             <span className="font-mono text-xl font-bold text-accent">
-                                ab €{(serviceTotal + (appliesSurcharge ? (vehicleCategory.aufpreis || 0) : 0) + mobileSurcharge).toLocaleString('de-AT')},-
+                                ab €{(serviceTotal + (appliesSurcharge ? (aufpreisVal || 0) : 0) + mobileSurcharge).toLocaleString('de-AT')},-
                             </span>
                         )}
                     </div>
@@ -962,9 +986,7 @@ const STUDIO_ADDRESSES = {
 
 function Step4({ selectedItems, datetime, serviceMode, contact, vehicleCategory, studioLocation }) {
     const serviceTotal = selectedItems.reduce((s, i) => s + i.priceNum, 0);
-    const appliesSurcharge = selectedItems.some(i => SIZE_SURCHARGE_IDS.has(i.id));
-    const onRequestSurcharge = appliesSurcharge && vehicleCategory?.aufpreis === null;
-    const aufpreis = appliesSurcharge ? (vehicleCategory?.aufpreis || 0) : 0;
+    const { applies: appliesSurcharge, amount: aufpreis, onRequest: onRequestSurcharge } = resolveSurcharge(selectedItems, vehicleCategory);
     const mobileSurcharge = serviceMode === 'mobil' ? MOBILE_SURCHARGE : 0;
     const total = serviceTotal + aufpreis + mobileSurcharge;
 
@@ -998,7 +1020,7 @@ function Step4({ selectedItems, datetime, serviceMode, contact, vehicleCategory,
                     <div className="flex justify-between items-center">
                         <span className="font-sans text-sm text-ivory/70">{vehicleCategory.name}</span>
                         <span className="font-mono text-sm text-accent font-semibold">
-                            {!appliesSurcharge ? 'kein Aufpreis' : vehicleCategory.aufpreis === null ? 'auf Anfrage' : vehicleCategory.aufpreis === 0 ? 'kein Aufpreis' : `+€${vehicleCategory.aufpreis},-`}
+                            {!appliesSurcharge ? 'kein Aufpreis' : onRequestSurcharge ? 'auf Anfrage' : aufpreis === 0 ? 'kein Aufpreis' : `+€${aufpreis},-`}
                         </span>
                     </div>
                 )}
@@ -1215,10 +1237,8 @@ export default function BookingPage() {
         const dd = String(datetime.date.getDate()).padStart(2, '0');
         const isoDate = `${yyyy}-${mm}-${dd}`;
         const serviceTotal = selectedItems.reduce((s, i) => s + i.priceNum, 0);
-        // Size-based Aufpreis only applies to Deep Clean & Leichte Politur.
-        const appliesSurcharge = selectedItems.some(i => SIZE_SURCHARGE_IDS.has(i.id));
-        const onRequestSurcharge = appliesSurcharge && vehicleCategory?.aufpreis === null;
-        const aufpreis = appliesSurcharge ? (vehicleCategory?.aufpreis || 0) : 0;
+        // Size-based Aufpreis: full tier (Deep Clean / Politur / Verkauf) or light tier (Innenreinigung / Handwäsche).
+        const { applies: appliesSurcharge, amount: aufpreis, onRequest: onRequestSurcharge } = resolveSurcharge(selectedItems, vehicleCategory);
         const mobileSurchargeVal = serviceMode === 'mobil' ? MOBILE_SURCHARGE : 0;
         const total = serviceTotal + aufpreis + mobileSurchargeVal;
         const aufpreisStr = onRequestSurcharge ? 'auf Anfrage' : aufpreis > 0 ? `+€${aufpreis},-` : 'kein Aufpreis';

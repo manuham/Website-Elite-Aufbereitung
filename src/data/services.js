@@ -33,7 +33,7 @@ export const tierPackages = [
         name: 'Deep Clean',
         subtitle: 'Bronze + Politur & Versiegelung',
         price: 'ab 420,–',
-        sizeSurcharge: true,
+        sizeSurcharge: 'full',
         durationDays: 1,
         mobilExtraMin: 60,
         mobilSurcharge: 45,
@@ -121,6 +121,7 @@ export const serviceCategories = [
                 name: "Basic Handwäsche",
                 price: "ab €75,-",
                 popular: false,
+                sizeSurcharge: 'light',
                 durationMin: 60,
                 mobilExtraMin: 30,
                 features: [
@@ -129,12 +130,14 @@ export const serviceCategories = [
                     "Reinigung von Felgen, Reifen und Radkästen",
                     "Mit warmer Luft & Mikrofasertüchern trocknen",
                     "Reifenaufbereitung",
+                    "Aufpreis je nach Fahrzeuggröße (Kompakt +35, Mittel +45, SUV +55)",
                 ]
             },
             {
                 name: "Premium Handwäsche",
                 price: "ab €115,-",
                 popular: true,
+                sizeSurcharge: 'light',
                 durationMin: 90,
                 mobilExtraMin: 30,
                 features: [
@@ -145,13 +148,15 @@ export const serviceCategories = [
                     "Mit warmer Luft & Mikrofasertüchern trocknen",
                     "Sprühwachs Versiegelung",
                     "Reifenaufbereitung",
-                    "Optional: Keramik-Versiegelung (+Aufpreis)"
+                    "Optional: Keramik-Versiegelung (+Aufpreis)",
+                    "Aufpreis je nach Fahrzeuggröße (Kompakt +35, Mittel +45, SUV +55)",
                 ]
             },
             {
                 name: "Premium + Basic Interieur",
                 price: "ab €175,-",
                 popular: false,
+                sizeSurcharge: 'light',
                 durationMin: 150,
                 mobilExtraMin: 30,
                 features: [
@@ -160,6 +165,7 @@ export const serviceCategories = [
                     "Innenraum abstauben",
                     "Tierhaare Aufsaugen",
                     "Fenster, Spiegel putzen",
+                    "Aufpreis je nach Fahrzeuggröße (Kompakt +35, Mittel +45, SUV +55)",
                 ]
             }
         ]
@@ -172,19 +178,22 @@ export const serviceCategories = [
                 name: "Basic Innenreinigung",
                 price: "ab €75,-",
                 popular: false,
+                sizeSurcharge: 'light',
                 durationMin: 90,
                 features: [
                     "Staubsaugen des Innenraums und der Automatten",
                     "Abstauben des Armaturenbretts und Konsole",
                     "Reinigung der Fenster und Spiegel (streifenfrei)",
                     "Tierhaare aufsaugen",
-                    "Automatten ausbürsten und absaugen"
+                    "Automatten ausbürsten und absaugen",
+                    "Aufpreis je nach Fahrzeuggröße (Kompakt +35, Mittel +45, SUV +55)",
                 ]
             },
             {
                 name: "Premium Innenreinigung",
                 price: "ab €155,-",
                 popular: true,
+                sizeSurcharge: 'light',
                 durationMin: 150,
                 features: [
                     "Armaturenbrett und Mittelkonsole reinigen",
@@ -194,7 +203,8 @@ export const serviceCategories = [
                     "Stoffsitze reinigen und Nassaugen",
                     "Reinigung von Automatten und Teppichen",
                     "Kunststoffteile behandeln (neuer Look)",
-                    "Fenster streifenfrei reinigen"
+                    "Fenster streifenfrei reinigen",
+                    "Aufpreis je nach Fahrzeuggröße (Kompakt +35, Mittel +45, SUV +55)",
                 ]
             },
             {
@@ -221,7 +231,7 @@ export const serviceCategories = [
                 name: "Leichte Politur",
                 price: "ab €395,-",
                 popular: false,
-                sizeSurcharge: true,
+                sizeSurcharge: 'full',
                 durationMin: 360,
                 mobilExtraMin: 30,
                 mobilSurcharge: 45,
@@ -351,6 +361,7 @@ export const serviceCategories = [
                 name: "Verkaufsaufbereitung / Leasingrückläufer",
                 price: "ab €295,-",
                 popular: true,
+                sizeSurcharge: 'full',
                 durationMin: 360,
                 mobilExtraMin: 60,
                 features: [
@@ -359,6 +370,7 @@ export const serviceCategories = [
                     "Lack polieren für einen glänzenden Auftritt",
                     "Optimale Präsentation für Inserate & Besichtigungen",
                     "Leasingrückläufer rückgabefertig aufbereitet — vermeidet Nachzahlungen",
+                    "Aufpreis je nach Fahrzeuggröße (Kompakt +55, Mittel +75, SUV +95)",
                 ]
             }
         ]
