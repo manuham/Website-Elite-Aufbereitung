@@ -376,11 +376,11 @@ function Step1({ selectedItems, toggleItem, onNext, onBack, recommendations, pac
 
                                 {/* Body */}
                                 <div className="p-5 flex flex-col gap-3 flex-1">
-                                    <div className="flex items-start justify-between gap-3">
+                                    <div className="flex items-start justify-between gap-3 flex-wrap">
                                         <div className="font-mono text-2xl font-bold text-accent">{pkg.price} €</div>
                                         {pkg.phoneOnly ? (
-                                            <span className="flex items-center gap-1 shrink-0 mt-0.5 px-2.5 py-1 rounded-full border border-champagne/40 bg-champagne/10 text-champagne font-sans text-[10px] font-bold uppercase tracking-wider">
-                                                <Phone className="w-3 h-3" /> Nur auf Termin
+                                            <span className="inline-flex items-center gap-1 shrink-0 mt-0.5 px-2.5 py-1 rounded-full border border-champagne/40 bg-champagne/10 text-champagne font-sans text-[10px] font-bold uppercase tracking-wider whitespace-nowrap">
+                                                <Phone className="w-3 h-3 shrink-0" /> Nur auf Termin
                                             </span>
                                         ) : (
                                             <div className={`w-6 h-6 rounded-full border-2 shrink-0 mt-0.5 flex items-center justify-center transition-all ${selected ? 'bg-accent border-accent' : 'border-slate'}`}>
@@ -446,16 +446,19 @@ function Step1({ selectedItems, toggleItem, onNext, onBack, recommendations, pac
                                     ? 'bg-accent/10 border-accent shadow-[0_0_20px_rgba(77,178,146,0.15)]'
                                     : 'bg-slate/30 border-slate/50 hover:border-slate'}`}
                             >
-                                <div className="flex items-start justify-between gap-3">
-                                    <span className="font-sans font-bold text-lg text-ivory leading-tight">{pkg.name}</span>
-                                    {pkg.phoneOnly ? (
-                                        <span className="flex items-center gap-1 shrink-0 mt-0.5 px-2.5 py-1 rounded-full border border-champagne/40 bg-champagne/10 text-champagne font-sans text-[10px] font-bold uppercase tracking-wider">
-                                            <Phone className="w-3 h-3" /> Nur auf Termin
+                                <div className="flex flex-col gap-2">
+                                    <div className="flex items-start justify-between gap-3">
+                                        <span className="font-sans font-bold text-lg text-ivory leading-tight min-w-0">{pkg.name}</span>
+                                        {!pkg.phoneOnly && (
+                                            <div className={`w-6 h-6 rounded-full border-2 shrink-0 mt-0.5 flex items-center justify-center transition-all ${selected ? 'bg-accent border-accent' : 'border-slate'}`}>
+                                                {selected ? <Check className="w-3.5 h-3.5 text-obsidian" strokeWidth={3} /> : <Plus className="w-3.5 h-3.5 text-ivory/30" />}
+                                            </div>
+                                        )}
+                                    </div>
+                                    {pkg.phoneOnly && (
+                                        <span className="inline-flex items-center gap-1 self-start px-2.5 py-1 rounded-full border border-champagne/40 bg-champagne/10 text-champagne font-sans text-[10px] font-bold uppercase tracking-wider whitespace-nowrap">
+                                            <Phone className="w-3 h-3 shrink-0" /> Nur auf Termin
                                         </span>
-                                    ) : (
-                                        <div className={`w-6 h-6 rounded-full border-2 shrink-0 mt-0.5 flex items-center justify-center transition-all ${selected ? 'bg-accent border-accent' : 'border-slate'}`}>
-                                            {selected ? <Check className="w-3.5 h-3.5 text-obsidian" strokeWidth={3} /> : <Plus className="w-3.5 h-3.5 text-ivory/30" />}
-                                        </div>
                                     )}
                                 </div>
                                 <div className="font-mono text-2xl font-bold text-accent">{pkg.price}</div>

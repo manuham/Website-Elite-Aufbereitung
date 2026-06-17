@@ -114,9 +114,9 @@ export default function WeekCalendar({
         {/* past shade */}
         {plan.past && <Region top={(plan.past[0] - AXIS_START) * MIN_PX} h={(plan.past[1] - plan.past[0]) * MIN_PX} kind="past" />}
         {plan.fullyPast && <Region top={0} h={bodyH} kind="past" />}
-        {/* busy */}
+        {/* busy — labels suppressed on unbookable days so they can't collide with the no-fit note */}
         {plan.busy.map(([s, e], i) => (
-          <Region key={i} top={(s - AXIS_START) * MIN_PX} h={(e - s) * MIN_PX} kind="busy" label={(e - s) * MIN_PX > 34 ? 'Belegt' : ''} />
+          <Region key={i} top={(s - AXIS_START) * MIN_PX} h={(e - s) * MIN_PX} kind="busy" label={plan.free.length > 0 && (e - s) * MIN_PX > 34 ? 'Belegt' : ''} />
         ))}
         {/* now line */}
         {isToday && nowTop != null && (
