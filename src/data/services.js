@@ -5,7 +5,8 @@ export const tierPackages = [
         dots: 1,
         name: 'Wash & Clean',
         subtitle: 'Premium Handwäsche & Innenreinigung',
-        price: 'ab 230,–',
+        price: 'ab €230,-',
+        sizeSurcharge: true,
         durationMin: 300,
         mobilExtraMin: 60,
         headerStyle: { background: 'linear-gradient(135deg, #A0522D, #CD7F32, #D4945A)' },
@@ -32,7 +33,7 @@ export const tierPackages = [
         dots: 2,
         name: 'Deep Clean',
         subtitle: 'Bronze + Politur & Versiegelung',
-        price: 'ab 420,–',
+        price: 'ab €420,-',
         sizeSurcharge: true,
         durationDays: 1,
         mobilExtraMin: 60,
@@ -53,7 +54,7 @@ export const tierPackages = [
         name: 'Deep Polish',
         phoneOnly: true,
         subtitle: 'Silber + 2-stufige Politur & Beschichtungen',
-        price: 'ab 890,–',
+        price: 'ab €890,-',
         durationDays: 2,
         mobilSurcharge: 65,
         headerStyle: { background: 'linear-gradient(135deg, #996515, #B8860B, #DAA520)' },
@@ -74,7 +75,7 @@ export const tierPackages = [
         dots: 0, // uses lightning icon instead
         name: 'Endstufe',
         subtitle: 'Das Ultimative. Kein Kompromiss.',
-        price: 'ab 1.890,–',
+        price: 'ab €1.890,-',
         durationDays: 5,
         headerStyle: { background: 'linear-gradient(135deg, #064E3B, #047857, #4DB292)' },
         features: [
@@ -103,7 +104,7 @@ export const tierPackages = [
 export const allInOnePackages = tierPackages.map(pkg => ({
     id: pkg.id,
     name: `${pkg.tier} – ${pkg.name}`,
-    price: `${pkg.price} €`,
+    price: pkg.price,
     priceNum: parseInt(pkg.price.replace(/[^\d]/g, '')),
     phoneOnly: !!pkg.phoneOnly,
     durationMin: pkg.durationMin ?? null,
@@ -250,7 +251,7 @@ export const serviceCategories = [
                     "Optimaler Glanz",
                     "Inkl. Wachsbeschichtung als Lackschutz",
                     "Empfohlen für Autos mit viel Gebrauchsspuren",
-                    "Für SUV/Transporter/Kombis Aufpreis 95,-"
+                    "Größere Fahrzeuge: Aufpreis je nach Fahrzeuggröße (auf Anfrage)"
                 ]
             },
             {

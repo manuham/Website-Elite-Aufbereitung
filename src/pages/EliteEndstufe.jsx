@@ -97,7 +97,7 @@ export default function EliteEndstufe() {
 
                         <div className="hero-anim flex items-baseline gap-3">
                             <span className="font-mono text-4xl sm:text-5xl font-black text-champagne">{elite.price}</span>
-                            <span className="font-sans text-sm text-ivory/40">€ Endpreis</span>
+                            <span className="font-sans text-sm text-ivory/40">Endpreis</span>
                         </div>
 
                         <div className="hero-anim flex flex-wrap gap-4 mt-2">

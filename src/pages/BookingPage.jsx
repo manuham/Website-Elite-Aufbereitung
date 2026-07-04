@@ -9,7 +9,7 @@ import { submitBooking } from '../lib/api';
 import {
     computeBookingDuration, weekDays, weekStartMonday, addDays, workingSpan,
     sameDayPlan, multiDayStartFree, isoKey, minToTime, durLabel, daysLabel, germanFull,
-    DROPOFF_BY, PICKUP_FROM,
+    multiDayTerms,
 } from '../lib/scheduling';
 import RecommendationPanel from '../components/booking/RecommendationPanel';
 import WeekCalendar from '../components/booking/WeekCalendar';
@@ -20,11 +20,24 @@ import PhoneConsultModal from '../components/PhoneConsultModal';
 const DAYS_SHORT = ['Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa', 'So'];
 const MONTHS = ['Januar', 'Februar', 'März', 'April', 'Mai', 'Juni',
     'Juli', 'August', 'September', 'Oktober', 'November', 'Dezember'];
-const TIME_SLOTS_WEEKDAY = ['08:00', '09:30', '11:00', '12:30', '14:00', '15:30', '17:00'];
-const TIME_SLOTS_SATURDAY = ['08:00', '09:30', '11:00', '12:30'];
 const MOBILE_SURCHARGE = 50;
-// Size-based Aufpreis applies ONLY to these services (Deep Clean & Leichte Politur).
-const SIZE_SURCHARGE_IDS = new Set(['tier-silber', 'politur-0']);
+// Per-package Mobil-Aufpreis on top of the flat Anfahrtspauschale: the most equipment-intensive
+// package in the cart sets it (published €45–85). Max, not sum, so overlapping equipment for two
+// premium jobs isn't double-charged and the value stays within the advertised range.
+function mobilePackageSurchargeOf(items, serviceMode) {
+    if (serviceMode !== 'mobil') return 0;
+    return (items || []).reduce((max, i) => Math.max(max, i.mobilSurcharge || 0), 0);
+}
+// Size-based Aufpreis applies to any package/service flagged `sizeSurcharge: true` in the data.
+// The set is DERIVED from that flag (single source of truth) so StepVehicle, Step4 and handleSubmit
+// stay in sync automatically — flip the flag in services.js and every surface follows.
+// Currently: Wash & Clean (tier-bronze), Deep Clean (tier-silber) & Leichte Politur (politur-0).
+const SIZE_SURCHARGE_IDS = new Set([
+    ...tierPackages.filter(p => p.sizeSurcharge).map(p => p.id),
+    ...serviceCategories.flatMap(cat =>
+        cat.packages.flatMap((pkg, i) => (pkg.sizeSurcharge ? [`${cat.id}-${i}`] : []))
+    ),
+]);
 
 function getDaysInMonth(y, m) { return new Date(y, m + 1, 0).getDate(); }
 function getFirstDayOfMonth(y, m) { return (new Date(y, m, 1).getDay() + 6) % 7; }
@@ -238,7 +251,8 @@ function Step1({ selectedItems, toggleItem, onNext, onBack, recommendations, pac
 
     const serviceNum = selectedItems.reduce((sum, i) => sum + i.priceNum, 0);
     const mobileSurcharge = serviceMode === 'mobil' ? MOBILE_SURCHARGE : 0;
-    const totalNum = serviceNum + mobileSurcharge;
+    const mobilePkgSurcharge = mobilePackageSurchargeOf(selectedItems, serviceMode);
+    const totalNum = serviceNum + mobileSurcharge + mobilePkgSurcharge;
     const totalStr = totalNum > 0 ? `ab €${totalNum.toLocaleString('de-AT')},-` : null;
 
     // Show disclaimer when adding, toggle directly when removing
@@ -261,7 +275,7 @@ function Step1({ selectedItems, toggleItem, onNext, onBack, recommendations, pac
     const toggleAIO = (pkg) => {
         const priceNum = parseInt(pkg.price.replace(/[^\d]/g, ''));
         addWithDisclaimer({
-            id: pkg.id, name: `${pkg.tier} – ${pkg.name}`, price: `${pkg.price} €`, priceNum, type: 'aio',
+            id: pkg.id, name: `${pkg.tier} – ${pkg.name}`, price: pkg.price, priceNum, type: 'aio',
             durationMin: pkg.durationMin ?? null, durationDays: pkg.durationDays ?? null,
             mobilExtraMin: pkg.mobilExtraMin ?? 0, mobilSurcharge: pkg.mobilSurcharge ?? 0,
         });
@@ -355,7 +369,7 @@ function Step1({ selectedItems, toggleItem, onNext, onBack, recommendations, pac
                                 {/* Body */}
                                 <div className="p-5 flex flex-col gap-3 flex-1">
                                     <div className="flex items-start justify-between gap-3">
-                                        <div className="font-mono text-2xl font-bold text-accent">{pkg.price} €</div>
+                                        <div className="font-mono text-2xl font-bold text-accent">{pkg.price}</div>
                                         {pkg.phoneOnly ? (
                                             <span className="flex items-center gap-1 shrink-0 mt-0.5 px-2.5 py-1 rounded-full border border-champagne/40 bg-champagne/10 text-champagne font-sans text-[10px] font-bold uppercase tracking-wider">
                                                 <Phone className="w-3 h-3" /> Nur auf Termin
@@ -500,6 +514,13 @@ function Step1({ selectedItems, toggleItem, onNext, onBack, recommendations, pac
                             <span className="font-mono text-xs text-champagne font-semibold ml-auto">+€{MOBILE_SURCHARGE},-</span>
                         </div>
                     )}
+                    {mobilePkgSurcharge > 0 && (
+                        <div className="flex items-center gap-2 bg-accent/10 border border-accent/30 rounded-full pl-4 pr-4 py-1.5">
+                            <Truck className="w-3.5 h-3.5 text-accent" />
+                            <span className="font-sans text-sm text-ivory">Mobil-Aufpreis (Premium-Paket)</span>
+                            <span className="font-mono text-xs text-champagne font-semibold ml-auto">+€{mobilePkgSurcharge},-</span>
+                        </div>
+                    )}
                     {totalStr && (
                         <div className="flex items-center justify-between pt-2 border-t border-slate/50">
                             <span className="font-sans text-sm text-ivory/50">Geschätzte Gesamtsumme</span>
@@ -567,7 +588,8 @@ const VEHICLE_CATEGORIES = [
 function StepVehicle({ vehicleCategory, setVehicleCategory, selectedItems, onNext, onBack, serviceMode }) {
     const serviceTotal = selectedItems.reduce((sum, i) => sum + i.priceNum, 0);
     const mobileSurcharge = serviceMode === 'mobil' ? MOBILE_SURCHARGE : 0;
-    // Size surcharge only counts when Deep Clean or Leichte Politur is in the cart.
+    const mobilePkgSurcharge = mobilePackageSurchargeOf(selectedItems, serviceMode);
+    // Size surcharge only counts when a sizeSurcharge-flagged service/package is in the cart.
     const appliesSurcharge = selectedItems.some(i => SIZE_SURCHARGE_IDS.has(i.id));
 
     return (
@@ -577,7 +599,7 @@ function StepVehicle({ vehicleCategory, setVehicleCategory, selectedItems, onNex
                 <p className="font-sans text-sm text-ivory/50">
                     {appliesSurcharge
                         ? 'Der Größen-Aufpreis richtet sich nach der Fahrzeuggröße.'
-                        : 'Hilft uns bei der Planung. Ein Größen-Aufpreis fällt nur bei Deep Clean & Leichter Politur an.'}
+                        : 'Hilft uns bei der Planung. Ein Größen-Aufpreis fällt nur bei bestimmten Leistungen an.'}
                 </p>
             </div>
 
@@ -601,7 +623,9 @@ function StepVehicle({ vehicleCategory, setVehicleCategory, selectedItems, onNex
                                 <span className="font-sans text-[11px] text-ivory/25">{cat.description}</span>
                             </div>
                             <div className="shrink-0">
-                                {!appliesSurcharge ? null : cat.aufpreis === null ? (
+                                {!appliesSurcharge ? (
+                                    <span className="font-mono text-sm text-ivory/40 font-semibold">kein Aufpreis</span>
+                                ) : cat.aufpreis === null ? (
                                     <span className="font-mono text-sm text-champagne font-semibold">auf Anfrage</span>
                                 ) : cat.aufpreis === 0 ? (
                                     <span className="font-mono text-sm text-accent font-semibold">kein Aufpreis</span>
@@ -622,6 +646,12 @@ function StepVehicle({ vehicleCategory, setVehicleCategory, selectedItems, onNex
                             <span className="font-mono text-sm text-champagne font-semibold">+€{MOBILE_SURCHARGE},-</span>
                         </div>
                     )}
+                    {mobilePkgSurcharge > 0 && (
+                        <div className="flex items-center justify-between">
+                            <span className="font-sans text-sm text-ivory/50 inline-flex items-center gap-2"><Truck className="w-3.5 h-3.5 text-accent" /> Mobil-Aufpreis (Premium-Paket)</span>
+                            <span className="font-mono text-sm text-champagne font-semibold">+€{mobilePkgSurcharge},-</span>
+                        </div>
+                    )}
                     {appliesSurcharge && vehicleCategory.aufpreis > 0 && (
                         <div className="flex items-center justify-between">
                             <span className="font-sans text-sm text-ivory/50">Größen-Aufpreis ({vehicleCategory.name})</span>
@@ -632,12 +662,12 @@ function StepVehicle({ vehicleCategory, setVehicleCategory, selectedItems, onNex
                         <span className="font-sans text-sm text-ivory/50">Geschätzte Gesamtsumme</span>
                         {appliesSurcharge && vehicleCategory.aufpreis === null ? (
                             <div className="flex flex-col items-end gap-0.5">
-                                <span className="font-mono text-lg font-bold text-accent">ab €{(serviceTotal + mobileSurcharge).toLocaleString('de-AT')},-</span>
+                                <span className="font-mono text-lg font-bold text-accent">ab €{(serviceTotal + mobileSurcharge + mobilePkgSurcharge).toLocaleString('de-AT')},-</span>
                                 <span className="font-mono text-[10px] text-champagne">+ Aufpreis auf Anfrage</span>
                             </div>
                         ) : (
                             <span className="font-mono text-xl font-bold text-accent">
-                                ab €{(serviceTotal + (appliesSurcharge ? (vehicleCategory.aufpreis || 0) : 0) + mobileSurcharge).toLocaleString('de-AT')},-
+                                ab €{(serviceTotal + (appliesSurcharge ? (vehicleCategory.aufpreis || 0) : 0) + mobileSurcharge + mobilePkgSurcharge).toLocaleString('de-AT')},-
                             </span>
                         )}
                     </div>
@@ -727,19 +757,23 @@ function Step2({ datetime, setDatetime, onNext, onBack, serviceMode, selectedIte
         }
     }, [busyByIso]); // eslint-disable-line react-hooks/exhaustive-deps
 
-    const ready = duration.multiDay ? !!datetime.date : (!!datetime.date && !!datetime.time);
+    const ready = duration.multiDay
+        ? (!!datetime.date && datetime.multiDay === true && !!datetime.endDate)
+        : (!!datetime.date && !!datetime.time);
+
+    const terms = multiDayTerms(serviceMode);
 
     let summary = null;
     if (duration.multiDay && datetime.date) {
         const span = workingSpan(datetime.date, duration.spanDays);
-        summary = `Abgabe ${germanFull(span[0])} bis ${DROPOFF_BY} · Abholung ${germanFull(span[span.length - 1])} ab ${PICKUP_FROM}`;
+        summary = `${terms.start} ${germanFull(span[0])} ${terms.startTime} · ${terms.end} ${germanFull(span[span.length - 1])} ${terms.endTime}`;
     } else if (!duration.multiDay && datetime.date && datetime.time) {
         const [h, m] = datetime.time.split(':').map(Number);
         summary = `${germanFull(datetime.date)} · ${datetime.time}–${minToTime(h * 60 + m + duration.durationMin)} Uhr`;
     }
 
     const subline = duration.multiDay
-        ? `Ihr Fahrzeug bleibt ${daysLabel(duration.spanDays)} im Studio — wählen Sie einen Abgabetag.`
+        ? `${terms.stay(daysLabel(duration.spanDays))} — wählen Sie einen ${terms.chooseDay}.`
         : `Dauer ca. ${durLabel(duration.durationMin)} — wählen Sie einen freien Termin.`;
 
     return (
@@ -762,6 +796,7 @@ function Step2({ datetime, setDatetime, onNext, onBack, serviceMode, selectedIte
                 onToday={goToday}
                 canPrev={canPrev}
                 compact={isMobile}
+                serviceMode={serviceMode}
             />
 
             {ghostWarning && (
@@ -966,7 +1001,9 @@ function Step4({ selectedItems, datetime, serviceMode, contact, vehicleCategory,
     const onRequestSurcharge = appliesSurcharge && vehicleCategory?.aufpreis === null;
     const aufpreis = appliesSurcharge ? (vehicleCategory?.aufpreis || 0) : 0;
     const mobileSurcharge = serviceMode === 'mobil' ? MOBILE_SURCHARGE : 0;
-    const total = serviceTotal + aufpreis + mobileSurcharge;
+    const mobilePkgSurcharge = mobilePackageSurchargeOf(selectedItems, serviceMode);
+    const total = serviceTotal + aufpreis + mobileSurcharge + mobilePkgSurcharge;
+    const terms = multiDayTerms(serviceMode);
 
     return (
         <div className="flex flex-col items-center text-center gap-10 py-8 w-full max-w-xl mx-auto">
@@ -1010,12 +1047,19 @@ function Step4({ selectedItems, datetime, serviceMode, contact, vehicleCategory,
                     </div>
                 )}
 
+                {mobilePkgSurcharge > 0 && (
+                    <div className="flex justify-between items-center">
+                        <span className="font-sans text-sm text-ivory/70 inline-flex items-center gap-2"><Truck className="w-3.5 h-3.5 text-accent" /> Mobil-Aufpreis (Premium-Paket)</span>
+                        <span className="font-mono text-sm text-champagne font-semibold">+€{mobilePkgSurcharge},-</span>
+                    </div>
+                )}
+
                 <div className="h-px bg-slate/50" />
                 <div className="flex justify-between items-center">
                     <span className="font-sans text-sm font-bold text-ivory">Gesamtsumme</span>
                     {onRequestSurcharge ? (
                         <div className="flex flex-col items-end gap-0.5">
-                            <span className="font-mono text-lg font-bold text-accent">ab €{(serviceTotal + mobileSurcharge).toLocaleString('de-AT')},-</span>
+                            <span className="font-mono text-lg font-bold text-accent">ab €{(serviceTotal + mobileSurcharge + mobilePkgSurcharge).toLocaleString('de-AT')},-</span>
                             <span className="font-mono text-[10px] text-champagne">+ Aufpreis auf Anfrage</span>
                         </div>
                     ) : (
@@ -1039,16 +1083,16 @@ function Step4({ selectedItems, datetime, serviceMode, contact, vehicleCategory,
                     <>
                         <div className="h-px bg-slate/50" />
                         <div className="flex justify-between items-center">
-                            <span className="font-sans text-sm text-ivory/60">Abgabe</span>
+                            <span className="font-sans text-sm text-ivory/60">{terms.start}</span>
                             <span className="font-sans text-sm font-semibold text-ivory">
-                                {datetime.date?.toLocaleDateString('de-AT', { weekday: 'short', day: '2-digit', month: '2-digit', year: 'numeric' })} bis {DROPOFF_BY}
+                                {datetime.date?.toLocaleDateString('de-AT', { weekday: 'short', day: '2-digit', month: '2-digit', year: 'numeric' })} {terms.startTime}
                             </span>
                         </div>
                         <div className="h-px bg-slate/50" />
                         <div className="flex justify-between items-center">
-                            <span className="font-sans text-sm text-ivory/60">Abholung</span>
+                            <span className="font-sans text-sm text-ivory/60">{terms.end}</span>
                             <span className="font-mono text-sm font-bold text-accent">
-                                {datetime.endDate?.toLocaleDateString('de-AT', { weekday: 'short', day: '2-digit', month: '2-digit', year: 'numeric' })} ab {PICKUP_FROM}
+                                {datetime.endDate?.toLocaleDateString('de-AT', { weekday: 'short', day: '2-digit', month: '2-digit', year: 'numeric' })} {terms.endTime}
                             </span>
                         </div>
                     </>
@@ -1174,6 +1218,23 @@ export default function BookingPage() {
 
     const { recommendations, packageSuggestion } = useRecommendations(selectedItems);
 
+    // Any change to the cart's duration SHAPE (same-day minutes ↔ multi-day span) invalidates a
+    // previously chosen date/time. Lifted to the parent so it survives Step2's unmount/remount
+    // between steps (the in-Step2 guard alone could never fire, so a stale same-day pick used to
+    // leak into a now-multi-day booking — confirmation showed a clock time while the calendar/email
+    // recorded a multi-day drop-off).
+    const durationShape = useMemo(() => {
+        const d = computeBookingDuration(selectedItems, serviceMode);
+        return d.multiDay ? `m${d.spanDays}` : `s${d.durationMin}`;
+    }, [selectedItems, serviceMode]);
+    const prevDurationShape = useRef(durationShape);
+    useEffect(() => {
+        if (prevDurationShape.current !== durationShape) {
+            prevDurationShape.current = durationShape;
+            setDatetime({ date: null, time: null });
+        }
+    }, [durationShape]);
+
     const toggleItem = (item) => {
         setSelectedItems(prev => {
             const exists = prev.find(i => i.id === item.id);
@@ -1215,28 +1276,30 @@ export default function BookingPage() {
         const dd = String(datetime.date.getDate()).padStart(2, '0');
         const isoDate = `${yyyy}-${mm}-${dd}`;
         const serviceTotal = selectedItems.reduce((s, i) => s + i.priceNum, 0);
-        // Size-based Aufpreis only applies to Deep Clean & Leichte Politur.
+        // Size-based Aufpreis only applies to sizeSurcharge-flagged services (see SIZE_SURCHARGE_IDS).
         const appliesSurcharge = selectedItems.some(i => SIZE_SURCHARGE_IDS.has(i.id));
         const onRequestSurcharge = appliesSurcharge && vehicleCategory?.aufpreis === null;
         const aufpreis = appliesSurcharge ? (vehicleCategory?.aufpreis || 0) : 0;
         const mobileSurchargeVal = serviceMode === 'mobil' ? MOBILE_SURCHARGE : 0;
-        const total = serviceTotal + aufpreis + mobileSurchargeVal;
+        const mobilePkgSurchargeVal = mobilePackageSurchargeOf(selectedItems, serviceMode);
+        const total = serviceTotal + aufpreis + mobileSurchargeVal + mobilePkgSurchargeVal;
         const aufpreisStr = onRequestSurcharge ? 'auf Anfrage' : aufpreis > 0 ? `+€${aufpreis},-` : 'kein Aufpreis';
 
         const location = serviceMode === 'mobil'
             ? contact.address
             : (STUDIO_ADDRESSES[studioLocation] || STUDIO_ADDRESSES.feldkirch);
         const totalStr = onRequestSurcharge
-            ? `ab €${(serviceTotal + mobileSurchargeVal).toLocaleString('de-AT')},- + Aufpreis auf Anfrage`
+            ? `ab €${(serviceTotal + mobileSurchargeVal + mobilePkgSurchargeVal).toLocaleString('de-AT')},- + Aufpreis auf Anfrage`
             : `ab €${total.toLocaleString('de-AT')},-`;
 
         // Effective duration → same-day block vs. multi-day span
         const duration = computeBookingDuration(selectedItems, serviceMode);
+        const terms = multiDayTerms(serviceMode);
         let terminLabel;
         if (duration.multiDay) {
             const span = workingSpan(datetime.date, duration.spanDays);
             const fmtDay = (d) => d.toLocaleDateString('de-AT', { weekday: 'long', day: '2-digit', month: '2-digit', year: 'numeric' });
-            terminLabel = `Abgabe ${fmtDay(span[0])} bis ${DROPOFF_BY} · Abholung ${fmtDay(span[span.length - 1])} ab ${PICKUP_FROM}`;
+            terminLabel = `${terms.start} ${fmtDay(span[0])} ${terms.startTime} · ${terms.end} ${fmtDay(span[span.length - 1])} ${terms.endTime}`;
         } else {
             const [hh, mmn] = datetime.time.split(':').map(Number);
             terminLabel = `${datetime.time}–${minToTime(hh * 60 + mmn + duration.durationMin)} Uhr`;
@@ -1254,6 +1317,7 @@ export default function BookingPage() {
                 vehicleCategory: vehicleCategory?.name,
                 vehicleAufpreis: aufpreisStr,
                 mobileSurcharge: mobileSurchargeVal,
+                mobilePackageSurcharge: mobilePkgSurchargeVal,
                 totalStr,
                 photoUrls,
                 durationMin: duration.durationMin,
@@ -1279,6 +1343,7 @@ export default function BookingPage() {
                     [duration.multiDay ? 'Zeitraum' : 'Uhrzeit']: terminLabel,
                     Services: selectedItems.map(i => `${i.name} (${i.price})`).join(', '),
                     ...(serviceMode === 'mobil' ? { Anfahrtspauschale: `+€${MOBILE_SURCHARGE},-` } : {}),
+                    ...(mobilePkgSurchargeVal > 0 ? { 'Mobil-Aufpreis (Premium-Paket)': `+€${mobilePkgSurchargeVal},-` } : {}),
                     Gesamtsumme: totalStr,
                     Anmerkungen: contact.notes || '—',
                     Fahrzeugfotos: photoUrls.length > 0 ? photoUrls.join('\n') : '—',

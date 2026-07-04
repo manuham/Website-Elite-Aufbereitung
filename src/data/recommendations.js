@@ -50,11 +50,6 @@ export const serviceRecommendations = {
         { recommend: 'politur-3', reason: 'Scheinwerfer gleich mitpolieren', type: 'addon', priority: 2 },
         { recommend: 'zusatz-0', reason: 'Fenster beschichten für bessere Sicht bei Regen', type: 'addon', priority: 3 },
     ],
-    'politur-1': [ // Schwere Politur
-        { recommend: 'keramik-1', reason: 'Nach der Politur: Keramikschutz für 2–3 Jahre Glanz', type: 'protect', priority: 1 },
-        { recommend: 'politur-3', reason: 'Scheinwerfer gleich mitpolieren', type: 'addon', priority: 2 },
-        { recommend: 'innenreinigung-1', reason: 'Außen perfekt? Innen auch — Premium Innenreinigung', type: 'complement', priority: 3 },
-    ],
     'politur-2': [ // Spot-Politur
         { recommend: 'politur-0', reason: 'Für rundum perfekten Glanz: komplette Leichte Politur', type: 'upgrade', priority: 1 },
         { recommend: 'handwaesche-1', reason: 'Premium Handwäsche für den frischen Look', type: 'complement', priority: 2 },
@@ -66,22 +61,8 @@ export const serviceRecommendations = {
         { recommend: 'handwaesche-1', reason: 'Premium Handwäsche für den kompletten Look', type: 'complement', priority: 3 },
     ],
 
-    // ─── KERAMIK VERSIEGELUNG ────────────────────────────────────────────────────
-    'keramik-0': [ // Neuwagen Beschichtung
-        { recommend: 'zusatz-3', reason: 'Felgen-Keramik dazu — Komplettschutz', type: 'addon', priority: 1 },
-        { recommend: 'innenreinigung-2', reason: 'Außen geschützt? Leder innen auch beschichten', type: 'complement', priority: 2 },
-        { recommend: 'zusatz-5', reason: 'Textilimprägnierung für den Innenraum', type: 'addon', priority: 3 },
-    ],
-    'keramik-1': [ // Beschichtungspaket
-        { recommend: 'zusatz-3', reason: 'Felgen-Keramik dazu — Komplettschutz', type: 'addon', priority: 1 },
-        { recommend: 'innenreinigung-2', reason: 'Leder innen auch langfristig beschichten', type: 'complement', priority: 2 },
-        { recommend: 'innenreinigung-1', reason: 'Premium Innenreinigung inklusive Lederpflege', type: 'complement', priority: 3 },
-    ],
-    'keramik-2': [ // Matt Beschichtung
-        { recommend: 'zusatz-0', reason: 'Fensterbeschichtung für den vollen Schutz', type: 'addon', priority: 1 },
-        { recommend: 'handwaesche-1', reason: 'Premium Handwäsche — schonend für matte Lacke', type: 'complement', priority: 2 },
-        { recommend: 'innenreinigung-1', reason: 'Premium Innenreinigung für den Innenraum', type: 'complement', priority: 3 },
-    ],
+    // Keramik packages are phone-only (never enter the cart), so a serviceRecommendations entry
+    // keyed on them could never be looked up — omitted intentionally.
 
     // ─── ZUSATZPAKETE ────────────────────────────────────────────────────────────
     'zusatz-0': [ // Autofenster beschichten
@@ -106,16 +87,8 @@ export const serviceRecommendations = {
         { recommend: 'zusatz-0', reason: 'Fensterbeschichtung gegen Regen', type: 'addon', priority: 2 },
         { recommend: 'zusatz-16', reason: 'Ozonbehandlung für frischen Duft', type: 'addon', priority: 3 },
     ],
-    'tier-gold': [ // Deep Polish (Politur & Keramikschutz)
-        { recommend: 'innenreinigung-1', reason: 'Innen auch perfekt: Premium Innenreinigung', type: 'complement', priority: 1 },
-        { recommend: 'zusatz-0', reason: 'Fenster beschichten für Komplettschutz', type: 'addon', priority: 2 },
-        { recommend: 'politur-3', reason: 'Scheinwerfer gleich mitpolieren', type: 'addon', priority: 3 },
-    ],
-    'tier-elite': [ // Endstufe (Elite Komplettpaket)
-        { recommend: 'zusatz-0', reason: 'Fensterbeschichtung für den letzten Schliff', type: 'addon', priority: 1 },
-        { recommend: 'zusatz-16', reason: 'Ozonbehandlung für frischen Duft dazu', type: 'addon', priority: 2 },
-        { recommend: 'politur-3', reason: 'Scheinwerfer gleich mitpolieren', type: 'addon', priority: 3 },
-    ],
+    // Gold & Élite are phone-only (never enter the cart), so entries keyed on them could never be
+    // looked up — omitted intentionally. Same reasoning applies to the exclusion/detection rules below.
 };
 
 /**
@@ -127,14 +100,16 @@ export const exclusionRules = [
     { if: 'handwaesche-1', exclude: ['handwaesche-0'] },
     { if: 'handwaesche-2', exclude: ['handwaesche-0', 'handwaesche-1'] },
     { if: 'innenreinigung-1', exclude: ['innenreinigung-0'] },
-    { if: 'politur-1', exclude: ['politur-0', 'politur-2'] },
     { if: 'politur-0', exclude: ['politur-2'] },
 
-    // AIO packages cover their constituent services
-    { if: 'tier-bronze', exclude: ['handwaesche-0', 'innenreinigung-0'] },
-    { if: 'tier-silber', exclude: ['handwaesche-0', 'handwaesche-1', 'innenreinigung-0', 'innenreinigung-1'] },
-    { if: 'tier-gold', exclude: ['politur-0', 'politur-1', 'politur-2', 'keramik-1'] },
-    { if: 'tier-elite', exclude: ['handwaesche-0', 'handwaesche-1', 'handwaesche-2', 'innenreinigung-0', 'innenreinigung-1', 'politur-0', 'politur-1', 'politur-2', 'keramik-0', 'keramik-1'] },
+    // AIO packages cover their constituent services. Bronze = Premium Handwäsche + Premium
+    // Innenreinigung (its feature list is the premium interior), so it also covers the premium
+    // wash/interior services — not just the basic ones. Silber additionally includes a 1-step
+    // polish, so it covers Leichte Politur too.
+    { if: 'tier-bronze', exclude: ['handwaesche-0', 'handwaesche-1', 'handwaesche-2', 'innenreinigung-0', 'innenreinigung-1'] },
+    { if: 'tier-silber', exclude: ['handwaesche-0', 'handwaesche-1', 'handwaesche-2', 'innenreinigung-0', 'innenreinigung-1', 'politur-0'] },
+    // (Gold/Élite are phone-only and can never be in the cart, so exclusion rules keyed on them
+    // would never fire — omitted. politur-1/Schwere Politur is phone-only too, for the same reason.)
 
     // Verkaufsaufbereitung / Leasingrückläufer is comprehensive
     { if: 'verkauf-0', exclude: ['handwaesche-0', 'innenreinigung-0'] },
@@ -143,23 +118,22 @@ export const exclusionRules = [
 /**
  * Smart package detection: when individual selections can be replaced by a cheaper AIO package.
  * `partialMatchThreshold` allows suggesting the package when N of M required services are selected.
+ *
+ * The engine only suggests a package when its "ab" price is BELOW the summed "ab" price of the
+ * matched constituents (real saving), so each rule's requiredServiceIds must reflect what the
+ * package actually bundles — Bronze = Premium wash + Premium interior; Silber = that + a light
+ * polish. (Basic constituents summed cheaper than the package, so the old basic-id rules could
+ * never fire.) Gold/Élite are phone-only and can't be cart-suggested, so they have no rule.
  */
 export const packageDetectionRules = [
     {
+        // Premium Handwäsche (115) + Premium Innenreinigung (155) = 270 > Bronze 230 → save ~40.
         packageId: 'tier-bronze',
-        requiredServiceIds: ['handwaesche-0', 'innenreinigung-0'],
-    },
-    {
-        packageId: 'tier-silber',
         requiredServiceIds: ['handwaesche-1', 'innenreinigung-1'],
     },
     {
-        packageId: 'tier-gold',
-        requiredServiceIds: ['politur-1', 'keramik-1'],
-    },
-    {
-        packageId: 'tier-elite',
-        requiredServiceIds: ['handwaesche-1', 'innenreinigung-1', 'politur-1', 'keramik-1'],
-        partialMatchThreshold: 3, // Suggest when at least 3 of 4 are selected
+        // + Leichte Politur (395): 665 > Silber 420 → save ~245. Needs all three (full match).
+        packageId: 'tier-silber',
+        requiredServiceIds: ['handwaesche-1', 'innenreinigung-1', 'politur-0'],
     },
 ];

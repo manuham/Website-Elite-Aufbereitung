@@ -13,11 +13,13 @@ Step2 Date & time → Step3 Contact + photos → Step4 Confirmation.
 ## Vehicle size surcharge (StepVehicle) — conditional
 `VEHICLE_CATEGORIES` (`BookingPage.jsx`) carries `aufpreis` per size: Kleinwagen 0, Kompakt 55,
 Mittelklasse 75, SUV 95, Großfahrzeuge `null` ("auf Anfrage"). The size Aufpreis applies **only**
-when the cart contains *Deep Clean* (`tier-silber`) or *Leichte Politur* (`politur-0`) — see
-`SIZE_SURCHARGE_IDS`. For every other selection no size surcharge is added (the step still asks for
-the size so the operator knows the vehicle). The gate is recomputed identically in `StepVehicle`,
-`handleSubmit`, and the `Step4` confirmation. Both qualifying services carry `sizeSurcharge: true`
-in `src/data/services.js` (for display/intent); the booking logic keys off the ID set.
+when the cart contains a service/package flagged `sizeSurcharge: true` in `src/data/services.js` —
+currently *Wash & Clean* (`tier-bronze`), *Deep Clean* (`tier-silber`) & *Leichte Politur*
+(`politur-0`). `SIZE_SURCHARGE_IDS` in `BookingPage.jsx` is **derived from that flag** (single source
+of truth), so flipping the flag in the data updates every surface at once. For every other selection
+no size surcharge is added (the step still asks for the size so the operator knows the vehicle). The
+gate is recomputed identically in `StepVehicle`, `handleSubmit`, and the `Step4` confirmation.
+Keep the marketing copy (`Pricing.jsx`) and FAQ answers (`faqKnowledge.js`) in sync with the flag.
 
 ## Services: bookable vs. appointment-only
 Services live in `src/data/services.js`. Some carry `phoneOnly: true` (Gold & Élite tiers,
@@ -39,9 +41,22 @@ collapsible folders; the booking Step-1 still lists them flat.
 - Different services take different time. Each package in `src/data/services.js` carries
   `durationMin` (same-day) **or** `durationDays` (multi-day), plus `mobilExtraMin` /
   `mobilSurcharge`. `computeBookingDuration(selectedItems, serviceMode)` in
-  `src/lib/scheduling.js` combines the Step-1 cart into one effective duration: sums same-day
-  minutes (+ mobil extra when mobil); if ANY item is multi-day the whole booking is multi-day
-  (span = sum of multi-day items' days, rounded up).
+  `src/lib/scheduling.js` combines the Step-1 cart into one effective duration: it sums ALL
+  same-day minutes (+ mobil travel time when mobil), and the booking becomes multi-day when any
+  item is multi-day **OR** the combined same-day work exceeds one working day (`WORKDAY_MIN=600`).
+  The span folds in both (`ceil(multiDays + sameDayMin/WORKDAY_MIN)`), so a long combo never leaves
+  the user on an all-blocked calendar and a multi-day + same-day mix never under-blocks the studio.
+- **Multi-day spans run Mo–Fr only** (`isMultiDayDay` / `workingSpan`): Saturday's short hours
+  (08–13) can't host a 09:00 drop-off → 16:00 pickup. The backend `workingSpanStr` mirrors this.
+- **Mobil vs studio wording** is one source of truth: `multiDayTerms(serviceMode)` in
+  `scheduling.js` supplies every multi-day label (studio = Abgabe/Abholung "im Studio"; mobil =
+  Beginn/Fertigstellung "vor Ort"). Used by `WeekCalendar`, Step 3, Step 4 confirmation, the email,
+  and the calendar event — change wording there, not per surface.
+- **Mobile surcharge** = flat `MOBILE_SURCHARGE` (€50 Anfahrtspauschale) **plus** a per-package
+  Mobil-Aufpreis (`mobilePackageSurchargeOf` = MAX of the cart's `mobilSurcharge`, €45–85, shown as
+  its own line on every surface). Both are included in every total (Step 1 / StepVehicle / Step 4 /
+  email / calendar). A duration-shape change resets the date pick (parent-level guard in
+  `BookingPage`), so a stale same-day pick can't leak into a multi-day booking.
 - `src/components/booking/WeekCalendar.jsx` is an Apple-Calendar week view (replaces the old
   month-grid + `DayTimePickerModal`, both deleted):
   - **same-day:** time blocks sized to the duration, packed around busy intervals with a

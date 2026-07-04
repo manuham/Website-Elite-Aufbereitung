@@ -85,13 +85,16 @@ function addDaysStr(dateString, n) {
 function pad(n) { return String(n).padStart(2, '0'); }
 function minToTime(min) { return `${pad(Math.floor(min / 60))}:${pad(min % 60)}`; }
 
-// Working-day span (skips Sundays) as date strings.
+// Multi-day span as date strings — weekdays Mo–Fr only (Sat's 08–13 hours can't host a
+// 09:00 drop-off → 16:00 pickup, so multi-day jobs run Mon–Fri). Mirrors workingSpan/isMultiDayDay
+// in src/lib/scheduling.js.
 function workingSpanStr(startDateString, count) {
   const out = [];
   let ds = startDateString;
   let guard = 0;
   while (out.length < count && guard < 60) {
-    if (WORKING_HOURS[dayOfWeekFor(ds)]) out.push(ds);
+    const dow = dayOfWeekFor(ds);
+    if (dow >= 1 && dow <= 5) out.push(ds);
     ds = addDaysStr(ds, 1);
     guard++;
   }
@@ -182,7 +185,7 @@ export async function multiDaySpanFree(startDateString, spanDays) {
 
 export async function createBookingEvent({
   date, time, services, contact,
-  serviceMode, location, vehicleCategory, vehicleAufpreis, mobileSurcharge, totalStr, photoUrls,
+  serviceMode, location, vehicleCategory, vehicleAufpreis, mobileSurcharge, mobilePackageSurcharge, totalStr, photoUrls,
   durationMin, multiDay, spanDays,
 }) {
   const auth = getAuthClient();
@@ -203,7 +206,9 @@ export async function createBookingEvent({
     const last = span[span.length - 1] || date;
     startDateTime = `${first}T${minToTime(DROPOFF_MIN)}:00`;
     endDateTime = `${last}T${minToTime(PICKUP_MIN)}:00`;
-    scheduleLine = `Zeitraum: Abgabe ${first} bis ${minToTime(DROPOFF_MIN)} · Abholung ${last} ab ${minToTime(PICKUP_MIN)}`;
+    scheduleLine = isMobile
+      ? `Zeitraum: Beginn ${first} ab ${minToTime(DROPOFF_MIN)} · Fertigstellung ${last} bis ${minToTime(PICKUP_MIN)}`
+      : `Zeitraum: Abgabe ${first} bis ${minToTime(DROPOFF_MIN)} · Abholung ${last} ab ${minToTime(PICKUP_MIN)}`;
   } else {
     const dur = durationMin || DEFAULT_DURATION_MIN;
     const [h, m] = time.split(':').map(Number);
@@ -228,6 +233,7 @@ export async function createBookingEvent({
       'Services:',
       serviceList,
       isMobile && mobileSurcharge ? `  - Anfahrtspauschale (+€${mobileSurcharge},-)` : null,
+      isMobile && mobilePackageSurcharge ? `  - Mobil-Aufpreis Paket (+€${mobilePackageSurcharge},-)` : null,
       '',
       `Geschätzte Summe: ${totalStr || fallbackTotal}`,
       contact.notes ? `\nAnmerkungen: ${contact.notes}` : null,

@@ -131,7 +131,7 @@ export default function Hero({ entranceReady = true }) {
     };
 
     return (
-        <section ref={containerRef} className="relative h-[100dvh] w-full flex flex-col justify-end pb-28 sm:pb-36 lg:pb-44 px-6 sm:px-12 lg:px-24">
+        <section ref={containerRef} className="relative h-[100dvh] w-full flex flex-col justify-end pb-28 sm:pb-36 lg:pb-44 [@media(max-height:900px)]:!pb-24 px-6 sm:px-12 lg:px-24">
             {/* Background Image — depth layer (slowest parallax) */}
             <div className="hero-bg-layer absolute inset-0 z-0 overflow-hidden bg-obsidian pointer-events-none will-change-transform">
                 <img

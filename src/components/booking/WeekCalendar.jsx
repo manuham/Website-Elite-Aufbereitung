@@ -9,9 +9,9 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { ChevronLeft, ChevronRight, Check, Plus, Calendar as CalIcon } from 'lucide-react';
 import gsap from 'gsap';
 import {
-  AXIS_START, AXIS_END, DROPOFF_BY, PICKUP_FROM, DAYS_SHORT, MONTHS,
+  AXIS_START, AXIS_END, DAYS_SHORT, MONTHS,
   sameDay, isoKey, minToTime, isWorkingDay, durLabel, daysLabel, germanFull,
-  sameDayPlan, freeStartCount, workingSpan, multiDayStartFree,
+  sameDayPlan, freeStartCount, workingSpan, multiDayStartFree, multiDayTerms,
 } from '../../lib/scheduling';
 
 const ACCENT = '#4DB292';
@@ -44,11 +44,12 @@ export default function WeekCalendar({
   week, duration, busyByIso, now, selected,
   onSelectSameDay, onSelectMultiDay,
   onPrevWeek, onNextWeek, onToday, canPrev,
-  compact,
+  compact, serviceMode,
 }) {
   const rootRef = useRef(null);
   const multi = !!duration.multiDay;
   const span = multi ? duration.spanDays : 0;
+  const terms = useMemo(() => multiDayTerms(serviceMode), [serviceMode]);
   const bodyH = (AXIS_END - AXIS_START) * MIN_PX;
   const hours = useMemo(() => {
     const a = []; for (let h = AXIS_START / 60; h <= AXIS_END / 60; h++) a.push(h); return a;
@@ -235,7 +236,7 @@ export default function WeekCalendar({
           <MultiDayBand
             week={week} compact={compact} span={span} duration={duration} selected={selected}
             onSelectMultiDay={onSelectMultiDay} inSpan={inSpan} spanIndex={spanIndex} spanDays={spanDays}
-            busyByIso={busyByIso} now={now}
+            busyByIso={busyByIso} now={now} terms={terms}
           />
         ) : (
           <div className="hide-scrollbar flex overflow-y-auto" style={{ maxHeight: compact ? '54vh' : 528 }}>
@@ -264,10 +265,10 @@ export default function WeekCalendar({
 }
 
 // ── multi-day all-day band ──
-function MultiDayBand({ week, compact, span, duration, selected, onSelectMultiDay, inSpan, spanIndex, spanDays, busyByIso, now }) {
+function MultiDayBand({ week, compact, span, duration, selected, onSelectMultiDay, inSpan, spanIndex, spanDays, busyByIso, now, terms }) {
   if (compact) {
     // mobile uses the day-pill strip above for selection; show only the note
-    return <MultiDayNote duration={duration} spanDays={spanDays} selected={selected} />;
+    return <MultiDayNote duration={duration} spanDays={spanDays} selected={selected} terms={terms} />;
   }
   const lastSpan = spanDays[spanDays.length - 1];
   const overflowsWeek = lastSpan && lastSpan > week[6];
@@ -295,15 +296,15 @@ function MultiDayBand({ week, compact, span, duration, selected, onSelectMultiDa
                 }}>
                 {within ? (
                   <>
-                    {isStart && <span className="font-mono" style={{ fontSize: 9.5, fontWeight: 700, letterSpacing: '.08em' }}>ABGABE</span>}
-                    {isEnd && idx !== 0 && <span className="font-mono" style={{ fontSize: 9.5, fontWeight: 700, letterSpacing: '.08em' }}>{overflowsWeek && i === 6 ? '→' : 'ABHOLUNG'}</span>}
+                    {isStart && <span className="font-mono" style={{ fontSize: 9.5, fontWeight: 700, letterSpacing: '.08em' }}>{terms.bandStart}</span>}
+                    {isEnd && idx !== 0 && <span className="font-mono" style={{ fontSize: 9.5, fontWeight: 700, letterSpacing: '.08em' }}>{overflowsWeek && i === 6 ? '→' : terms.bandEnd}</span>}
                     {!isStart && !isEnd && <span style={{ width: 6, height: 6, borderRadius: 9, background: OBSIDIAN, opacity: 0.5 }} />}
-                    <span style={{ fontSize: 11, fontWeight: 600 }}>{isStart ? `bis ${DROPOFF_BY}` : isEnd ? `ab ${PICKUP_FROM}` : 'im Studio'}</span>
+                    <span style={{ fontSize: 11, fontWeight: 600 }}>{isStart ? terms.startTime : isEnd ? terms.endTime : terms.bandMid}</span>
                   </>
                 ) : selectable ? (
                   <>
                     <Plus size={14} style={{ opacity: 0.7 }} />
-                    <span className="font-mono" style={{ fontSize: 9.5, letterSpacing: '.06em', opacity: 0.7 }}>Abgabe</span>
+                    <span className="font-mono" style={{ fontSize: 9.5, letterSpacing: '.06em', opacity: 0.7 }}>{terms.start}</span>
                   </>
                 ) : (
                   <span style={{ fontSize: 16, opacity: 0.5 }}>·</span>
@@ -313,24 +314,24 @@ function MultiDayBand({ week, compact, span, duration, selected, onSelectMultiDa
           );
         })}
       </div>
-      <MultiDayNote duration={duration} spanDays={spanDays} selected={selected} />
+      <MultiDayNote duration={duration} spanDays={spanDays} selected={selected} terms={terms} />
     </div>
   );
 }
 
-function MultiDayNote({ duration, spanDays, selected }) {
+function MultiDayNote({ duration, spanDays, selected, terms }) {
   return (
     <div className="flex gap-4 items-center flex-wrap" style={{ borderTop: `1px solid ${iv(0.07)}`, padding: '16px 20px' }}>
       <span className="inline-flex items-center gap-2 font-sans" style={{ fontSize: 13, color: iv(0.7) }}>
         <CalIcon size={16} style={{ opacity: 0.7 }} />
-        Ihr Fahrzeug bleibt <strong style={{ color: IVORY, fontWeight: 700 }}>{daysLabel(duration.spanDays)}</strong> im Studio.
+        {terms.stayPrefix}<strong style={{ color: IVORY, fontWeight: 700 }}>{daysLabel(duration.spanDays)}</strong>{terms.staySuffix}.
       </span>
       {selected.date && spanDays.length ? (
         <span className="font-sans" style={{ fontSize: 13, color: ACCENT }}>
-          Abgabe {germanFull(spanDays[0])} bis {DROPOFF_BY} · Abholung {germanFull(spanDays[spanDays.length - 1])} ab {PICKUP_FROM}
+          {terms.start} {germanFull(spanDays[0])} {terms.startTime} · {terms.end} {germanFull(spanDays[spanDays.length - 1])} {terms.endTime}
         </span>
       ) : (
-        <span className="font-sans" style={{ fontSize: 13, color: iv(0.4) }}>Wählen Sie einen Abgabetag.</span>
+        <span className="font-sans" style={{ fontSize: 13, color: iv(0.4) }}>Wählen Sie einen {terms.chooseDay}.</span>
       )}
     </div>
   );

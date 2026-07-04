@@ -26,6 +26,7 @@ export const HOURS = {
 export const BUFFER = 30;          // min between two jobs
 export const AXIS_START = 480;     // grid top 08:00
 export const AXIS_END = 1080;      // grid bottom 18:00
+export const WORKDAY_MIN = 600;    // bookable minutes in a full weekday (Mo–Fr 08:00–18:00)
 export const DROPOFF_BY = '09:00'; // multi-day drop-off
 export const PICKUP_FROM = '16:00'; // multi-day pickup (last day)
 
@@ -46,6 +47,9 @@ export function minToTime(min) {
 }
 export function timeToMin(t) { const [h, m] = t.split(':').map(Number); return h * 60 + m; }
 export function isWorkingDay(d) { return HOURS[d.getDay()] != null; }
+/** Multi-day drop-off/pickup runs on full weekdays only (Mo–Fr). Saturday's short hours (08–13)
+ *  can't host a 09:00 drop-off → 16:00 pickup, so it is excluded from multi-day spans. */
+export function isMultiDayDay(d) { const w = d.getDay(); return w >= 1 && w <= 5; }
 
 /** Monday of the week containing `date`. */
 export function weekStartMonday(date) {
@@ -71,6 +75,32 @@ export function daysLabel(days) {
 }
 export function germanFull(d) { return `${DAYS_FULL[d.getDay()]}, ${d.getDate()}. ${MONTHS[d.getMonth()]}`; }
 
+/**
+ * Wording for the multi-day span differs by service mode (single source of truth for all surfaces):
+ *   • studio → the car is dropped off (bis 09:00) and picked up (ab 16:00).
+ *   • mobil  → the team starts on-site (ab 09:00) and finishes (bis 16:00); no studio hand-off.
+ */
+export function multiDayTerms(serviceMode) {
+  const mobil = serviceMode === 'mobil';
+  // "…{days}…" split so the day count can be rendered bold in JSX (stayPrefix/staySuffix) or
+  // as a plain string (stay()).
+  const stayPrefix = mobil ? 'Wir sind ' : 'Ihr Fahrzeug bleibt ';
+  const staySuffix = mobil ? ' bei Ihnen vor Ort' : ' im Studio';
+  return {
+    start: mobil ? 'Beginn' : 'Abgabe',
+    end: mobil ? 'Fertigstellung' : 'Abholung',
+    startTime: mobil ? `ab ${DROPOFF_BY}` : `bis ${DROPOFF_BY}`,
+    endTime: mobil ? `bis ${PICKUP_FROM}` : `ab ${PICKUP_FROM}`,
+    chooseDay: mobil ? 'Starttag' : 'Abgabetag',
+    stayPrefix,
+    staySuffix,
+    stay: (days) => `${stayPrefix}${days}${staySuffix}`,
+    bandStart: mobil ? 'START' : 'ABGABE',
+    bandEnd: mobil ? 'FERTIG' : 'ABHOLUNG',
+    bandMid: mobil ? 'vor Ort' : 'im Studio',
+  };
+}
+
 // ── duration aggregation across the Step-1 cart ─────────────────────────────
 /**
  * Combine the durations of all selected services into one effective booking
@@ -81,14 +111,21 @@ export function germanFull(d) { return `${DAYS_FULL[d.getDay()]}, ${d.getDate()}
  */
 export function computeBookingDuration(selectedItems, serviceMode) {
   const items = selectedItems || [];
-  const multi = items.filter(i => i.durationDays != null);
-  if (multi.length) {
-    const spanDays = Math.max(1, Math.ceil(multi.reduce((s, i) => s + i.durationDays, 0)));
+  const workMin = items.reduce((s, i) => s + (i.durationMin || 0), 0);   // same-day service minutes
+  const mobilTravel = serviceMode === 'mobil'                            // one-off mobil setup/travel time
+    ? items.reduce((s, i) => s + (i.mobilExtraMin || 0), 0) : 0;
+  const slotMin = workMin + mobilTravel;                                 // same-day slot to reserve
+  const multiDays = items.filter(i => i.durationDays != null).reduce((s, i) => s + i.durationDays, 0);
+
+  // Multi-day when any item is multi-day OR the same-day slot can't fit one working day.
+  // The span folds in same-day WORK only (÷ WORKDAY_MIN) — travel time doesn't add whole days — so
+  // the studio calendar is never under-blocked and an over-long same-day combo can't leave the user
+  // stuck on an all-blocked calendar (it spills into a drop-off span instead).
+  if (multiDays > 0 || slotMin > WORKDAY_MIN) {
+    const spanDays = Math.max(1, Math.ceil(multiDays + workMin / WORKDAY_MIN));
     return { multiDay: true, spanDays, durationMin: null };
   }
-  const base = items.reduce((s, i) => s + (i.durationMin || 0), 0);
-  const extra = serviceMode === 'mobil' ? items.reduce((s, i) => s + (i.mobilExtraMin || 0), 0) : 0;
-  return { multiDay: false, durationMin: base + extra, spanDays: null };
+  return { multiDay: false, durationMin: slotMin, spanDays: null };
 }
 
 // ── same-day packing ────────────────────────────────────────────────────────
@@ -163,13 +200,13 @@ export function freeStartCount(date, durMin, busy, now) {
 }
 
 // ── multi-day span ──────────────────────────────────────────────────────────
-/** Collect `count` working days starting at `date` (skips Sundays). */
+/** Collect `count` multi-day span days starting at `date` (weekdays Mo–Fr; skips Sat + Sun). */
 export function workingSpan(date, count) {
   const out = [];
   let d = startOfDay(date);
   let guard = 0;
   while (out.length < count && guard < 60) {
-    if (isWorkingDay(d)) out.push(new Date(d));
+    if (isMultiDayDay(d)) out.push(new Date(d));
     d = addDays(d, 1);
     guard++;
   }
@@ -184,7 +221,7 @@ export function workingSpan(date, count) {
 export function multiDayStartFree(date, count, busyByIso, now) {
   const base = startOfDay(date);
   const today0 = startOfDay(now);
-  if (base < today0 || !isWorkingDay(base)) return false;
+  if (base < today0 || !isMultiDayDay(base)) return false;
   if (sameDay(base, today0)) return false; // can't start a multi-day job same day
   const span = workingSpan(base, count);
   return span.every(d => {

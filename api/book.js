@@ -17,7 +17,7 @@ export default async function handler(req, res) {
 
   const {
     date, time, services, contact,
-    serviceMode, location, vehicleCategory, vehicleAufpreis, mobileSurcharge, totalStr, photoUrls,
+    serviceMode, location, vehicleCategory, vehicleAufpreis, mobileSurcharge, mobilePackageSurcharge, totalStr, photoUrls,
     durationMin, multiDay, spanDays,
   } = req.body;
 
@@ -43,7 +43,7 @@ export default async function handler(req, res) {
 
     const event = await createBookingEvent({
       date, time, services, contact,
-      serviceMode, location, vehicleCategory, vehicleAufpreis, mobileSurcharge, totalStr, photoUrls,
+      serviceMode, location, vehicleCategory, vehicleAufpreis, mobileSurcharge, mobilePackageSurcharge, totalStr, photoUrls,
       durationMin, multiDay, spanDays,
     });
 

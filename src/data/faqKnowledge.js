@@ -44,7 +44,7 @@ export const FAQ_KNOWLEDGE = [
     {
         id: 'faq-preis-aufbereitung',
         q: 'Was kostet eine Aufbereitung?',
-        a: 'Unsere Einstiegspreise: Handwäsche ab €75,–, Innenreinigung ab €75,–, das Komplettpaket „Deep Clean" ab €420,–. Alle Preise sind Endpreise und Richtwerte für durchschnittlich verschmutzte Pkw. Der finale Preis richtet sich nach Aufwand, Verschmutzungsgrad und – bei Deep Clean & Leichter Politur – nach der Fahrzeuggröße. Eine genaue Übersicht findest du im Bereich Services & Preise.',
+        a: 'Unsere Einstiegspreise: Handwäsche ab €75,–, Innenreinigung ab €75,–, das Komplettpaket „Deep Clean" ab €420,–. Alle Preise sind Endpreise und Richtwerte für durchschnittlich verschmutzte Pkw. Der finale Preis richtet sich nach Aufwand, Verschmutzungsgrad und – bei Wash & Clean, Deep Clean & Leichter Politur – nach der Fahrzeuggröße. Eine genaue Übersicht findest du im Bereich Services & Preise.',
         keywords: ['preis', 'preise', 'kosten', 'kostet', 'teuer', 'aufbereitung', 'einstiegspreis', 'preisliste'],
         category: 'preise',
         links: [LINK_BUCHEN],
@@ -78,7 +78,7 @@ export const FAQ_KNOWLEDGE = [
     {
         id: 'faq-aufpreis-groesse',
         q: 'Warum gibt es einen Aufpreis nach Fahrzeuggröße?',
-        a: 'Größere Fahrzeuge bedeuten mehr Fläche und Arbeitsaufwand. Ein größenabhängiger Aufpreis fällt nur bei Deep Clean & Leichter Politur an: Kompaktklasse +55,–, Mittelklasse +75,–, SUV/Van +95,–, Großfahrzeuge auf Anfrage. Kleinwagen sind ohne Aufpreis. Für alle anderen Leistungen gilt kein größenabhängiger Aufpreis.',
+        a: 'Größere Fahrzeuge bedeuten mehr Fläche und Arbeitsaufwand. Ein größenabhängiger Aufpreis fällt bei Wash & Clean, Deep Clean & Leichter Politur an: Kompaktklasse +55,–, Mittelklasse +75,–, SUV/Van +95,–, Großfahrzeuge auf Anfrage. Kleinwagen sind ohne Aufpreis. Für alle anderen Leistungen gilt kein größenabhängiger Aufpreis.',
         keywords: ['aufpreis', 'größe', 'fahrzeuggröße', 'suv', 'kombi', 'transporter', 'kleinwagen', 'zuschlag', 'größer'],
         category: 'preise',
         featured: true,
