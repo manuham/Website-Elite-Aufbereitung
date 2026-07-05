@@ -90,14 +90,22 @@ export default function Footer() {
 
             </div>
 
-            <div className="max-w-7xl mx-auto w-full pt-8 border-t border-ivory/10 flex flex-col sm:flex-row justify-between items-center gap-4 font-sans text-xs text-ivory/40">
-                <p>© 2026 Elité Auto Aufbereitung. Alle Rechte vorbehalten.</p>
-                <div className="flex flex-wrap gap-4 justify-center">
-                    <Link to="/impressum" className="hover:text-ivory transition-colors">Impressum</Link>
-                    <Link to="/datenschutz" className="hover:text-ivory transition-colors">Datenschutz</Link>
-                    <Link to="/agb" className="hover:text-ivory transition-colors">AGB</Link>
-                    <Link to="/widerruf" className="hover:text-ivory transition-colors">Widerruf</Link>
+            <div className="max-w-7xl mx-auto w-full pt-8 border-t border-ivory/10 flex flex-col gap-6">
+                <div className="flex flex-col sm:flex-row justify-between items-center gap-4 font-sans text-xs text-ivory/40">
+                    <p>© 2026 Elité Auto Aufbereitung. Alle Rechte vorbehalten.</p>
+                    <div className="flex flex-wrap gap-4 justify-center">
+                        <Link to="/impressum" className="hover:text-ivory transition-colors">Impressum</Link>
+                        <Link to="/datenschutz" className="hover:text-ivory transition-colors">Datenschutz</Link>
+                        <Link to="/agb" className="hover:text-ivory transition-colors">AGB</Link>
+                        <Link to="/widerruf" className="hover:text-ivory transition-colors">Widerruf</Link>
+                    </div>
                 </div>
+                <p className="text-center font-sans text-[11px] text-ivory/30">
+                    Webdesign von{' '}
+                    <a href="https://www.hmmr.digital/" target="_blank" rel="noreferrer" className="text-ivory/50 hover:text-champagne transition-colors font-medium">
+                        HMMR Digital
+                    </a>
+                </p>
             </div>
 
         </footer>
