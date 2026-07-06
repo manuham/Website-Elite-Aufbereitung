@@ -36,9 +36,22 @@ export function logUnansweredQuestion(q) {
 // Once GOOGLE_SERVICE_ACCOUNT_KEY / GOOGLE_CALENDAR_ID are configured on the
 // server, /api/book succeeds and this fallback is never used — no code change
 // needed to switch over.
-const MAKE_WEBHOOK_URL = 'https://hook.eu1.make.com/ugto7s564hkhy94gvh6ldgyjqgx7dn8x';
+//
+// SECURITY: a client-side webhook URL is inherently public (it ships in the
+// bundle), so it cannot be kept secret. It is read from an env var here so it is
+// not committed to source and can be rotated without a code change. The real
+// remediation is to retire this fallback once /api/book is confirmed live, and to
+// rotate + secure the Make scenario. If VITE_MAKE_WEBHOOK_URL is unset, the
+// fallback is disabled (submitViaMake throws) rather than shipping a hard-coded URL.
+const MAKE_WEBHOOK_URL = import.meta.env.VITE_MAKE_WEBHOOK_URL || '';
 
 async function submitViaMake(bookingData) {
+  if (!MAKE_WEBHOOK_URL) {
+    const err = new Error('Booking failed');
+    err.status = 503;
+    err.data = {};
+    throw err;
+  }
   const res = await fetch(MAKE_WEBHOOK_URL, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },

@@ -1,5 +1,6 @@
 import { google } from 'googleapis';
 import { loadServiceAccountCredentials } from './_lib/calendar.js';
+import { applyCors, enforceRateLimit } from './_lib/security.js';
 
 /*
     Collects questions the FAQ bot couldn't answer in a Google Sheet, so they
@@ -17,9 +18,14 @@ import { loadServiceAccountCredentials } from './_lib/calendar.js';
 const MAX_QUESTION_LENGTH = 300;
 
 export default async function handler(req, res) {
+  if (applyCors(req, res, 'POST, OPTIONS')) return;
+
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
   }
+
+  // Prevent spamming the review sheet / burning Google API quota.
+  if (enforceRateLimit(req, res, { name: 'faq-log', max: 20, windowMs: 60 * 60 * 1000 })) return;
 
   const sheetId = process.env.FAQ_LOG_SHEET_ID;
   if (!sheetId) {

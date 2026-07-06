@@ -1,7 +1,13 @@
+import { applyCors, enforceRateLimit } from './_lib/security.js';
+
 export default async function handler(req, res) {
+  if (applyCors(req, res, 'GET, OPTIONS')) return;
+
   if (req.method !== 'GET') {
     return res.status(405).json({ error: 'Method not allowed' });
   }
+
+  if (enforceRateLimit(req, res, { name: 'reviews', max: 120, windowMs: 60 * 1000 })) return;
 
   const { GOOGLE_PLACES_API_KEY, GOOGLE_PLACE_ID } = process.env;
 
