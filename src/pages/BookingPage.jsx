@@ -31,7 +31,8 @@ function mobilePackageSurchargeOf(items, serviceMode) {
 // Size-based Aufpreis applies to any package/service flagged `sizeSurcharge: true` in the data.
 // The set is DERIVED from that flag (single source of truth) so StepVehicle, Step4 and handleSubmit
 // stay in sync automatically — flip the flag in services.js and every surface follows.
-// Currently: Wash & Clean (tier-bronze), Deep Clean (tier-silber) & Leichte Politur (politur-0).
+// Applies to all full-car services (all tier packages, Handwäsche, Innenreinigung, Politur except
+// Spot/Scheinwerfer, Keramik, Verkauf). The per-unit Zusatzpakete add-ons stay surcharge-free.
 const SIZE_SURCHARGE_IDS = new Set([
     ...tierPackages.filter(p => p.sizeSurcharge).map(p => p.id),
     ...serviceCategories.flatMap(cat =>

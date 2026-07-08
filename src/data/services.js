@@ -55,6 +55,7 @@ export const tierPackages = [
         phoneOnly: true,
         subtitle: 'Silber + 2-stufige Politur & Beschichtungen',
         price: 'ab €890,-',
+        sizeSurcharge: true,
         durationDays: 2,
         mobilSurcharge: 65,
         headerStyle: { background: 'linear-gradient(135deg, #996515, #B8860B, #DAA520)' },
@@ -76,6 +77,7 @@ export const tierPackages = [
         name: 'Endstufe',
         subtitle: 'Das Ultimative. Kein Kompromiss.',
         price: 'ab €1.890,-',
+        sizeSurcharge: true,
         durationDays: 5,
         headerStyle: { background: 'linear-gradient(135deg, #064E3B, #047857, #4DB292)' },
         features: [
@@ -122,6 +124,7 @@ export const serviceCategories = [
                 name: "Basic Handwäsche",
                 price: "ab €75,-",
                 popular: false,
+                sizeSurcharge: true,
                 durationMin: 60,
                 mobilExtraMin: 30,
                 features: [
@@ -136,6 +139,7 @@ export const serviceCategories = [
                 name: "Premium Handwäsche",
                 price: "ab €115,-",
                 popular: true,
+                sizeSurcharge: true,
                 durationMin: 90,
                 mobilExtraMin: 30,
                 features: [
@@ -153,6 +157,7 @@ export const serviceCategories = [
                 name: "Premium + Basic Interieur",
                 price: "ab €175,-",
                 popular: false,
+                sizeSurcharge: true,
                 durationMin: 150,
                 mobilExtraMin: 30,
                 features: [
@@ -173,6 +178,7 @@ export const serviceCategories = [
                 name: "Basic Innenreinigung",
                 price: "ab €75,-",
                 popular: false,
+                sizeSurcharge: true,
                 durationMin: 90,
                 features: [
                     "Staubsaugen des Innenraums und der Automatten",
@@ -186,6 +192,7 @@ export const serviceCategories = [
                 name: "Premium Innenreinigung",
                 price: "ab €155,-",
                 popular: true,
+                sizeSurcharge: true,
                 durationMin: 150,
                 features: [
                     "Armaturenbrett und Mittelkonsole reinigen",
@@ -202,6 +209,7 @@ export const serviceCategories = [
                 name: "Ledersitz Beschichtung",
                 price: "ab €85,-",
                 popular: false,
+                sizeSurcharge: true,
                 durationMin: 60,
                 features: [
                     "Wasser- und schmutzabweisend",
@@ -240,6 +248,7 @@ export const serviceCategories = [
                 name: "Schwere Politur",
                 price: "ab €595,-",
                 popular: true,
+                sizeSurcharge: true,
                 phoneOnly: true,
                 durationDays: 1.5,
                 mobilSurcharge: 65,
@@ -290,6 +299,7 @@ export const serviceCategories = [
                 name: "Neuwagen Beschichtung",
                 price: "ab €795,-",
                 popular: false,
+                sizeSurcharge: true,
                 phoneOnly: true,
                 durationDays: 2,
                 features: [
@@ -308,6 +318,7 @@ export const serviceCategories = [
                 name: "Beschichtungspaket",
                 price: "ab €895,-",
                 popular: true,
+                sizeSurcharge: true,
                 phoneOnly: true,
                 durationDays: 3,
                 mobilSurcharge: 65,
@@ -327,6 +338,7 @@ export const serviceCategories = [
                 name: "Matt Beschichtung",
                 price: "ab €795,-",
                 popular: false,
+                sizeSurcharge: true,
                 phoneOnly: true,
                 durationDays: 2,
                 mobilSurcharge: 85,
@@ -352,6 +364,7 @@ export const serviceCategories = [
                 name: "Verkaufsaufbereitung / Leasingrückläufer",
                 price: "ab €295,-",
                 popular: true,
+                sizeSurcharge: true,
                 durationMin: 360,
                 mobilExtraMin: 60,
                 features: [
