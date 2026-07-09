@@ -160,12 +160,12 @@ export default function Datenschutz() {
                 <section className="flex flex-col gap-4">
                     <h2 className="font-sans font-bold text-sm uppercase tracking-widest text-ivory/50">11. Eingebundene Inhalte Dritter</h2>
                     <p className="text-ivory/70 leading-relaxed text-sm">
-                        Auf dieser Website werden keine YouTube-Videos direkt eingebettet. Stattdessen zeigen
-                        wir eine lokal gespeicherte Vorschaugrafik, die auf unser Video auf YouTube (Google LLC)
-                        verlinkt. Beim bloßen Aufrufen dieser Seite werden dadurch keine Daten an Google oder
-                        YouTube übertragen. Erst wenn Sie den Link anklicken und zu YouTube weitergeleitet
-                        werden, können Daten (z. B. Ihre IP-Adresse) an Google übertragen werden; es gelten dann
-                        die Datenschutzbestimmungen von Google.
+                        Diese Website bindet ein YouTube-Video (Google LLC) im erweiterten Datenschutzmodus
+                        (youtube-nocookie.com) ein. Beim Aufrufen der Seite wird zunächst nur eine lokal
+                        gespeicherte Vorschaugrafik geladen — dabei werden keine Daten an Google oder YouTube
+                        übertragen. Erst wenn Sie das Video durch Klick auf die Vorschau starten, wird die
+                        YouTube-Einbettung geladen und es können Daten (z. B. Ihre IP-Adresse) an Google
+                        übertragen werden; es gelten dann die Datenschutzbestimmungen von Google.
                     </p>
                     <p className="text-ivory/70 leading-relaxed text-sm">
                         Zur einheitlichen Darstellung von Schriftarten werden Google Fonts über die Server von

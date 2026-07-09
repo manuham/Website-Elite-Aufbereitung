@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
@@ -14,6 +14,7 @@ const YOUTUBE_VIDEO_ID = 'QrwdgrPwF4c';
 export default function Philosophy() {
     const containerRef = useRef(null);
     const textRef = useRef(null);
+    const [playing, setPlaying] = useState(false);
 
     useEffect(() => {
         const ctx = gsap.context(() => {
@@ -152,32 +153,40 @@ export default function Philosophy() {
                     ))}
                 </div>
 
-                {/* Showcase Video */}
-                <div className="reveal-text flex flex-col gap-3 w-full max-w-4xl">
-                    <a
-                        href={`https://www.youtube.com/watch?v=${YOUTUBE_VIDEO_ID}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        aria-label="Video ansehen: Elite Auto Aufbereitung Showcase (öffnet auf YouTube)"
-                        className="group relative block w-full aspect-video rounded-[2rem] overflow-hidden shadow-2xl border border-slate/40 bg-obsidian"
-                    >
-                        <img
-                            src="/assets/video-poster.jpg"
-                            alt="Elite Auto Aufbereitung Showcase"
-                            className="w-full h-full object-cover"
-                            loading="lazy"
+                {/* Showcase Video — poster loads first; the YouTube player is only
+                    fetched when the visitor clicks play (privacy-friendly Zwei-Klick). */}
+                <div className="reveal-text w-full max-w-4xl aspect-video rounded-[2rem] overflow-hidden shadow-2xl border border-slate/40 bg-obsidian">
+                    {playing ? (
+                        <iframe
+                            src={`https://www.youtube-nocookie.com/embed/${YOUTUBE_VIDEO_ID}?autoplay=1&rel=0`}
+                            title="Elite Auto Aufbereitung Showcase"
+                            className="w-full h-full"
+                            style={{ border: 'none' }}
+                            allow="autoplay; encrypted-media; picture-in-picture; fullscreen"
+                            allowFullScreen
                         />
-                        <div className="absolute inset-0 bg-obsidian/30 group-hover:bg-obsidian/40 transition-colors flex items-center justify-center">
-                            <span className="w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-ivory/90 flex items-center justify-center shadow-xl group-hover:scale-110 transition-transform duration-300">
-                                <svg viewBox="0 0 24 24" className="w-7 h-7 sm:w-8 sm:h-8 text-obsidian translate-x-0.5" fill="currentColor">
-                                    <path d="M8 5v14l11-7z" />
-                                </svg>
+                    ) : (
+                        <button
+                            type="button"
+                            onClick={() => setPlaying(true)}
+                            aria-label="Video abspielen: Elite Auto Aufbereitung Showcase"
+                            className="group relative block w-full h-full"
+                        >
+                            <img
+                                src="/assets/video-poster.jpg"
+                                alt="Elite Auto Aufbereitung Showcase"
+                                className="w-full h-full object-cover"
+                                loading="lazy"
+                            />
+                            <span className="absolute inset-0 bg-obsidian/30 group-hover:bg-obsidian/40 transition-colors flex items-center justify-center">
+                                <span className="w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-ivory/90 flex items-center justify-center shadow-xl group-hover:scale-110 transition-transform duration-300">
+                                    <svg viewBox="0 0 24 24" className="w-7 h-7 sm:w-8 sm:h-8 text-obsidian translate-x-0.5" fill="currentColor">
+                                        <path d="M8 5v14l11-7z" />
+                                    </svg>
+                                </span>
                             </span>
-                        </div>
-                    </a>
-                    <span className="text-xs text-ivory/40">
-                        Öffnet auf YouTube in einem neuen Tab
-                    </span>
+                        </button>
+                    )}
                 </div>
 
             </div>
