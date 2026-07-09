@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
@@ -14,7 +14,6 @@ const YOUTUBE_VIDEO_ID = 'QrwdgrPwF4c';
 export default function Philosophy() {
     const containerRef = useRef(null);
     const textRef = useRef(null);
-    const [thumbnailFailed, setThumbnailFailed] = useState(false);
 
     useEffect(() => {
         const ctx = gsap.context(() => {
@@ -162,15 +161,12 @@ export default function Philosophy() {
                         aria-label="Video ansehen: Elite Auto Aufbereitung Showcase (öffnet auf YouTube)"
                         className="group relative block w-full aspect-video rounded-[2rem] overflow-hidden shadow-2xl border border-slate/40 bg-obsidian"
                     >
-                        {!thumbnailFailed && (
-                            <img
-                                src={`https://i.ytimg.com/vi/${YOUTUBE_VIDEO_ID}/hqdefault.jpg`}
-                                alt="Elite Auto Aufbereitung Showcase"
-                                className="w-full h-full object-cover"
-                                loading="lazy"
-                                onError={() => setThumbnailFailed(true)}
-                            />
-                        )}
+                        <img
+                            src="/assets/video-poster.jpg"
+                            alt="Elite Auto Aufbereitung Showcase"
+                            className="w-full h-full object-cover"
+                            loading="lazy"
+                        />
                         <div className="absolute inset-0 bg-obsidian/30 group-hover:bg-obsidian/40 transition-colors flex items-center justify-center">
                             <span className="w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-ivory/90 flex items-center justify-center shadow-xl group-hover:scale-110 transition-transform duration-300">
                                 <svg viewBox="0 0 24 24" className="w-7 h-7 sm:w-8 sm:h-8 text-obsidian translate-x-0.5" fill="currentColor">
