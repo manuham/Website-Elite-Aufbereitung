@@ -21,12 +21,31 @@ sure the calendar he uses is in `GOOGLE_CALENDAR_ID` (either as the single conne
 or added to the comma-separated list) and shared with the service account.
 
 ## Make.com webhook (status: being phased out of the write path)
-- URL previously hard-coded in `src/lib/api.js`: `https://hook.eu1.make.com/ugto7s564hkhy94gvh6ldgyjqgx7dn8x`.
-- As of the double-booking fix, `submitBooking()` no longer calls it — bookings go through
-  `/api/book.js` instead.
+- **No longer hard-coded.** As of the security hardening, the URL is read from the
+  `VITE_MAKE_WEBHOOK_URL` env var in `src/lib/api.js`. If unset, the fallback is **disabled**
+  (`submitViaMake` throws) rather than shipping a public URL in the bundle.
+- The old hard-coded URL (`https://hook.eu1.make.com/ugto7s564hkhy94gvh6ldgyjqgx7dn8x`) is in
+  git history and should be treated as **compromised → rotate it**. A client-side webhook can
+  never be secret (it ships in the JS), so use a dedicated, rotatable URL and secure the scenario.
+- `submitBooking()` only uses this fallback when `/api/book` is unreachable or errors (never on 409).
 - ❓ OPEN: what does the Make.com scenario actually do (create a calendar event? notify?).
   Must be confirmed before deleting the scenario, to avoid losing notifications OR creating
   duplicate calendar events. See `open-questions.md`.
+
+## API security (added in the hardening pass)
+- Shared helper: `api/_lib/security.js` — CORS allowlisting, best-effort in-memory rate limiting,
+  and input validation/sanitisation. Imported by every function under `api/`.
+- **CORS** is no longer `*`. `vercel.json` sets only static security headers; each function reflects
+  an allow-listed origin via `applyCors()`. Allowlist defaults to the prod domain(s); override with
+  the `ALLOWED_ORIGINS` env var (comma-separated — add `http://localhost:5173` for local dev).
+- **Rate limits** (per-IP, per warm instance): book 8/h, faq-log 20/h, availability & reviews 120/min.
+  This is a soft mitigation; back it with Vercel KV / Upstash for a hard guarantee.
+- **Booking validation**: `/api/book` fully validates + length-caps every field server-side, strips
+  control chars (CRLF-injection), and drops any `photoUrls` not on our Cloudinary host. A hidden
+  `website` honeypot field silently rejects bots.
+- **Security headers** (`vercel.json`, all routes): CSP, `X-Content-Type-Options`, `X-Frame-Options: DENY`,
+  `Referrer-Policy`, `Permissions-Policy`, HSTS. The CSP allowlist must be updated if a new external
+  origin (font host, CDN, analytics) is added.
 
 ## Google Sheets (FAQ-bot unanswered-questions log)
 - `api/faq-log.js` appends questions the FAQ bot couldn't answer to a Google Sheet
@@ -56,6 +75,10 @@ or added to the comma-separated list) and shared with the service account.
   to the calendar event and the notification email.
 
 ## FormSubmit.co (email notification backup)
-- `BookingPage.jsx` handleSubmit sends a fire-and-forget email to
-  `info.eliteaufbereitung@gmail.com` with the full booking summary. Does not touch the
-  calendar — purely a notification.
+- **Now sent server-side** from `api/book.js` (`sendNotificationEmail`), fire-and-forget, **only
+  after** a validated + rate-limited booking succeeds. Previously it was an unauthenticated
+  client-side call (anyone could script it to flood the inbox) — that call has been removed.
+- Recipient is `NOTIFY_EMAIL` (defaults to `info.eliteaufbereitung@gmail.com`). Body reuses the
+  calendar event's summary/description. Does not touch the calendar — purely a notification.
+- Note: on the Make.com fallback path (`/api/book` unreachable) no server email is sent — the Make
+  scenario is expected to handle notification there.

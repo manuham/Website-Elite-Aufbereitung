@@ -21,6 +21,7 @@ const DAYS_SHORT = ['Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa', 'So'];
 const MONTHS = ['Januar', 'Februar', 'März', 'April', 'Mai', 'Juni',
     'Juli', 'August', 'September', 'Oktober', 'November', 'Dezember'];
 const MOBILE_SURCHARGE = 50;
+const MAX_PHOTO_BYTES = 10 * 1024 * 1024; // 10 MB per photo
 // Per-package Mobil-Aufpreis on top of the flat Anfahrtspauschale: the most equipment-intensive
 // package in the cart sets it (published €45–85). Max, not sum, so overlapping equipment for two
 // premium jobs isn't double-charged and the value stays within the advertised range.
@@ -844,7 +845,7 @@ function Step2({ datetime, setDatetime, onNext, onBack, serviceMode, selectedIte
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const PHONE_REGEX = /^[+\d][\d\s\-/]{6,}$/;
 
-function Step3({ contact, setContact, photos, setPhotos, photoPreviews, setPhotoPreviews, onSubmit, onBack, loading, uploadingPhotos, serviceMode }) {
+function Step3({ contact, setContact, honeypot, setHoneypot, photos, setPhotos, photoPreviews, setPhotoPreviews, onSubmit, onBack, loading, uploadingPhotos, serviceMode }) {
     const set = (key) => (e) => setContact(c => ({ ...c, [key]: e.target.value }));
 
     const nameValid = contact.name.trim().length >= 2;
@@ -858,7 +859,7 @@ function Step3({ contact, setContact, photos, setPhotos, photoPreviews, setPhoto
     const errorClass = "font-sans text-[11px] text-red-400 mt-1";
 
     const addPhotos = (files) => {
-        const imageFiles = files.filter(f => f.type.startsWith('image/'));
+        const imageFiles = files.filter(f => f.type.startsWith('image/') && f.size <= MAX_PHOTO_BYTES);
         const allowed = imageFiles.slice(0, 4 - photos.length);
         if (allowed.length === 0) return;
         setPhotos(prev => [...prev, ...allowed]);
@@ -875,6 +876,17 @@ function Step3({ contact, setContact, photos, setPhotos, photoPreviews, setPhoto
 
     return (
         <div className="flex flex-col gap-10 w-full">
+            {/* Honeypot: hidden from users, tempting to bots. A filled value → server drops the request. */}
+            <input
+                type="text"
+                name="website"
+                tabIndex={-1}
+                autoComplete="off"
+                aria-hidden="true"
+                value={honeypot}
+                onChange={(e) => setHoneypot(e.target.value)}
+                style={{ position: 'absolute', left: '-9999px', width: '1px', height: '1px', opacity: 0 }}
+            />
             <div>
                 <h2 className="font-drama italic text-4xl sm:text-5xl text-ivory mb-2">Ihre Kontaktdaten</h2>
                 <p className="font-sans text-sm text-ivory/50">Wir melden uns innerhalb von 24 Stunden zur Bestätigung.</p>
@@ -1169,6 +1181,7 @@ export default function BookingPage() {
     const [vehicleCategory, setVehicleCategory] = useState(null);
     const [datetime, setDatetime] = useState({ date: null, time: null });
     const [contact, setContact] = useState({ name: '', phone: '', email: '', notes: '', address: '' });
+    const [honeypot, setHoneypot] = useState(''); // spam trap — real users never fill this
     const [photos, setPhotos] = useState([]);
     const [photoPreviews, setPhotoPreviews] = useState([]);
     const [uploadingPhotos, setUploadingPhotos] = useState(false);
@@ -1307,12 +1320,15 @@ export default function BookingPage() {
         }
 
         try {
-            // Create Google Calendar event (primary booking action, with double-booking guard)
+            // Create Google Calendar event (primary booking action, with double-booking guard).
+            // The backup notification email is sent server-side by /api/book — only after a
+            // validated, rate-limited booking succeeds — so there is no client-side email call.
             await submitBooking({
                 date: isoDate,
                 time: datetime.time,
                 services: selectedItems,
                 contact,
+                website: honeypot, // spam trap; server silently rejects if non-empty
                 serviceMode,
                 location,
                 vehicleCategory: vehicleCategory?.name,
@@ -1325,31 +1341,6 @@ export default function BookingPage() {
                 multiDay: duration.multiDay,
                 spanDays: duration.spanDays,
             });
-
-            // Send email notification in parallel (fire-and-forget backup)
-            fetch('https://formsubmit.co/ajax/info.eliteaufbereitung@gmail.com', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
-                body: JSON.stringify({
-                    _subject: `${serviceMode === 'mobil' ? '[MOBIL] ' : ''}Terminanfrage: ${selectedItems.map(i => i.name).join(' + ')} — ${dateStr}`,
-                    _captcha: 'false',
-                    _template: 'table',
-                    'Service-Art': serviceMode === 'mobil' ? 'Mobiler Service' : 'Im Studio',
-                    ...(serviceMode === 'mobil' ? { Einsatzort: contact.address } : { Standort: STUDIO_ADDRESSES[studioLocation] || STUDIO_ADDRESSES.feldkirch }),
-                    Name: contact.name,
-                    Telefon: contact.phone,
-                    'E-Mail': contact.email,
-                    Fahrzeug: `${vehicleCategory?.name || '—'} (${aufpreisStr})`,
-                    Datum: dateStr,
-                    [duration.multiDay ? 'Zeitraum' : 'Uhrzeit']: terminLabel,
-                    Services: selectedItems.map(i => `${i.name} (${i.price})`).join(', '),
-                    ...(serviceMode === 'mobil' ? { Anfahrtspauschale: `+€${MOBILE_SURCHARGE},-` } : {}),
-                    ...(mobilePkgSurchargeVal > 0 ? { 'Mobil-Aufpreis (Premium-Paket)': `+€${mobilePkgSurchargeVal},-` } : {}),
-                    Gesamtsumme: totalStr,
-                    Anmerkungen: contact.notes || '—',
-                    Fahrzeugfotos: photoUrls.length > 0 ? photoUrls.join('\n') : '—',
-                }),
-            }).catch(() => {});
 
             animateStep(5);
         } catch (err) {
@@ -1396,7 +1387,7 @@ export default function BookingPage() {
                         {step === 3 && <Step2 datetime={datetime} setDatetime={setDatetime} onNext={() => animateStep(4)} onBack={() => animateStep(2)} serviceMode={serviceMode} selectedItems={selectedItems} />}
                         {step === 4 && (
                             <>
-                                <Step3 contact={contact} setContact={setContact} photos={photos} setPhotos={setPhotos} photoPreviews={photoPreviews} setPhotoPreviews={setPhotoPreviews} onSubmit={handleSubmit} onBack={() => animateStep(3)} loading={loading} uploadingPhotos={uploadingPhotos} serviceMode={serviceMode} />
+                                <Step3 contact={contact} setContact={setContact} honeypot={honeypot} setHoneypot={setHoneypot} photos={photos} setPhotos={setPhotos} photoPreviews={photoPreviews} setPhotoPreviews={setPhotoPreviews} onSubmit={handleSubmit} onBack={() => animateStep(3)} loading={loading} uploadingPhotos={uploadingPhotos} serviceMode={serviceMode} />
                                 {submitError && (
                                     <div className="mt-6 bg-red-500/10 border border-red-500/30 rounded-xl px-5 py-4 text-center">
                                         <p className="font-sans text-sm text-red-400">{submitError}</p>

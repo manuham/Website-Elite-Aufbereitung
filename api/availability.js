@@ -1,4 +1,5 @@
 import { getBusyForRange, WORKING_HOURS } from './_lib/calendar.js';
+import { applyCors, enforceRateLimit } from './_lib/security.js';
 
 const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
 
@@ -22,9 +23,14 @@ function fallbackDay(dateString) {
 }
 
 export default async function handler(req, res) {
+  if (applyCors(req, res, 'GET, OPTIONS')) return;
+
   if (req.method !== 'GET') {
     return res.status(405).json({ error: 'Method not allowed' });
   }
+
+  // Throttle to protect the Google free/busy quota from scraping/abuse.
+  if (enforceRateLimit(req, res, { name: 'availability', max: 120, windowMs: 60 * 1000 })) return;
 
   // Accept either ?date=YYYY-MM-DD (single day) or ?start=YYYY-MM-DD&days=N (range).
   const start = req.query.start || req.query.date;
