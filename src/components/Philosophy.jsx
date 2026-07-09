@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
@@ -9,9 +9,12 @@ const stats = [
     { value: '100%', label: 'Kundenzufriedenheit' },
 ];
 
+const YOUTUBE_VIDEO_ID = 'QrwdgrPwF4c';
+
 export default function Philosophy() {
     const containerRef = useRef(null);
     const textRef = useRef(null);
+    const [thumbnailFailed, setThumbnailFailed] = useState(false);
 
     useEffect(() => {
         const ctx = gsap.context(() => {
@@ -151,18 +154,34 @@ export default function Philosophy() {
                 </div>
 
                 {/* Showcase Video */}
-                <div className="reveal-text w-full max-w-4xl aspect-video rounded-[2rem] overflow-hidden shadow-2xl border border-slate/40 bg-obsidian">
-                    <iframe
-                        width="100%"
-                        height="100%"
-                        src="https://www.youtube-nocookie.com/embed/QrwdgrPwF4c?si=VzTS3_zS674CX_xt"
-                        title="Elite Auto Aufbereitung Showcase"
-                        style={{ border: 'none' }}
-                        allow="accelerometer; encrypted-media; gyroscope; picture-in-picture"
-                        allowFullScreen
-                        loading="lazy"
-                        className="w-full h-full"
-                    />
+                <div className="reveal-text flex flex-col gap-3 w-full max-w-4xl">
+                    <a
+                        href={`https://www.youtube.com/watch?v=${YOUTUBE_VIDEO_ID}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        aria-label="Video ansehen: Elite Auto Aufbereitung Showcase (öffnet auf YouTube)"
+                        className="group relative block w-full aspect-video rounded-[2rem] overflow-hidden shadow-2xl border border-slate/40 bg-obsidian"
+                    >
+                        {!thumbnailFailed && (
+                            <img
+                                src={`https://i.ytimg.com/vi/${YOUTUBE_VIDEO_ID}/hqdefault.jpg`}
+                                alt="Elite Auto Aufbereitung Showcase"
+                                className="w-full h-full object-cover"
+                                loading="lazy"
+                                onError={() => setThumbnailFailed(true)}
+                            />
+                        )}
+                        <div className="absolute inset-0 bg-obsidian/30 group-hover:bg-obsidian/40 transition-colors flex items-center justify-center">
+                            <span className="w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-ivory/90 flex items-center justify-center shadow-xl group-hover:scale-110 transition-transform duration-300">
+                                <svg viewBox="0 0 24 24" className="w-7 h-7 sm:w-8 sm:h-8 text-obsidian translate-x-0.5" fill="currentColor">
+                                    <path d="M8 5v14l11-7z" />
+                                </svg>
+                            </span>
+                        </div>
+                    </a>
+                    <span className="text-xs text-ivory/40">
+                        Öffnet auf YouTube in einem neuen Tab
+                    </span>
                 </div>
 
             </div>
