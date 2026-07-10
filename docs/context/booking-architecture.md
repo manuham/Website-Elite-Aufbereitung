@@ -14,8 +14,11 @@ Step2 Date & time → Step3 Contact + photos → Step4 Confirmation.
 `VEHICLE_CATEGORIES` (`BookingPage.jsx`) carries `aufpreis` per size: Kleinwagen 0, Kompakt 55,
 Mittelklasse 75, SUV 95, Großfahrzeuge `null` ("auf Anfrage"). The size Aufpreis applies **only**
 when the cart contains a service/package flagged `sizeSurcharge: true` in `src/data/services.js` —
-currently *Wash & Clean* (`tier-bronze`), *Deep Clean* (`tier-silber`) & *Leichte Politur*
-(`politur-0`). `SIZE_SURCHARGE_IDS` in `BookingPage.jsx` is **derived from that flag** (single source
+currently every full-car service flagged `sizeSurcharge: true`: all All-in-One tiers, all Handwäsche
+& Innenreinigung, *Leichte* & *Schwere Politur*, all Keramik coatings, and *Verkaufsaufbereitung*
+(`verkauf-0`) — but **not** *Spot-Politur* (`politur-2`), *Scheinwerfer* (`politur-3`), or the
+Zusatzpakete add-ons. The size Aufpreis is a flat amount charged **once per booking** (not per line
+item). `SIZE_SURCHARGE_IDS` in `BookingPage.jsx` is **derived from that flag** (single source
 of truth), so flipping the flag in the data updates every surface at once. For every other selection
 no size surcharge is added (the step still asks for the size so the operator knows the vehicle). The
 gate is recomputed identically in `StepVehicle`, `handleSubmit`, and the `Step4` confirmation.
