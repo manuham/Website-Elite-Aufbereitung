@@ -133,11 +133,47 @@ function busyMinutesForDay(dateString, busyInstants) {
 }
 
 /**
+ * Validate a free/busy response and flatten the busy instants across every requested calendar.
+ *
+ * Throws rather than returning partial data. Google returns, per calendar, EITHER `busy` OR an
+ * `errors` array (notFound / forbidden / …). Reading only `.busy` degrades an unreachable calendar
+ * to "no busy times" = completely free — which makes availability advertise every slot and makes
+ * book.js's double-booking guard pass everything. A partial free/busy picture is worse than an
+ * error, so callers get an error.
+ *
+ * An error-free entry with no `busy` key means "nothing booked", not a failure — Google omits
+ * empty arrays. Throwing on that would flag every quiet day as an outage.
+ *
+ * NOTE: calendar IDs appear in the message. Both callers only console.error it and return a fixed
+ * message (availability.js, book.js) — the text never reaches the client. Keep it that way.
+ */
+export function collectBusyInstants(calendars, ids) {
+  if (!ids.length) throw new Error('GOOGLE_CALENDAR_ID is not set — no calendars to query');
+
+  const cals = calendars || {};
+  const problems = [];
+  for (const id of ids) {
+    const entry = cals[id];
+    if (!entry) {
+      problems.push(`${id}: missing from free/busy response`);
+    } else if (entry.errors?.length) {
+      problems.push(`${id}: ${entry.errors.map((e) => e.reason || 'unknown').join(', ')}`);
+    }
+  }
+  if (problems.length) throw new Error(`Free/busy unavailable — ${problems.join('; ')}`);
+
+  return ids.flatMap((id) => cals[id].busy || []);
+}
+
+/**
  * Busy intervals for `days` consecutive days from `startDateString`.
  * One free/busy call across all connected calendars.
  * @returns array of { date, closed, open, close, busy: [[startMin,endMin],…] }
  */
 export async function getBusyForRange(startDateString, days) {
+  // Fail before spending an auth + network round trip on a query that cannot answer anything.
+  if (!CALENDAR_IDS.length) throw new Error('GOOGLE_CALENDAR_ID is not set — no calendars to query');
+
   const auth = getAuthClient();
   const calendar = google.calendar({ version: 'v3', auth });
 
@@ -147,8 +183,7 @@ export async function getBusyForRange(startDateString, days) {
   const resp = await calendar.freebusy.query({
     requestBody: { timeMin, timeMax, timeZone: TZ, items: CALENDAR_IDS.map((id) => ({ id })) },
   });
-  const cals = resp.data.calendars || {};
-  const busyInstants = CALENDAR_IDS.flatMap((id) => cals[id]?.busy || []);
+  const busyInstants = collectBusyInstants(resp.data.calendars, CALENDAR_IDS);
 
   return Array.from({ length: days }, (_, i) => busyMinutesForDay(addDaysStr(startDateString, i), busyInstants));
 }
@@ -188,6 +223,9 @@ export async function createBookingEvent({
   serviceMode, location, vehicleCategory, vehicleAufpreis, mobileSurcharge, mobilePackageSurcharge, totalStr, photoUrls,
   durationMin, multiDay, spanDays,
 }) {
+  // Without this, events.insert is called with calendarId: undefined and fails opaquely.
+  if (!PRIMARY_CALENDAR_ID) throw new Error('GOOGLE_CALENDAR_ID is not set — cannot write bookings');
+
   const auth = getAuthClient();
   const calendar = google.calendar({ version: 'v3', auth });
 
