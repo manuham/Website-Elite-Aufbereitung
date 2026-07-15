@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import gsap from 'gsap';
-import { googleReviews } from '../data/reviews';
+import { deriveReviewsState, buildMarqueeTrack } from '../lib/reviewsState';
 import SplitText from './SplitText';
 
 function GoogleLogo({ className = 'w-5 h-5' }) {
@@ -49,9 +49,11 @@ function ReviewCard({ review }) {
                 {review.text}
             </p>
 
-            <span className="font-sans text-xs text-ivory/40 mt-auto">
-                {review.timeAgo}
-            </span>
+            {review.timeAgo && (
+                <span className="font-sans text-xs text-ivory/40 mt-auto">
+                    {review.timeAgo}
+                </span>
+            )}
         </div>
     );
 }
@@ -78,39 +80,22 @@ function SkeletonCard() {
 
 export default function GoogleReviews() {
     const containerRef = useRef(null);
-    const [reviews, setReviews] = useState([]);
-    const [overallRating, setOverallRating] = useState(5);
-    const [totalCount, setTotalCount] = useState(null);
+    // rating/total stay null until real Google data arrives — never seeded with a plausible
+    // guess, because a seeded value renders as a factual claim about Google's data.
+    const [state, setState] = useState({ isLive: false, reviews: [], rating: null, total: null });
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         async function fetchReviews() {
             try {
                 const res = await fetch('/api/reviews');
-                if (!res.ok) throw new Error('API error');
-                const data = await res.json();
-
-                const mapped = (data.reviews || [])
-                    .filter((r) => r.rating >= 4)
-                    .map((r) => ({
-                        name: r.author_name && r.author_name.includes(' ')
-                            ? `${r.author_name.split(' ')[0]} ${r.author_name.split(' ').slice(-1)[0][0]}.`
-                            : r.author_name || 'Anonym',
-                        rating: r.rating,
-                        text: r.text,
-                        timeAgo: r.relative_time_description,
-                    }));
-
-                if (mapped.length > 0) {
-                    setReviews(mapped);
-                } else {
-                    setReviews(googleReviews);
-                }
-
-                if (data.rating) setOverallRating(data.rating);
-                if (data.total) setTotalCount(data.total);
-            } catch {
-                setReviews(googleReviews);
+                if (!res.ok) throw new Error(`/api/reviews responded ${res.status}`);
+                setState(deriveReviewsState(await res.json()));
+            } catch (err) {
+                // Browser console, not Vercel logs — this is a client component. The
+                // server-side counterpart lives in api/reviews.js.
+                console.error('Google reviews unavailable, showing curated testimonials:', err);
+                setState(deriveReviewsState(null));
             } finally {
                 setLoading(false);
             }
@@ -159,7 +144,7 @@ export default function GoogleReviews() {
 
     const displayReviews = loading
         ? Array(3).fill(null)
-        : [...reviews, ...reviews];
+        : buildMarqueeTrack(state.reviews);
 
     return (
         <section
@@ -185,16 +170,25 @@ export default function GoogleReviews() {
                         <span className="underline-draw bg-champagne" />
                     </span>
                 </h2>
-                <div className="flex items-center gap-2 mt-2">
-                    <StarRating rating={Math.round(overallRating)} />
-                    <span className="font-mono text-sm text-ivory/60">
-                        {overallRating.toFixed(1)} Sterne
-                    </span>
-                    <span className="text-ivory/30">|</span>
-                    <span className="font-sans text-sm text-ivory/60">
-                        {totalCount ? `${totalCount}` : '30'} Bewertungen
-                    </span>
-                </div>
+                {/* Only rendered when the numbers actually came from Google. Never seeded, never
+                    defaulted: an unsourced rating under a Google logo is a claim about Google's
+                    data, not a placeholder. No data -> no row. */}
+                {state.rating !== null && (
+                    <div className="flex items-center gap-2 mt-2">
+                        <StarRating rating={Math.round(state.rating)} />
+                        <span className="font-mono text-sm text-ivory/60">
+                            {state.rating.toFixed(1)} Sterne
+                        </span>
+                        {state.total !== null && (
+                            <>
+                                <span className="text-ivory/30">|</span>
+                                <span className="font-sans text-sm text-ivory/60">
+                                    {state.total} Bewertungen
+                                </span>
+                            </>
+                        )}
+                    </div>
+                )}
             </div>
 
             <div className="reviews-marquee-wrapper relative group">

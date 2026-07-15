@@ -12,6 +12,14 @@ export default async function handler(req, res) {
   const { GOOGLE_PLACES_API_KEY, GOOGLE_PLACE_ID } = process.env;
 
   if (!GOOGLE_PLACES_API_KEY || !GOOGLE_PLACE_ID) {
+    // This 500 used to return silently, so the reviews section fell back to curated
+    // testimonials and looked perfect while the endpoint had never once succeeded.
+    // Name the missing vars: this is the log that would have caught it.
+    const missing = [
+      !GOOGLE_PLACES_API_KEY && 'GOOGLE_PLACES_API_KEY',
+      !GOOGLE_PLACE_ID && 'GOOGLE_PLACE_ID',
+    ].filter(Boolean);
+    console.error(`Reviews API misconfigured — not set in this environment: ${missing.join(', ')}`);
     return res.status(500).json({ error: 'Missing Google Places configuration' });
   }
 
