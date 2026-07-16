@@ -30,6 +30,10 @@ export const WORKDAY_MIN = 600;    // bookable minutes in a full weekday (Mo–F
 export const DROPOFF_BY = '09:00'; // multi-day drop-off
 export const PICKUP_FROM = '16:00'; // multi-day pickup (last day)
 
+/** Days of availability loaded in one range. MUST equal the clamp in api/availability.js
+ *  (the two files share no import; `scheduling.test.js` pins them together). */
+export const HORIZON_DAYS = 56;
+
 // ── date helpers ──────────────────────────────────────────────────────────
 export function startOfDay(d) { const x = new Date(d); x.setHours(0, 0, 0, 0); return x; }
 export function addDays(d, n) { const x = new Date(d); x.setDate(x.getDate() + n); return x; }
@@ -92,6 +96,7 @@ export function multiDayTerms(serviceMode) {
     startTime: mobil ? `ab ${DROPOFF_BY}` : `bis ${DROPOFF_BY}`,
     endTime: mobil ? `bis ${PICKUP_FROM}` : `ab ${PICKUP_FROM}`,
     chooseDay: mobil ? 'Starttag' : 'Abgabetag',
+    chooseDayPlural: mobil ? 'Starttage' : 'Abgabetage',
     stayPrefix,
     staySuffix,
     stay: (days) => `${stayPrefix}${days}${staySuffix}`,
@@ -133,9 +138,10 @@ export function computeBookingDuration(selectedItems, serviceMode) {
  * Compute the same-day plan for a given duration.
  * @param date  Date of the column
  * @param durMin  effective duration in minutes
- * @param busy  array of [startMin, endMin] busy intervals for that day
+ * @param busy  array of [startMin, endMin] busy intervals for that day, or null/undefined when
+ *              the day is not covered by loaded data (see makeAvailability)
  * @param now   "current" Date (for past shading / earliest start)
- * @returns { closed, fullyPast, busy, free:[{start,end}], past:[s,e]|null, open, close }
+ * @returns { closed, fullyPast, unknown, busy, free:[{start,end}], past:[s,e]|null, open, close }
  */
 export function sameDayPlan(date, durMin, busy, now) {
   const wh = HOURS[date.getDay()];
@@ -148,7 +154,12 @@ export function sameDayPlan(date, durMin, busy, now) {
 
   if (isPast) return { closed: false, fullyPast: true, busy: [], free: [], past: [open, close], open, close };
 
-  const intervals = (busy || []).slice().sort((a, b) => a[0] - b[0]);
+  // Not covered by loaded data (never fetched, or a fallback skeleton). Unknown is NOT free — pack
+  // nothing rather than invent a wide-open day. Checked after closed/past so those stay derivable
+  // from the rules alone and an unfetched Sunday reports "closed", not "unknown".
+  if (busy == null) return { closed: false, unknown: true, busy: [], free: [], past: null, open, close };
+
+  const intervals = busy.slice().sort((a, b) => a[0] - b[0]);
 
   // No (or invalid) duration → nothing to pack. Guards against an infinite loop.
   if (!durMin || durMin <= 0) return { closed: false, busy: intervals, free: [], past: null, open, close };
@@ -196,7 +207,109 @@ export function sameDayPlan(date, durMin, busy, now) {
 /** Number of free same-day starts for a duration (for the mobile day-pill dots). */
 export function freeStartCount(date, durMin, busy, now) {
   const p = sameDayPlan(date, durMin, busy, now);
-  return p.closed || p.fullyPast ? 0 : p.free.length;
+  return (p.closed || p.fullyPast || p.unknown) ? 0 : p.free.length;
+}
+
+// ── availability coverage: "unknown" is not "free" ──────────────────────────
+/**
+ * Wrap the raw busy map in something that can say "I have no data for this day".
+ *
+ * `busyByIso[iso]` missing and `busyByIso[iso] === []` are otherwise indistinguishable under
+ * `|| []`: "never fetched" and "fetched, nothing booked" both read as free. That is how a
+ * multi-day span reaching past the loaded range got offered without ever being checked — the
+ * server then rejects it with a 409 at the end of the funnel.
+ *
+ * Key presence is the signal: /api/availability writes a key for every day it returns, including
+ * closed ones. Nothing below ever infers freedom from absence.
+ *
+ * @param busyByIso  { 'YYYY-MM-DD': [[startMin,endMin], …] }
+ * @param opts.trusted  false when the API returned fallback:true. That response is a fabricated
+ *   working-hours skeleton (`busy: []` for every day) built without reaching Google, so every day
+ *   in it is unknown — repeating it back as availability would invent appointments out of an outage.
+ */
+export function makeAvailability(busyByIso, opts = {}) {
+  const map = busyByIso || {};
+  const { trusted = true } = opts;
+  const known = trusted ? new Set(Object.keys(map)) : new Set();
+  return {
+    known,
+    isKnown: (d) => known.has(isoKey(d)),
+    busy: (d) => (known.has(isoKey(d)) ? (map[isoKey(d)] || []) : null),   // null ⇒ unknown
+  };
+}
+
+/** Why a day is or isn't offerable. CLOSED/PAST/TOO_SOON follow from the rules alone — no data needed. */
+export const DAY = {
+  CLOSED: 'closed',      // structural: So (and Sa for multi-day). Never bookable, at any duration.
+  PAST: 'past',          // before today, or today's remaining hours can no longer host the job.
+  TOO_SOON: 'too_soon',  // multi-day cannot start today.
+  UNKNOWN: 'unknown',    // not covered by loaded data, or covered only by a fallback skeleton.
+  FULL: 'full',          // known, open, zero starts fit.
+  FREE: 'free',          // known, open, ≥1 start.
+};
+
+/**
+ * Status of one day for the whole booking (either shape).
+ * @param duration  the result of computeBookingDuration()
+ * @param avail     the result of makeAvailability()
+ * @returns {{date, iso, status, freeCount, free:[{start,end}], plan, span}}
+ */
+export function dayStatus(date, duration, avail, now) {
+  const iso = isoKey(date);
+  if (duration.multiDay) {
+    const status = multiDayStartState(date, duration.spanDays, avail, now);
+    return {
+      date, iso, status,
+      freeCount: status === DAY.FREE ? 1 : 0,
+      free: [], plan: null,
+      span: status === DAY.FREE ? workingSpan(date, duration.spanDays) : null,
+    };
+  }
+  const plan = sameDayPlan(date, duration.durationMin, avail.busy(date), now);
+  let status;
+  if (plan.closed) status = DAY.CLOSED;
+  else if (plan.fullyPast) status = DAY.PAST;
+  else if (plan.unknown) status = DAY.UNKNOWN;
+  else if (plan.free.length > 0) status = DAY.FREE;
+  // Today, and the clock alone rules it out: the earliest start we could still offer
+  // (plan.past[1]) leaves less than the job needs before closing. Busy intervals are
+  // irrelevant here — nothing would fit even on an empty day.
+  else if (plan.past && plan.past[1] + duration.durationMin > plan.close) status = DAY.PAST;
+  else status = DAY.FULL;
+  return { date, iso, status, freeCount: plan.free.length, free: plan.free, plan, span: null };
+}
+
+/** Can a same-day job of `durMin` still be squeezed onto `date`? Coverage-aware. */
+export function sameDayStartState(date, durMin, avail, now) {
+  return dayStatus(date, { multiDay: false, durationMin: durMin, spanDays: null }, avail, now).status;
+}
+
+/** Does one day of a multi-day span have room for the car? Loosened in stage 3. */
+function spanDayFree(busy) {
+  return busy.length === 0;
+}
+
+/**
+ * Status of `date` as a multi-day drop-off start: a future working day (not today) whose every
+ * working span day is free of bookings.
+ *
+ * A definite FULL outranks UNKNOWN: if day 2 of the span is booked, the span is unbookable whether
+ * or not day 3 was ever loaded. Only an otherwise-clean span with a gap in coverage is UNKNOWN.
+ */
+export function multiDayStartState(date, count, avail, now) {
+  const base = startOfDay(date);
+  const today0 = startOfDay(now);
+  if (base < today0) return DAY.PAST;
+  if (!isMultiDayDay(base)) return DAY.CLOSED;
+  if (sameDay(base, today0)) return DAY.TOO_SOON;
+
+  let unknown = false;
+  for (const d of workingSpan(base, count)) {
+    const busy = avail.busy(d);
+    if (busy == null) { unknown = true; continue; }
+    if (!spanDayFree(busy)) return DAY.FULL;
+  }
+  return unknown ? DAY.UNKNOWN : DAY.FREE;
 }
 
 // ── multi-day span ──────────────────────────────────────────────────────────
@@ -214,18 +327,10 @@ export function workingSpan(date, count) {
 }
 
 /**
- * Whether `date` is a valid multi-day drop-off start: a future working day
- * (not today), where every working day in the span is free of bookings.
- * @param busyByIso  map of isoKey to busy intervals array
+ * Whether `date` is a valid multi-day drop-off start — i.e. we positively know the span is free.
+ * UNKNOWN is not free, so a span reaching past the loaded range is refused, not offered.
+ * @param avail  the result of makeAvailability()
  */
-export function multiDayStartFree(date, count, busyByIso, now) {
-  const base = startOfDay(date);
-  const today0 = startOfDay(now);
-  if (base < today0 || !isMultiDayDay(base)) return false;
-  if (sameDay(base, today0)) return false; // can't start a multi-day job same day
-  const span = workingSpan(base, count);
-  return span.every(d => {
-    const b = busyByIso ? busyByIso[isoKey(d)] : null;
-    return !b || b.length === 0;
-  });
+export function multiDayStartFree(date, count, avail, now) {
+  return multiDayStartState(date, count, avail, now) === DAY.FREE;
 }

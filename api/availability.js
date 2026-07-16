@@ -33,8 +33,12 @@ export default async function handler(req, res) {
   if (enforceRateLimit(req, res, { name: 'availability', max: 120, windowMs: 60 * 1000 })) return;
 
   // Accept either ?date=YYYY-MM-DD (single day) or ?start=YYYY-MM-DD&days=N (range).
+  // The cap mirrors HORIZON_DAYS in src/lib/scheduling.js (pinned by scheduling.test.js).
+  // A wider range costs no more Google quota than a narrow one: getBusyForRange issues exactly
+  // one freebusy.query whatever the span, so one 56-day call replaces the client's old
+  // one-call-per-week-arrow. Google's freeBusy accepts ranges up to ~3 months.
   const start = req.query.start || req.query.date;
-  const days = Math.min(Math.max(parseInt(req.query.days, 10) || 1, 1), 21);
+  const days = Math.min(Math.max(parseInt(req.query.days, 10) || 1, 1), 56);
 
   if (!start || !DATE_RE.test(start)) {
     return res.status(400).json({ error: 'Invalid date format. Use YYYY-MM-DD.' });

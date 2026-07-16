@@ -4,12 +4,12 @@ import { Check, ChevronLeft, ChevronRight, ChevronDown, ArrowLeft, Phone, Mail, 
 import gsap from 'gsap';
 import { serviceCategories, tierPackages, allInOnePackages } from '../data/services';
 import { useRecommendations } from '../hooks/useRecommendations';
-import { useWeekAvailability } from '../hooks/useWeekAvailability';
+import { useAvailability } from '../hooks/useAvailability';
 import { submitBooking } from '../lib/api';
 import { summarizePhotoUploads } from '../lib/photoUploads';
 import {
-    computeBookingDuration, weekDays, weekStartMonday, addDays, workingSpan,
-    sameDayPlan, multiDayStartFree, isoKey, minToTime, durLabel, daysLabel, germanFull,
+    computeBookingDuration, weekDays, weekStartMonday, addDays, startOfDay, workingSpan,
+    sameDayPlan, multiDayStartState, DAY, HORIZON_DAYS, minToTime, durLabel, daysLabel, germanFull,
     multiDayTerms,
 } from '../lib/scheduling';
 import RecommendationPanel from '../components/booking/RecommendationPanel';
@@ -697,14 +697,25 @@ function StepVehicle({ vehicleCategory, setVehicleCategory, selectedItems, onNex
 // ─── Step 3: Date & Time ──────────────────────────────────────────────────────
 
 function Step2({ datetime, setDatetime, onNext, onBack, serviceMode, selectedItems }) {
-    const now = useMemo(() => new Date(), []);
+    // `now` must not be frozen at mount: a tab left open past midnight would anchor the horizon to
+    // yesterday and keep shading today as past. Tick on the poll interval, but bucket to the minute
+    // so everything downstream memoises on a stable key instead of a per-tick Date identity.
+    // Truncating to the minute is exact for scheduling — sameDayPlan only reads hours + minutes.
+    const [nowTick, setNowTick] = useState(() => Date.now());
+    useEffect(() => {
+        const id = setInterval(() => setNowTick(Date.now()), 30_000);
+        return () => clearInterval(id);
+    }, []);
+    const nowKey = Math.floor(nowTick / 60_000);
+    const now = useMemo(() => new Date(nowKey * 60_000), [nowKey]);
+
     const duration = useMemo(() => computeBookingDuration(selectedItems, serviceMode), [selectedItems, serviceMode]);
     const durKey = duration.multiDay ? `m${duration.spanDays}` : `s${duration.durationMin}`;
 
     const currentWeekStart = useMemo(() => weekStartMonday(now), [now]);
-    const [weekStart, setWeekStart] = useState(() => weekStartMonday(datetime.date || now));
+    const [weekStart, setWeekStart] = useState(() => weekStartMonday(datetime.date || new Date()));
     const [isMobile, setIsMobile] = useState(typeof window !== 'undefined' && window.innerWidth < 768);
-    const [ghostWarning, setGhostWarning] = useState(false);
+    const [ghostWarning, setGhostWarning] = useState(null);
     const prevDurKey = useRef(durKey);
 
     useEffect(() => {
@@ -714,24 +725,35 @@ function Step2({ datetime, setDatetime, onNext, onBack, serviceMode, selectedIte
     }, []);
 
     const week = useMemo(() => weekDays(weekStart), [weekStart]);
-    const { busyByIso, loading, isFallback } = useWeekAvailability(weekStart, 7, true);
 
+    // One horizon anchored on today, not on the visible week: week nav is then pure client-side
+    // slicing over data we already hold, instead of a fetch per arrow press.
+    const horizonStart = useMemo(() => startOfDay(now), [now]);
+    const { avail, loading, hasLoaded, isFallback, isStale } = useAvailability(horizonStart, HORIZON_DAYS, true);
+
+    // Last week we hold data for. Forward paging used to be unbounded — you could page into 2027,
+    // firing a fetch per press, and every day out there rendered as free.
+    const lastWeekStart = useMemo(
+        () => weekStartMonday(addDays(horizonStart, HORIZON_DAYS - 1)),
+        [horizonStart],
+    );
     const canPrev = weekStart > currentWeekStart;
+    const canNext = weekStart < lastWeekStart;
     const goPrev = () => { if (canPrev) setWeekStart(w => addDays(w, -7)); };
-    const goNext = () => setWeekStart(w => addDays(w, 7));
+    const goNext = () => { if (canNext) setWeekStart(w => addDays(w, 7)); };
     const goToday = () => setWeekStart(currentWeekStart);
 
     const selectSameDay = (date, time) => {
-        setGhostWarning(false);
+        setGhostWarning(null);
         setDatetime(dt => ({ ...dt, date, time, multiDay: false, spanDays: null, endDate: null }));
     };
     const selectMultiDay = (date) => {
-        setGhostWarning(false);
+        setGhostWarning(null);
         const span = workingSpan(date, duration.spanDays);
         setDatetime(dt => ({ ...dt, date, time: null, multiDay: true, spanDays: duration.spanDays, endDate: span[span.length - 1] || date }));
     };
     const clearPick = () => {
-        setGhostWarning(false);
+        setGhostWarning(null);
         setDatetime(dt => ({ ...dt, date: null, time: null, multiDay: duration.multiDay, spanDays: null, endDate: null }));
     };
 
@@ -743,28 +765,56 @@ function Step2({ datetime, setDatetime, onNext, onBack, serviceMode, selectedIte
         }
     }, [durKey, duration.multiDay, setDatetime]);
 
-    // Ghost-booking guard: if a poll shows the pick is no longer available, clear + warn.
+    // Ghost-booking guard: a poll showing the pick is gone clears it and says why.
+    //
+    // Gates on COVERAGE, never on `loading`. React 18 batches the hook's setBusyByIso with its
+    // setLoading(false), so `loading` was already false in the very commit the new map landed —
+    // the old `if (loading) return` never guarded anything. The pick used to survive a week change
+    // only because an unfetched day read as free; now that unknown is honest, the guard has to be
+    // explicit or it would clear valid picks with a false "soeben vergeben".
+    //
+    // Only a definite FULL clears. UNKNOWN must not: during a Google outage every day is unknown,
+    // and clearing on that would wipe every in-flight pick site-wide over a server hiccup.
     useEffect(() => {
-        if (loading || !datetime.date) return;
+        if (!datetime.date) return;
         if (duration.multiDay) {
-            if (!multiDayStartFree(datetime.date, duration.spanDays, busyByIso, now)) {
-                setGhostWarning(true);
+            if (multiDayStartState(datetime.date, duration.spanDays, avail, now) === DAY.FULL) {
+                setGhostWarning({ reason: 'multiday' });
                 setDatetime(dt => ({ ...dt, date: null, time: null }));
             }
         } else if (datetime.time) {
-            const plan = sameDayPlan(datetime.date, duration.durationMin, busyByIso[isoKey(datetime.date)] || [], now);
+            if (!avail.isKnown(datetime.date)) return;
+            const plan = sameDayPlan(datetime.date, duration.durationMin, avail.busy(datetime.date), now);
             if (!plan.free.some(b => minToTime(b.start) === datetime.time)) {
-                setGhostWarning(true);
+                setGhostWarning({
+                    reason: plan.free.length === 0 ? 'day-full' : 'time-taken',
+                    day: germanFull(datetime.date),
+                });
                 setDatetime(dt => ({ ...dt, time: null }));
             }
         }
-    }, [busyByIso]); // eslint-disable-line react-hooks/exhaustive-deps
+    }, [avail, datetime.date, datetime.time, duration, now, setDatetime]);
 
     const ready = duration.multiDay
         ? (!!datetime.date && datetime.multiDay === true && !!datetime.endDate)
         : (!!datetime.date && !!datetime.time);
 
     const terms = multiDayTerms(serviceMode);
+
+    // Split by cause. "Dieser Termin wurde soeben vergeben" was wrong for the commonest case —
+    // usually only the one time slot went, and the day still has others. Vocabulary: a whole day is
+    // "ausgebucht", a single interval is "belegt". The multi-day wording comes from multiDayTerms
+    // (mobil says Starttag, studio says Abgabetag) — never hardcode it here.
+    const ghostText = useMemo(() => {
+        if (!ghostWarning) return null;
+        if (ghostWarning.reason === 'time-taken') {
+            return 'Diese Uhrzeit wurde soeben vergeben. Bitte wählen Sie eine andere.';
+        }
+        if (ghostWarning.reason === 'day-full') {
+            return `Dieser Termin wurde soeben vergeben — der ${ghostWarning.day} ist jetzt ausgebucht. Bitte wählen Sie einen anderen Tag.`;
+        }
+        return `Dieser ${terms.chooseDay} ist nicht mehr verfügbar — in Ihrem Zeitraum wurde inzwischen ein Termin vergeben. Bitte wählen Sie einen anderen ${terms.chooseDay}.`;
+    }, [ghostWarning, terms]);
 
     let summary = null;
     if (duration.multiDay && datetime.date) {
@@ -779,6 +829,9 @@ function Step2({ datetime, setDatetime, onNext, onBack, serviceMode, selectedIte
         ? `${terms.stay(daysLabel(duration.spanDays))} — wählen Sie einen ${terms.chooseDay}.`
         : `Dauer ca. ${durLabel(duration.durationMin)} — wählen Sie einen freien Termin.`;
 
+    const noData = !loading && (isFallback || (isStale && !hasLoaded));
+    const showStale = isStale && hasLoaded && !isFallback;
+
     return (
         <div className="flex flex-col gap-8 w-full">
             <div>
@@ -786,34 +839,55 @@ function Step2({ datetime, setDatetime, onNext, onBack, serviceMode, selectedIte
                 <p className="font-sans text-sm text-ivory/50">{subline}</p>
             </div>
 
+            {/* Notices sit ABOVE the picker: they change the meaning of everything below them, and
+                under the fold on a phone they go unread.
+
+                Two different failures, two different messages. `noData`: we hold nothing we can
+                stand behind — either the server could not reach Google and fabricated an all-free
+                skeleton, or the very first fetch failed. Either way the calendar below shows no
+                slots, so "wir bestätigen Ihren Wunschtermin" would be meaningless; offer the phone.
+                `showStale`: a poll failed but the data we already hold is real, just older — the
+                calendar still works, so keep the softer original wording. */}
+            {noData && (
+                <div className="px-4 py-3 rounded-xl bg-amber-500/10 border border-amber-500/30" role="status">
+                    <p className="font-sans text-xs text-amber-300/90 text-center leading-relaxed">
+                        <strong className="text-amber-200">Live-Verfügbarkeit gerade nicht abrufbar.</strong>{' '}
+                        Wir zeigen Ihnen lieber keine Termine als falsche — rufen Sie uns an, wir haben
+                        den Kalender vor uns:{' '}
+                        <a href="tel:+436642546078" className="text-amber-100 underline underline-offset-2 whitespace-nowrap">
+                            +43 664 2546078
+                        </a>
+                    </p>
+                </div>
+            )}
+            {showStale && (
+                <div className="px-4 py-2.5 rounded-xl bg-amber-500/10 border border-amber-500/30" role="status">
+                    <p className="font-sans text-xs text-amber-300/90 text-center leading-relaxed">
+                        Live-Verfügbarkeit gerade nicht abrufbar — wir bestätigen Ihren Wunschtermin telefonisch.
+                    </p>
+                </div>
+            )}
+            {ghostText && (
+                <p className="font-sans text-xs text-red-400 text-center" role="alert">{ghostText}</p>
+            )}
+
             <WeekCalendar
                 week={week}
                 duration={duration}
-                busyByIso={busyByIso}
+                avail={avail}
                 now={now}
                 selected={datetime}
+                pending={loading}
                 onSelectSameDay={selectSameDay}
                 onSelectMultiDay={selectMultiDay}
                 onPrevWeek={goPrev}
                 onNextWeek={goNext}
                 onToday={goToday}
                 canPrev={canPrev}
+                canNext={canNext}
                 compact={isMobile}
                 serviceMode={serviceMode}
             />
-
-            {ghostWarning && (
-                <p className="font-sans text-xs text-red-400 text-center">
-                    Dieser Termin wurde soeben vergeben. Bitte wählen Sie einen anderen.
-                </p>
-            )}
-            {isFallback && !loading && (
-                <div className="px-4 py-2.5 rounded-xl bg-amber-500/10 border border-amber-500/30">
-                    <p className="font-sans text-xs text-amber-300/90 text-center leading-relaxed">
-                        Live-Verfügbarkeit gerade nicht abrufbar — wir bestätigen Ihren Wunschtermin telefonisch.
-                    </p>
-                </div>
-            )}
             <p className="font-mono text-[10px] text-ivory/30 text-center uppercase tracking-wider">
                 Alle Zeitangaben sind Richtwerte und können je nach Fahrzeugzustand variieren.
             </p>

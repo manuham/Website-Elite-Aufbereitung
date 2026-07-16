@@ -41,9 +41,9 @@ function Region({ top, h, kind, label }) {
 }
 
 export default function WeekCalendar({
-  week, duration, busyByIso, now, selected,
+  week, duration, avail, now, selected, pending,
   onSelectSameDay, onSelectMultiDay,
-  onPrevWeek, onNextWeek, onToday, canPrev,
+  onPrevWeek, onNextWeek, onToday, canPrev, canNext,
   compact, serviceMode,
 }) {
   const rootRef = useRef(null);
@@ -93,7 +93,9 @@ export default function WeekCalendar({
 
   // ── same-day column ──
   function DayColumn({ date }) {
-    const plan = sameDayPlan(date, duration.durationMin, busyByIso[isoKey(date)] || [], now);
+    // avail.busy() returns null for a day we have no trustworthy data for, and sameDayPlan turns
+    // that into `unknown` rather than packing an invented wide-open day.
+    const plan = sameDayPlan(date, duration.durationMin, avail.busy(date), now);
     const isToday = sameDay(date, today);
     const wh = isWorkingDay(date) ? plan.close : null;
     const closeTop = wh ? (plan.close - AXIS_START) * MIN_PX : bodyH;
@@ -155,8 +157,18 @@ export default function WeekCalendar({
             </button>
           );
         })}
-        {/* no-fit */}
-        {!plan.closed && !plan.fullyPast && plan.free.length === 0 && (
+        {/* Not yet known. Only say "lädt" while data may actually still arrive (`pending`) —
+            during an outage nothing is loading, and a column pulsing "lädt" forever would
+            contradict the notice above the calendar. Then we simply show nothing.
+            Never accent: accent means "frei", so an accent placeholder would re-create the
+            fabricated-availability lie in shimmer form. */}
+        {plan.unknown && pending && (
+          <div className="motion-safe:animate-pulse" style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: iv(0.02) }}>
+            <span className="font-mono uppercase" style={{ fontSize: 9, color: iv(0.25), letterSpacing: '.08em' }}>lädt</span>
+          </div>
+        )}
+        {/* no-fit — only for days we actually know about */}
+        {!plan.closed && !plan.fullyPast && !plan.unknown && plan.free.length === 0 && (
           <div style={{ position: 'absolute', left: 6, right: 6, top: '42%', textAlign: 'center' }}>
             <span className="font-mono uppercase" style={{ fontSize: 9.5, color: iv(0.3), letterSpacing: '.06em', lineHeight: 1.5 }}>An diesem Tag<br />nicht möglich</span>
           </div>
@@ -175,7 +187,7 @@ export default function WeekCalendar({
         <div className="flex items-center gap-2">
           <NavBtn onClick={onPrevWeek} disabled={!canPrev} aria="Vorherige Woche"><ChevronLeft size={18} /></NavBtn>
           <button type="button" onClick={onToday} className="font-sans rounded-full border border-ivory/12 text-ivory bg-ivory/[0.03] hover:border-accent hover:text-accent transition-colors" style={{ padding: '8px 16px', fontSize: 13, fontWeight: 600 }}>Heute</button>
-          <NavBtn onClick={onNextWeek} aria="Nächste Woche"><ChevronRight size={18} /></NavBtn>
+          <NavBtn onClick={onNextWeek} disabled={!canNext} aria="Nächste Woche"><ChevronRight size={18} /></NavBtn>
         </div>
       </div>
 
@@ -186,9 +198,9 @@ export default function WeekCalendar({
             const closed = !isWorkingDay(d);
             const isT = sameDay(d, today);
             const act = i === activeIdx;
-            const selectableMulti = multi && multiDayStartFree(d, span, busyByIso, now);
+            const selectableMulti = multi && multiDayStartFree(d, span, avail, now);
             const within = multi && inSpan(d);
-            const cnt = multi ? 0 : freeStartCount(d, duration.durationMin, busyByIso[isoKey(d)] || [], now);
+            const cnt = multi ? 0 : freeStartCount(d, duration.durationMin, avail.busy(d), now);
             const onClickPill = multi
               ? () => { setActiveIdx(i); if (selectableMulti) onSelectMultiDay(d); }
               : () => setActiveIdx(i);
@@ -236,7 +248,7 @@ export default function WeekCalendar({
           <MultiDayBand
             week={week} compact={compact} span={span} duration={duration} selected={selected}
             onSelectMultiDay={onSelectMultiDay} inSpan={inSpan} spanIndex={spanIndex} spanDays={spanDays}
-            busyByIso={busyByIso} now={now} terms={terms}
+            avail={avail} now={now} terms={terms}
           />
         ) : (
           <div className="hide-scrollbar flex overflow-y-auto" style={{ maxHeight: compact ? '54vh' : 528 }}>
@@ -265,7 +277,7 @@ export default function WeekCalendar({
 }
 
 // ── multi-day all-day band ──
-function MultiDayBand({ week, compact, span, duration, selected, onSelectMultiDay, inSpan, spanIndex, spanDays, busyByIso, now, terms }) {
+function MultiDayBand({ week, compact, span, duration, selected, onSelectMultiDay, inSpan, spanIndex, spanDays, avail, now, terms }) {
   if (compact) {
     // mobile uses the day-pill strip above for selection; show only the note
     return <MultiDayNote duration={duration} spanDays={spanDays} selected={selected} terms={terms} />;
@@ -281,7 +293,7 @@ function MultiDayBand({ week, compact, span, duration, selected, onSelectMultiDa
         {week.map((d, i) => {
           const within = inSpan(d);
           const idx = spanIndex(d);
-          const selectable = multiDayStartFree(d, span, busyByIso, now);
+          const selectable = multiDayStartFree(d, span, avail, now);
           const isStart = idx === 0;
           const isEnd = within && (idx === spanDays.length - 1 || (overflowsWeek && i === 6));
           return (
