@@ -40,7 +40,7 @@ collapsible folders; the booking Step-1 still lists them flat.
   package-savings suggestion (`src/hooks/useRecommendations.js`), so they can't sneak into
   the cart via an "add" button.
 
-## Duration-aware week calendar (Step 3 "Termin")
+## Availability-first date picker (Step 3 "Termin")
 - Different services take different time. Each package in `src/data/services.js` carries
   `durationMin` (same-day) **or** `durationDays` (multi-day), plus `mobilExtraMin` /
   `mobilSurcharge`. `computeBookingDuration(selectedItems, serviceMode)` in
@@ -53,33 +53,53 @@ collapsible folders; the booking Step-1 still lists them flat.
   (08–13) can't host a 09:00 drop-off → 16:00 pickup. The backend `workingSpanStr` mirrors this.
 - **Mobil vs studio wording** is one source of truth: `multiDayTerms(serviceMode)` in
   `scheduling.js` supplies every multi-day label (studio = Abgabe/Abholung "im Studio"; mobil =
-  Beginn/Fertigstellung "vor Ort"). Used by `WeekCalendar`, Step 3, Step 4 confirmation, the email,
-  and the calendar event — change wording there, not per surface.
+  Beginn/Fertigstellung "vor Ort"; `chooseDay`/`chooseDayPlural` for "Abgabetag"/"Starttag"). Used
+  by `AvailabilityRail`, Step 3, Step 4 confirmation, the email, and the calendar event — change
+  wording there, not per surface.
 - **Mobile surcharge** = flat `MOBILE_SURCHARGE` (€50 Anfahrtspauschale) **plus** a per-package
   Mobil-Aufpreis (`mobilePackageSurchargeOf` = MAX of the cart's `mobilSurcharge`, €45–85, shown as
   its own line on every surface). Both are included in every total (Step 1 / StepVehicle / Step 4 /
   email / calendar). A duration-shape change resets the date pick (parent-level guard in
   `BookingPage`), so a stale same-day pick can't leak into a multi-day booking.
-- `src/components/booking/WeekCalendar.jsx` is an Apple-Calendar week view (replaces the old
-  month-grid + `DayTimePickerModal`, both deleted):
-  - **same-day:** time blocks sized to the duration, packed around busy intervals with a
-    30-min buffer (`sameDayPlan` in `scheduling.js`); days that can't fit show "An diesem Tag
-    nicht möglich".
-  - **multi-day:** an all-day band; pick a drop-off day, the span highlights Abgabe (09:00) →
-    Abholung (16:00) across working days.
+- `src/components/booking/AvailabilityRail.jsx` shows **only the days that actually have an
+  opening**, drawn from the whole loaded horizon (replaces the old `WeekCalendar` week grid and,
+  before it, the month-grid + `DayTimePickerModal` — all deleted). Why: at the studio's real
+  durations a totally empty day yields ONE bookable start for the flagship packages (300–360 min),
+  so a time-axis grid spent 540px to render a single block and everything else read as gray. The
+  rail is a single centered column of day cards, one code path for mobile and desktop (no
+  breakpoint), grouped by week ("Diese Woche" / "Nächste Woche" / "Woche vom …") with `GapNote`
+  separators for orientation:
+  - **same-day:** each free day is a card of `SlotChip`s (start time + "bis HH:MM · N Std"),
+    packed around busy intervals with a 30-min buffer (`sameDayPlan`).
+  - **multi-day:** each valid drop-off day is a card (`MultiDayCard`) — Abgabe 09:00 → Abholung
+    16:00, with an "über das Wochenende" note when the span straddles a weekend.
+- The list helpers are pure and in `scheduling.js`: `availableDays()` walks the horizon once and
+  returns day/gap items plus `truncated` (ran out of data) vs `exhausted` (scanned it all, nothing
+  free) — kept distinct so an incomplete fetch never reads as "nothing available".
+  `groupAvailableDays()` buckets by week. First `DAYS_SHOWN_INITIALLY` (10) days show; the rest are
+  already fetched, revealed by "Weitere Termine anzeigen" (no extra request). Gap notes are gated
+  behind `SHOW_GAP_NOTES` (open question Q6).
 - All scheduling rules live in `src/lib/scheduling.js` (working hours Mo–Fr 08–18 / Sa 08–13 /
-  So closed, `BUFFER=30`, packing, working-day span). Pure + unit-testable.
+  So closed, `BUFFER=30`, packing, working-day span). Pure + unit-tested (`scheduling.test.js`).
 
 ## Availability (read path) — no double-booking
-- `src/hooks/useWeekAvailability.js` calls `GET /api/availability?start=YYYY-MM-DD&days=7`,
-  polls every 30 s while Step 3 is open.
-- `api/availability.js` → `getBusyForRange()` in `api/_lib/calendar.js` queries Google
-  Calendar free/busy across all connected calendars and returns, per day,
-  `{ closed, open, close, busy: [[startMin,endMin],…] }` (minutes from midnight, Europe/Vienna,
-  timezone-correct). The client packs blocks for the selected duration.
-- If Google Calendar fails, the endpoint returns a working-hours skeleton with `fallback:true`
-  and empty busy; the calendar shows an amber "Live-Verfügbarkeit nicht abrufbar" notice so it
-  is never silent. The ghost-guard clears a pick that a poll shows is no longer free.
+- `src/hooks/useAvailability.js` calls `GET /api/availability?start=YYYY-MM-DD&days=56` **once**
+  (anchored on today, not the visible week), polls every 30 s while Step 3 is open, and replaces
+  the map wholesale each poll. The rail slices that one horizon — there is no week paging and so no
+  fetch-per-arrow. The server clamp in `api/availability.js` mirrors `HORIZON_DAYS=56` (pinned by a
+  test). One `freebusy.query` covers any range, so a wide horizon costs no more Google quota.
+- **Coverage is first-class.** `makeAvailability()` wraps the busy map so a day that was *never
+  fetched* is `UNKNOWN`, not "free" — key presence is the signal (the API writes a key per returned
+  day). Nothing infers availability from absence, which is what previously let a multi-day span
+  reaching past the loaded range be offered and then 409'd at the end of the funnel.
+- `api/availability.js` → `getBusyForRange()` in `api/_lib/calendar.js` queries Google Calendar
+  free/busy across all connected calendars and returns, per day,
+  `{ closed, open, close, busy: [[startMin,endMin],…] }` (minutes from midnight, Europe/Vienna).
+- Two failure modes, kept distinct: `isFallback` (Google unreachable → the server returns a
+  fabricated skeleton; `makeAvailability` marks every such day UNKNOWN, and the rail shows a phone
+  CTA instead of a wall of invented slots) vs `isStale` (a poll threw but the held data is still
+  real → keep the rail, show a soft amber note). The ghost-guard clears a pick only when a poll
+  shows the day is *known* FULL — never on UNKNOWN, so an outage can't wipe every in-flight pick.
 
 ## Booking (write path) — single writer with race guard
 - `src/lib/api.js` `submitBooking()` POSTs to `POST /api/book` (NOT the old Make.com webhook).

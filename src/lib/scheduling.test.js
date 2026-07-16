@@ -1,9 +1,10 @@
 import { describe, it, expect } from 'vitest';
 import {
   DAY, HORIZON_DAYS, WORKDAY_MIN,
-  addDays, isoKey, workingSpan,
+  addDays, isoKey, workingSpan, startOfDay,
   makeAvailability, dayStatus, multiDayStartState, multiDayStartFree,
   sameDayPlan, freeStartCount, computeBookingDuration, multiDayTerms,
+  availableDays, groupAvailableDays, relativeDayLabel, dateRangeLabel, weekGroupLabel,
 } from './scheduling';
 
 // 2026-07-20 Mo · 07-24 Fr · 07-25 Sa · 07-26 So · 07-27 Mo · 07-28 Di
@@ -238,6 +239,120 @@ describe('drift guards', () => {
     const clamp = src.match(/parseInt\(req\.query\.days, 10\) \|\| 1, 1\), (\d+)\)/);
     expect(clamp, 'could not find the days clamp in api/availability.js').not.toBeNull();
     expect(Number(clamp[1])).toBe(HORIZON_DAYS);
+  });
+});
+
+// ── availableDays / grouping — the rail's data ──────────────────────────────
+describe('availableDays', () => {
+  // Mon 20 06:00 — before open, so the whole week is future and bookable.
+  const NOW = at(MON, 6);
+  const WED = new Date(2026, 6, 22);
+  const MON27 = new Date(2026, 6, 27);
+  const FULL_WD = [[480, 1080]];   // a booked-solid weekday
+  const FULL_SA = [[480, 780]];    // a booked-solid Saturday
+
+  // Mon free · Tue full · Wed free · Thu/Fri/Sat full · Sun closed · Mon(next) free
+  const sparse = () => ({
+    ...week(MON, 14),
+    '2026-07-21': FULL_WD, '2026-07-23': FULL_WD, '2026-07-24': FULL_WD, '2026-07-25': FULL_SA,
+  });
+
+  it('collects only the bookable days, in order', () => {
+    const r = availableDays(MON, SAME, makeAvailability(sparse()), NOW, 8);   // Mon 20 → Mon 27
+    expect(r.count).toBe(3);
+    expect(r.items.filter((i) => i.kind === 'day').map((i) => i.iso))
+      .toEqual(['2026-07-20', '2026-07-22', '2026-07-27']);
+    expect(r.truncated).toBe(false);
+    expect(r.exhausted).toBe(false);
+  });
+
+  it('emits a gap marker between free days that skips a genuine no-fit run', () => {
+    const r = availableDays(MON, SAME, makeAvailability(sparse()), NOW, 8);
+    const gaps = r.items.filter((i) => i.kind === 'gap');
+    expect(gaps).toHaveLength(2);
+    expect(isoKey(gaps[0].from)).toBe('2026-07-21');                  // Tue only
+    expect([isoKey(gaps[1].from), isoKey(gaps[1].to)]).toEqual(['2026-07-23', '2026-07-26']); // Thu–Sun
+  });
+
+  it('does NOT emit a gap for a weekend-only skip (a closed Sunday is not news)', () => {
+    const SAT = new Date(2026, 6, 25);
+    const map = { [isoKey(SAT)]: [], [isoKey(MON27)]: [] };   // Sat free, Sun closed (no data), Mon free
+    const r = availableDays(SAT, SAME, makeAvailability(map), at(MON, 6));
+    expect(r.count).toBe(2);
+    expect(r.items.some((i) => i.kind === 'gap')).toBe(false);
+  });
+
+  it('never emits a leading or trailing gap', () => {
+    // Tue full (leading, before any free day), then Wed free, then Thu full (trailing).
+    const map = { '2026-07-21': FULL_WD, [isoKey(WED)]: [], '2026-07-23': FULL_WD };
+    const r = availableDays(new Date(2026, 6, 21), SAME, makeAvailability(map), NOW);
+    expect(r.items.map((i) => i.kind)).toEqual(['day']);   // just Wed, no gaps around it
+  });
+
+  it('stops at the first UNKNOWN and reports truncated, not exhausted', () => {
+    // Only Monday is known (and free); Tuesday onward was never fetched.
+    const r = availableDays(MON, SAME, makeAvailability({ [isoKey(MON)]: [] }), NOW);
+    expect(r.count).toBe(1);
+    expect(r.truncated).toBe(true);
+    expect(r.exhausted).toBe(false);
+    expect(isoKey(r.knownThrough)).toBe('2026-07-20');
+  });
+
+  it('reports exhausted when the whole horizon is known and nothing fits', () => {
+    const allFull = Object.fromEntries(
+      Array.from({ length: HORIZON_DAYS }, (_, i) => [isoKey(addDays(MON, i)), FULL_WD]));
+    const r = availableDays(MON, SAME, makeAvailability(allFull), NOW, HORIZON_DAYS);
+    expect(r.count).toBe(0);
+    expect(r.exhausted).toBe(true);
+    expect(r.truncated).toBe(false);
+    expect(isoKey(r.until)).toBe(isoKey(addDays(MON, HORIZON_DAYS - 1)));
+  });
+
+  it('a fallback (untrusted) horizon is truncated, never a wall of free days', () => {
+    const r = availableDays(MON, SAME, makeAvailability(week(MON, 14), { trusted: false }), NOW);
+    expect(r.count).toBe(0);
+    expect(r.truncated).toBe(true);
+    expect(r.exhausted).toBe(false);
+  });
+});
+
+describe('groupAvailableDays', () => {
+  const NOW = at(MON, 6);
+  const sparse = () => ({
+    ...week(MON, 14),
+    '2026-07-21': [[480, 1080]], '2026-07-23': [[480, 1080]], '2026-07-24': [[480, 1080]], '2026-07-25': [[480, 780]],
+  });
+
+  it('buckets days into named weeks and hands a gap to the FOLLOWING day’s group', () => {
+    const r = availableDays(MON, SAME, makeAvailability(sparse()), NOW, 8);
+    const groups = groupAvailableDays(r.items, NOW);
+    expect(groups.map((g) => g.title)).toEqual(['Diese Woche', 'Nächste Woche']);
+    // The Thu–Sun gap sits in the Mon-27 week, not the week its days belong to.
+    const nextWeek = groups[1];
+    expect(nextWeek.items[0].kind).toBe('gap');
+    expect(isoKey(nextWeek.items[0].from)).toBe('2026-07-23');
+    expect(nextWeek.items[1].iso).toBe('2026-07-27');
+  });
+});
+
+describe('rail labels', () => {
+  it('relativeDayLabel', () => {
+    expect(relativeDayLabel(MON, at(MON, 9))).toBe('Heute');
+    expect(relativeDayLabel(new Date(2026, 6, 21), at(MON, 9))).toBe('Morgen');
+    expect(relativeDayLabel(new Date(2026, 6, 24), at(MON, 9))).toBeNull();
+  });
+
+  it('dateRangeLabel', () => {
+    expect(dateRangeLabel(new Date(2026, 6, 21), new Date(2026, 6, 26))).toBe('21.–26. Juli');
+    expect(dateRangeLabel(new Date(2026, 6, 28), new Date(2026, 7, 2))).toBe('28. Juli – 2. August');
+    expect(dateRangeLabel(new Date(2026, 11, 28), new Date(2027, 0, 2))).toBe('28. Dezember 2026 – 2. Januar 2027');
+  });
+
+  it('weekGroupLabel', () => {
+    const now = at(MON, 6);
+    expect(weekGroupLabel(MON, now).title).toBe('Diese Woche');
+    expect(weekGroupLabel(new Date(2026, 6, 27), now).title).toBe('Nächste Woche');
+    expect(weekGroupLabel(new Date(2026, 7, 3), now)).toEqual({ title: 'Woche vom 3. August', sub: null });
   });
 });
 

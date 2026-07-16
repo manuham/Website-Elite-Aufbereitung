@@ -8,12 +8,12 @@ import { useAvailability } from '../hooks/useAvailability';
 import { submitBooking } from '../lib/api';
 import { summarizePhotoUploads } from '../lib/photoUploads';
 import {
-    computeBookingDuration, weekDays, weekStartMonday, addDays, startOfDay, workingSpan,
+    computeBookingDuration, startOfDay, workingSpan,
     sameDayPlan, multiDayStartState, DAY, HORIZON_DAYS, minToTime, durLabel, daysLabel, germanFull,
     multiDayTerms,
 } from '../lib/scheduling';
 import RecommendationPanel from '../components/booking/RecommendationPanel';
-import WeekCalendar from '../components/booking/WeekCalendar';
+import AvailabilityRail from '../components/booking/AvailabilityRail';
 import PhoneConsultModal from '../components/PhoneConsultModal';
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
@@ -712,36 +712,14 @@ function Step2({ datetime, setDatetime, onNext, onBack, serviceMode, selectedIte
     const duration = useMemo(() => computeBookingDuration(selectedItems, serviceMode), [selectedItems, serviceMode]);
     const durKey = duration.multiDay ? `m${duration.spanDays}` : `s${duration.durationMin}`;
 
-    const currentWeekStart = useMemo(() => weekStartMonday(now), [now]);
-    const [weekStart, setWeekStart] = useState(() => weekStartMonday(datetime.date || new Date()));
-    const [isMobile, setIsMobile] = useState(typeof window !== 'undefined' && window.innerWidth < 768);
     const [ghostWarning, setGhostWarning] = useState(null);
+    const [phoneModal, setPhoneModal] = useState(false);
     const prevDurKey = useRef(durKey);
 
-    useEffect(() => {
-        const h = () => setIsMobile(window.innerWidth < 768);
-        window.addEventListener('resize', h);
-        return () => window.removeEventListener('resize', h);
-    }, []);
-
-    const week = useMemo(() => weekDays(weekStart), [weekStart]);
-
-    // One horizon anchored on today, not on the visible week: week nav is then pure client-side
-    // slicing over data we already hold, instead of a fetch per arrow press.
+    // One horizon anchored on today. The rail renders every free day inside it, so there is no
+    // week to page through — no per-arrow fetch, no mobile/desktop split.
     const horizonStart = useMemo(() => startOfDay(now), [now]);
-    const { avail, loading, hasLoaded, isFallback, isStale } = useAvailability(horizonStart, HORIZON_DAYS, true);
-
-    // Last week we hold data for. Forward paging used to be unbounded — you could page into 2027,
-    // firing a fetch per press, and every day out there rendered as free.
-    const lastWeekStart = useMemo(
-        () => weekStartMonday(addDays(horizonStart, HORIZON_DAYS - 1)),
-        [horizonStart],
-    );
-    const canPrev = weekStart > currentWeekStart;
-    const canNext = weekStart < lastWeekStart;
-    const goPrev = () => { if (canPrev) setWeekStart(w => addDays(w, -7)); };
-    const goNext = () => { if (canNext) setWeekStart(w => addDays(w, 7)); };
-    const goToday = () => setWeekStart(currentWeekStart);
+    const { avail, loading, hasLoaded, isFallback, isStale, refresh } = useAvailability(horizonStart, HORIZON_DAYS, true);
 
     const selectSameDay = (date, time) => {
         setGhostWarning(null);
@@ -839,27 +817,10 @@ function Step2({ datetime, setDatetime, onNext, onBack, serviceMode, selectedIte
                 <p className="font-sans text-sm text-ivory/50">{subline}</p>
             </div>
 
-            {/* Notices sit ABOVE the picker: they change the meaning of everything below them, and
-                under the fold on a phone they go unread.
-
-                Two different failures, two different messages. `noData`: we hold nothing we can
-                stand behind — either the server could not reach Google and fabricated an all-free
-                skeleton, or the very first fetch failed. Either way the calendar below shows no
-                slots, so "wir bestätigen Ihren Wunschtermin" would be meaningless; offer the phone.
-                `showStale`: a poll failed but the data we already hold is real, just older — the
-                calendar still works, so keep the softer original wording. */}
-            {noData && (
-                <div className="px-4 py-3 rounded-xl bg-amber-500/10 border border-amber-500/30" role="status">
-                    <p className="font-sans text-xs text-amber-300/90 text-center leading-relaxed">
-                        <strong className="text-amber-200">Live-Verfügbarkeit gerade nicht abrufbar.</strong>{' '}
-                        Wir zeigen Ihnen lieber keine Termine als falsche — rufen Sie uns an, wir haben
-                        den Kalender vor uns:{' '}
-                        <a href="tel:+436642546078" className="text-amber-100 underline underline-offset-2 whitespace-nowrap">
-                            +43 664 2546078
-                        </a>
-                    </p>
-                </div>
-            )}
+            {/* A stale poll (data still real, just older) keeps the rail and shows a soft note above
+                it — it changes the meaning of what's below, so it can't sit under the fold. A total
+                outage (noData) is handled inside the rail, which replaces the list with a phone CTA
+                rather than a wall of fabricated free days. */}
             {showStale && (
                 <div className="px-4 py-2.5 rounded-xl bg-amber-500/10 border border-amber-500/30" role="status">
                     <p className="font-sans text-xs text-amber-300/90 text-center leading-relaxed">
@@ -871,22 +832,19 @@ function Step2({ datetime, setDatetime, onNext, onBack, serviceMode, selectedIte
                 <p className="font-sans text-xs text-red-400 text-center" role="alert">{ghostText}</p>
             )}
 
-            <WeekCalendar
-                week={week}
+            <AvailabilityRail
                 duration={duration}
                 avail={avail}
                 now={now}
                 selected={datetime}
+                serviceMode={serviceMode}
+                hasLoaded={hasLoaded}
                 pending={loading}
+                noData={noData}
                 onSelectSameDay={selectSameDay}
                 onSelectMultiDay={selectMultiDay}
-                onPrevWeek={goPrev}
-                onNextWeek={goNext}
-                onToday={goToday}
-                canPrev={canPrev}
-                canNext={canNext}
-                compact={isMobile}
-                serviceMode={serviceMode}
+                onRetry={refresh}
+                onPhone={() => setPhoneModal(true)}
             />
             <p className="font-mono text-[10px] text-ivory/30 text-center uppercase tracking-wider">
                 Alle Zeitangaben sind Richtwerte und können je nach Fahrzeugzustand variieren.
@@ -911,6 +869,15 @@ function Step2({ datetime, setDatetime, onNext, onBack, serviceMode, selectedIte
                     Weiter →
                 </button>
             </div>
+
+            {phoneModal && (
+                <PhoneConsultModal
+                    eyebrow="Terminanfrage"
+                    title="Wir finden Ihren Termin"
+                    body="Online ist gerade nichts Passendes frei. Rufen Sie uns an — wir planen Ihren Termin persönlich und finden oft kurzfristig eine Lösung."
+                    onClose={() => setPhoneModal(false)}
+                />
+            )}
         </div>
     );
 }
