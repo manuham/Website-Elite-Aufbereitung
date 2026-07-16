@@ -6,6 +6,7 @@ import { serviceCategories, tierPackages, allInOnePackages } from '../data/servi
 import { useRecommendations } from '../hooks/useRecommendations';
 import { useWeekAvailability } from '../hooks/useWeekAvailability';
 import { submitBooking } from '../lib/api';
+import { summarizePhotoUploads } from '../lib/photoUploads';
 import {
     computeBookingDuration, weekDays, weekStartMonday, addDays, workingSpan,
     sameDayPlan, multiDayStartFree, isoKey, minToTime, durLabel, daysLabel, germanFull,
@@ -1008,7 +1009,7 @@ const STUDIO_ADDRESSES = {
     nueziders: 'Bundesstraße 2a, 6714 Nüziders',
 };
 
-function Step4({ selectedItems, datetime, serviceMode, contact, vehicleCategory, studioLocation }) {
+function Step4({ selectedItems, datetime, serviceMode, contact, vehicleCategory, studioLocation, photoWarning }) {
     const serviceTotal = selectedItems.reduce((s, i) => s + i.priceNum, 0);
     const appliesSurcharge = selectedItems.some(i => SIZE_SURCHARGE_IDS.has(i.id));
     const onRequestSurcharge = appliesSurcharge && vehicleCategory?.aufpreis === null;
@@ -1030,6 +1031,21 @@ function Step4({ selectedItems, datetime, serviceMode, contact, vehicleCategory,
                     Vielen Dank. Wir melden uns innerhalb von <span className="text-ivory font-semibold">24 Stunden</span> zur Bestätigung Ihres Termins.
                 </p>
             </div>
+
+            {/* The booking went through; only the photos did not. Amber, not red — and it says
+                what to do about it, rather than just that something went wrong. */}
+            {photoWarning && (
+                <div className="w-full bg-amber-500/10 border border-amber-500/30 rounded-2xl px-5 py-4 text-left">
+                    <p className="font-sans text-sm text-amber-200/90 leading-relaxed">
+                        {photoWarning}{' '}
+                        Sie können uns die Fotos gerne per E-Mail an{' '}
+                        <a href="mailto:info.eliteaufbereitung@gmail.com" className="text-amber-100 underline underline-offset-2">
+                            info.eliteaufbereitung@gmail.com
+                        </a>{' '}
+                        senden — nötig ist das aber nicht.
+                    </p>
+                </div>
+            )}
 
             <div className="w-full bg-slate/40 border border-slate/60 rounded-[1.5rem] p-6 flex flex-col gap-4 text-left">
                 <h3 className="font-sans font-bold text-xs uppercase tracking-widest text-ivory/40">Ihre Buchungsübersicht</h3>
@@ -1186,6 +1202,8 @@ export default function BookingPage() {
     const [photoPreviews, setPhotoPreviews] = useState([]);
     const [uploadingPhotos, setUploadingPhotos] = useState(false);
     const [submitError, setSubmitError] = useState(null);
+    // Non-blocking: the booking succeeded, but some photos did not attach.
+    const [photoWarning, setPhotoWarning] = useState(null);
 
     const stepContentRef = useRef(null);
     const prevStepRef = useRef(0);
@@ -1271,16 +1289,16 @@ export default function BookingPage() {
         setLoading(true);
         setSubmitError(null);
 
-        // Upload photos to Cloudinary first
+        // Photos are supporting material, not the booking. allSettled, not all: a Cloudinary
+        // hiccup must never abort a completed booking. Upload what we can, keep the rest.
         setUploadingPhotos(true);
-        let photoUrls = [];
-        try {
-            photoUrls = await Promise.all(photos.map(uploadPhoto));
-        } catch {
-            setSubmitError('Fotos konnten nicht hochgeladen werden. Bitte versuchen Sie es erneut.');
-            setUploadingPhotos(false);
-            setLoading(false);
-            return;
+        setPhotoWarning(null);
+        const results = await Promise.allSettled(photos.map(uploadPhoto));
+        const { urls: photoUrls, warning } = summarizePhotoUploads(results);
+        if (warning) {
+            console.error('Photo upload(s) failed:',
+                results.filter((r) => r.status === 'rejected').map((r) => r.reason));
+            setPhotoWarning(warning);
         }
         setUploadingPhotos(false);
 
@@ -1398,7 +1416,7 @@ export default function BookingPage() {
                                 )}
                             </>
                         )}
-                        {step === 5 && <Step4 selectedItems={selectedItems} datetime={datetime} serviceMode={serviceMode} contact={contact} vehicleCategory={vehicleCategory} studioLocation={studioLocation} />}
+                        {step === 5 && <Step4 selectedItems={selectedItems} datetime={datetime} serviceMode={serviceMode} contact={contact} vehicleCategory={vehicleCategory} studioLocation={studioLocation} photoWarning={photoWarning} />}
                     </div>
                 </div>
             </main>
