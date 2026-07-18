@@ -32,13 +32,14 @@ The Step-3 calendar was rebuilt from a time-axis week grid into an availability-
 (`src/components/booking/AvailabilityRail.jsx`) that lists only bookable days. These need
 Matthias' sign-off before it goes live:
 
-- [ ] **Q1 — Calendar maintained how far ahead?** *(gates the rail)* The rail scans a 56-day
-  (8-week) horizon and presents empty days as *free*. That's only true if the calendar is
-  maintained that far out. If Matthias only enters events ~1–2 weeks ahead, far-out days are
-  *unplanned*, not free, and the rail would advertise openings that don't exist. There is no
-  holiday/vacation/blackout table in the repo (grep `feiertag|holiday|urlaub` → 0); days are
-  blocked only by Google events. If he doesn't maintain 8 weeks, shorten `HORIZON_DAYS`
-  (`src/lib/scheduling.js`, mirrored by the clamp in `api/availability.js`).
+- [x] **Q1 — Calendar maintained how far ahead?** — CONFIRMED (2026-07-16): Matthias blocks his
+  time-off (vacation, days he won't work) reliably weeks in advance, so far-out empty days are
+  genuinely free, not merely unplanned. The 56-day (8-week) horizon stays as-is (`HORIZON_DAYS` in
+  `src/lib/scheduling.js`, mirrored by the clamp in `api/availability.js`; one line to change if
+  that ever stops holding). The risk was never un-entered customer bookings (those accumulate and
+  an empty far week really is free) — only un-blocked time-off, which he enters early.
+  ⚠️ **This trust holds only if `GOOGLE_CALENDAR_ID` points at the calendar he actually blocks
+  time-off on** — still gated on the calendar-ID ACTION above. Resolve that before deploy.
 - [ ] **Q2 — Multi-day tolerance (90 min).** A multi-day drop-off day now accepts up to
   `MULTIDAY_TOLERANCE_MIN` (90) of existing bookings instead of demanding a totally empty day
   (`scheduling.js` + `api/_lib/calendar.js`, kept in sync by a drift test). Right value? And is
