@@ -34,6 +34,17 @@ export const PICKUP_FROM = '16:00'; // multi-day pickup (last day)
  *  (the two files share no import; `scheduling.test.js` pins them together). */
 export const HORIZON_DAYS = 56;
 
+/**
+ * How many booked minutes a multi-day span day may already hold and still accept a drop-off.
+ * The car occupies the studio across the span, but a short unrelated errand (a 30-min
+ * Textilimprägnierung, a personal appointment on the connected calendar) shouldn't remove a
+ * whole drop-off day the way "must be totally empty" did. All-day vacation blocks stay well over
+ * this, so they keep blocking. MUST equal MULTIDAY_TOLERANCE_MIN in api/_lib/calendar.js — the
+ * server mirrors this rule and a mismatch would 409 a booking the client offered
+ * (`scheduling.test.js` pins them together).
+ */
+export const MULTIDAY_TOLERANCE_MIN = 90;
+
 // ── date helpers ──────────────────────────────────────────────────────────
 export function startOfDay(d) { const x = new Date(d); x.setHours(0, 0, 0, 0); return x; }
 export function addDays(d, n) { const x = new Date(d); x.setDate(x.getDate() + n); return x; }
@@ -284,9 +295,12 @@ export function sameDayStartState(date, durMin, avail, now) {
   return dayStatus(date, { multiDay: false, durationMin: durMin, spanDays: null }, avail, now).status;
 }
 
-/** Does one day of a multi-day span have room for the car? Loosened in stage 3. */
+/** Does one day of a multi-day span have room for the car? Tolerates a short amount of existing
+ *  busy time (see MULTIDAY_TOLERANCE_MIN) rather than demanding a totally empty day. `busy` is
+ *  already clipped to working hours and merged, so summing the intervals is the day's booked total. */
 function spanDayFree(busy) {
-  return busy.length === 0;
+  const booked = busy.reduce((sum, [s, e]) => sum + (e - s), 0);
+  return booked <= MULTIDAY_TOLERANCE_MIN;
 }
 
 /**

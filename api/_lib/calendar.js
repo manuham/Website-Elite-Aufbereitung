@@ -42,6 +42,10 @@ export const WORKING_HOURS = {
   6: [480, 780],
 };
 export const BUFFER = 30;
+// Booked minutes a multi-day span day may already hold and still accept a drop-off. Mirrors
+// MULTIDAY_TOLERANCE_MIN in src/lib/scheduling.js — the client offers a day exactly when this
+// check passes, so the two MUST agree or a booking the rail offered would 409 here.
+export const MULTIDAY_TOLERANCE_MIN = 90;
 const DEFAULT_DURATION_MIN = 90;
 const DROPOFF_MIN = 9 * 60;   // 09:00
 const PICKUP_MIN = 16 * 60;   // 16:00
@@ -212,7 +216,9 @@ export async function multiDaySpanFree(startDateString, spanDays) {
   const byDate = Object.fromEntries(range.map((d) => [d.date, d]));
   return span.every((ds) => {
     const day = byDate[ds];
-    return day && !day.closed && day.busy.length === 0;
+    if (!day || day.closed) return false;
+    const booked = day.busy.reduce((sum, [s, e]) => sum + (e - s), 0);
+    return booked <= MULTIDAY_TOLERANCE_MIN;
   });
 }
 

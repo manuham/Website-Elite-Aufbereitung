@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import {
-  DAY, HORIZON_DAYS, WORKDAY_MIN,
+  DAY, HORIZON_DAYS, WORKDAY_MIN, MULTIDAY_TOLERANCE_MIN,
   addDays, isoKey, workingSpan, startOfDay,
   makeAvailability, dayStatus, multiDayStartState, multiDayStartFree,
   sameDayPlan, freeStartCount, computeBookingDuration, multiDayTerms,
@@ -95,15 +95,32 @@ describe('multi-day drop-off', () => {
     expect(dayStatus(FRI, MULTI(3), avail, at(MON, 9)).status).toBe(DAY.FREE);
   });
 
-  it('requires EVERY span day empty — one 15-min event on Tuesday kills a Friday drop-off', () => {
-    const avail = makeAvailability({ ...week(MON, 14), '2026-07-28': [[600, 615]] });
+  it('tolerates a short event on a span day but a long one blocks the drop-off', () => {
+    // A 15-min errand on Tuesday no longer kills a Friday→(Fri,Mon,Tue) drop-off …
+    const short = makeAvailability({ ...week(MON, 14), '2026-07-28': [[600, 615]] });
+    expect(dayStatus(FRI, MULTI(3), short, at(MON, 9)).status).toBe(DAY.FREE);
+    // … but a 6-hour booking does.
+    const long = makeAvailability({ ...week(MON, 14), '2026-07-28': [[540, 900]] });
+    expect(dayStatus(FRI, MULTI(3), long, at(MON, 9)).status).toBe(DAY.FULL);
+  });
+
+  it('the tolerance is a boundary: exactly MULTIDAY_TOLERANCE_MIN passes, one minute more blocks', () => {
+    const ok = makeAvailability({ ...week(MON, 14), '2026-07-28': [[600, 600 + MULTIDAY_TOLERANCE_MIN]] });
+    const over = makeAvailability({ ...week(MON, 14), '2026-07-28': [[600, 601 + MULTIDAY_TOLERANCE_MIN]] });
+    expect(dayStatus(FRI, MULTI(3), ok, at(MON, 9)).status).toBe(DAY.FREE);
+    expect(dayStatus(FRI, MULTI(3), over, at(MON, 9)).status).toBe(DAY.FULL);
+  });
+
+  it('sums multiple short events — several small blocks can still exceed the tolerance', () => {
+    // 3 × 40 min = 120 > 90, even though no single one would block.
+    const avail = makeAvailability({ ...week(MON, 14), '2026-07-28': [[540, 580], [660, 700], [780, 820]] });
     expect(dayStatus(FRI, MULTI(3), avail, at(MON, 9)).status).toBe(DAY.FULL);
   });
 
   it('lets a definite FULL outrank a coverage gap', () => {
-    // Tue 28 is booked AND the rest of the span is unfetched → FULL, not UNKNOWN:
+    // Tue 28 is booked solid AND the rest of the span is unfetched → FULL, not UNKNOWN:
     // the span is unbookable either way, and FULL is the more useful answer.
-    const avail = makeAvailability({ ...week(MON), '2026-07-28': [[600, 615]] });
+    const avail = makeAvailability({ ...week(MON), '2026-07-28': [[480, 1080]] });
     expect(dayStatus(FRI, MULTI(3), avail, at(MON, 9)).status).toBe(DAY.FULL);
   });
 
@@ -239,6 +256,16 @@ describe('drift guards', () => {
     const clamp = src.match(/parseInt\(req\.query\.days, 10\) \|\| 1, 1\), (\d+)\)/);
     expect(clamp, 'could not find the days clamp in api/availability.js').not.toBeNull();
     expect(Number(clamp[1])).toBe(HORIZON_DAYS);
+  });
+
+  it('MULTIDAY_TOLERANCE_MIN matches the server mirror in api/_lib/calendar.js', async () => {
+    // The client offers a multi-day drop-off exactly when the server would accept it; if these
+    // drift, the rail advertises a day and api/book 409s it.
+    const src = await import('node:fs').then((fs) =>
+      fs.readFileSync(new URL('../../api/_lib/calendar.js', import.meta.url), 'utf8'));
+    const m = src.match(/MULTIDAY_TOLERANCE_MIN\s*=\s*(\d+)/);
+    expect(m, 'could not find MULTIDAY_TOLERANCE_MIN in api/_lib/calendar.js').not.toBeNull();
+    expect(Number(m[1])).toBe(MULTIDAY_TOLERANCE_MIN);
   });
 });
 
