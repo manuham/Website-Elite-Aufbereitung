@@ -41,6 +41,28 @@
     text-wrap: balance;
   }
 
+  /* Free time-slot buttons in the booking week grid. Hover/focus live here (not JS) so a
+     keyboard-focused slot gets the same lift + a visible ring the mouse gets. */
+  .slot-free {
+    transition: transform 0.15s ease, box-shadow 0.15s ease, filter 0.15s ease;
+  }
+  .slot-free:hover {
+    transform: translateY(-1px);
+    filter: brightness(1.12);
+  }
+  .slot-free:focus-visible {
+    outline: 2px solid #2ce09a;
+    outline-offset: 2px;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .slot-free {
+      transition: none;
+    }
+    .slot-free:hover {
+      transform: none;
+    }
+  }
+
   .glass-card {
     @apply bg-slate/20 backdrop-blur-2xl border border-ivory/10 shadow-lg;
   }

@@ -4,7 +4,7 @@ import {
   addDays, isoKey, workingSpan, startOfDay,
   makeAvailability, dayStatus, multiDayStartState, multiDayStartFree,
   sameDayPlan, freeStartCount, computeBookingDuration, multiDayTerms,
-  availableDays, groupAvailableDays, relativeDayLabel, dateRangeLabel, weekGroupLabel,
+  availableDays,
 } from './scheduling';
 
 // 2026-07-20 Mo · 07-24 Fr · 07-25 Sa · 07-26 So · 07-27 Mo · 07-28 Di
@@ -340,46 +340,6 @@ describe('availableDays', () => {
     expect(r.count).toBe(0);
     expect(r.truncated).toBe(true);
     expect(r.exhausted).toBe(false);
-  });
-});
-
-describe('groupAvailableDays', () => {
-  const NOW = at(MON, 6);
-  const sparse = () => ({
-    ...week(MON, 14),
-    '2026-07-21': [[480, 1080]], '2026-07-23': [[480, 1080]], '2026-07-24': [[480, 1080]], '2026-07-25': [[480, 780]],
-  });
-
-  it('buckets days into named weeks and hands a gap to the FOLLOWING day’s group', () => {
-    const r = availableDays(MON, SAME, makeAvailability(sparse()), NOW, 8);
-    const groups = groupAvailableDays(r.items, NOW);
-    expect(groups.map((g) => g.title)).toEqual(['Diese Woche', 'Nächste Woche']);
-    // The Thu–Sun gap sits in the Mon-27 week, not the week its days belong to.
-    const nextWeek = groups[1];
-    expect(nextWeek.items[0].kind).toBe('gap');
-    expect(isoKey(nextWeek.items[0].from)).toBe('2026-07-23');
-    expect(nextWeek.items[1].iso).toBe('2026-07-27');
-  });
-});
-
-describe('rail labels', () => {
-  it('relativeDayLabel', () => {
-    expect(relativeDayLabel(MON, at(MON, 9))).toBe('Heute');
-    expect(relativeDayLabel(new Date(2026, 6, 21), at(MON, 9))).toBe('Morgen');
-    expect(relativeDayLabel(new Date(2026, 6, 24), at(MON, 9))).toBeNull();
-  });
-
-  it('dateRangeLabel', () => {
-    expect(dateRangeLabel(new Date(2026, 6, 21), new Date(2026, 6, 26))).toBe('21.–26. Juli');
-    expect(dateRangeLabel(new Date(2026, 6, 28), new Date(2026, 7, 2))).toBe('28. Juli – 2. August');
-    expect(dateRangeLabel(new Date(2026, 11, 28), new Date(2027, 0, 2))).toBe('28. Dezember 2026 – 2. Januar 2027');
-  });
-
-  it('weekGroupLabel', () => {
-    const now = at(MON, 6);
-    expect(weekGroupLabel(MON, now).title).toBe('Diese Woche');
-    expect(weekGroupLabel(new Date(2026, 6, 27), now).title).toBe('Nächste Woche');
-    expect(weekGroupLabel(new Date(2026, 7, 3), now)).toEqual({ title: 'Woche vom 3. August', sub: null });
   });
 });
 

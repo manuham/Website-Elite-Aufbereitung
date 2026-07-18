@@ -61,31 +61,33 @@ collapsible folders; the booking Step-1 still lists them flat.
   its own line on every surface). Both are included in every total (Step 1 / StepVehicle / Step 4 /
   email / calendar). A duration-shape change resets the date pick (parent-level guard in
   `BookingPage`), so a stale same-day pick can't leak into a multi-day booking.
-- `src/components/booking/AvailabilityRail.jsx` shows **only the days that actually have an
-  opening**, drawn from the whole loaded horizon (replaces the old `WeekCalendar` week grid and,
-  before it, the month-grid + `DayTimePickerModal` — all deleted). Why: at the studio's real
-  durations a totally empty day yields ONE bookable start for the flagship packages (300–360 min),
-  so a time-axis grid spent 540px to render a single block and everything else read as gray. The
-  rail is a single centered column of day cards, one code path for mobile and desktop (no
-  breakpoint), grouped by week ("Diese Woche" / "Nächste Woche" / "Woche vom …") with `GapNote`
-  separators for orientation:
-  - **same-day:** each free day is a card of `SlotChip`s (start time + "bis HH:MM · N Std"),
-    packed around busy intervals with a 30-min buffer (`sameDayPlan`).
-  - **multi-day:** each valid drop-off day is a card (`MultiDayCard`) — Abgabe 09:00 → Abholung
-    16:00, with an "über das Wochenende" note when the span straddles a weekend.
-- The list helpers are pure and in `scheduling.js`: `availableDays()` walks the horizon once and
-  returns day/gap items plus `truncated` (ran out of data) vs `exhausted` (scanned it all, nothing
-  free) — kept distinct so an incomplete fetch never reads as "nothing available".
-  `groupAvailableDays()` buckets by week. First `DAYS_SHOWN_INITIALLY` (10) days show; the rest are
-  already fetched, revealed by "Weitere Termine anzeigen" (no extra request). Gap notes are gated
-  behind `SHOW_GAP_NOTES` (open question Q6).
+- `src/components/booking/WeekCalendar.jsx` is an Apple-Calendar-style **week time-axis grid** (day
+  columns, hour rows 08–18). It was briefly replaced by an availability-first list (`AvailabilityRail`)
+  but the client preferred the calendar layout, so the grid is back — with **inverted visual
+  emphasis** so the original "everything is gray" complaint stays solved: free slots are the only lit
+  objects (bright accent gradient + border + soft glow, ≥44px), while all unavailable time (past /
+  busy / after-hours / closed) is one flat, wordless recess. The `Belegt` / `Geschlossen` / "An
+  diesem Tag nicht möglich" labels are gone — the client said the *reason* a time is unavailable
+  doesn't matter.
+  - **same-day:** duration-sized blocks packed around busy intervals with a 30-min buffer
+    (`sameDayPlan`). Each desktop day header shows a green **"N frei"** badge (or dims, wordless, at
+    zero). A **"Nächster freier Termin"** button jumps to the week of the next opening
+    (`availableDays` → first `kind:'day'`). The column body **auto-scrolls** to the earliest free
+    slot so a late (16:00-only) opening isn't hidden below the fold. Hover/focus live in CSS
+    (`.slot-free` in `index.css`) so keyboard focus gets a visible ring.
+  - **multi-day:** an all-day band; pick a drop-off day, the span highlights Abgabe (09:00) →
+    Abholung (16:00) across working days.
+  - **Inherent limitation:** at the flagship 300–360 min durations an empty day yields exactly ONE
+    bookable start, so the grid is tall and sparse for long services — the inversion makes that one
+    slot unmissable, but can't change the arithmetic.
 - All scheduling rules live in `src/lib/scheduling.js` (working hours Mo–Fr 08–18 / Sa 08–13 /
   So closed, `BUFFER=30`, packing, working-day span). Pure + unit-tested (`scheduling.test.js`).
 
 ## Availability (read path) — no double-booking
 - `src/hooks/useAvailability.js` calls `GET /api/availability?start=YYYY-MM-DD&days=56` **once**
   (anchored on today, not the visible week), polls every 30 s while Step 3 is open, and replaces
-  the map wholesale each poll. The rail slices that one horizon — there is no week paging and so no
+  the map wholesale each poll. The grid pages **client-side** within that one loaded horizon — the
+  next/prev arrows and the "Nächster freier Termin" jump slice already-fetched data, so there is no
   fetch-per-arrow. The server clamp in `api/availability.js` mirrors `HORIZON_DAYS=56` (pinned by a
   test). One `freebusy.query` covers any range, so a wide horizon costs no more Google quota.
 - **Coverage is first-class.** `makeAvailability()` wraps the busy map so a day that was *never

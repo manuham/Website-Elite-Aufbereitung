@@ -349,18 +349,12 @@ export function multiDayStartFree(date, count, avail, now) {
   return multiDayStartState(date, count, avail, now) === DAY.FREE;
 }
 
-// ── availability-first rail (view helpers) ──────────────────────────────────
-// The rail shows only the days that actually have an opening. These build that list from the
-// coverage-aware model above. All pure — the component just renders what they return.
-
-export const CHIPS_COLLAPSED = 6;        // same-day starts shown before a "+N weitere" toggle
-export const DAYS_SHOWN_INITIALLY = 10;  // free days shown before "Weitere Termine anzeigen"
-
+// ── next-free scan ──────────────────────────────────────────────────────────
 /**
- * Walk the horizon once from `fromDate` and collect the days that can be booked, with gap markers
- * between them. Stops at the first UNKNOWN day: "the next free day" is an ordering claim, and a day
- * we never fetched cannot be ordered against — better to stop and say "loading/incomplete" than to
- * skip past a hole and call a later day "the next one".
+ * Walk the horizon once from `fromDate` and collect the days that can be booked (in order). Used by
+ * the week grid's "Nächster freier Termin" jump — it reads the first `kind:'day'` item. Stops at the
+ * first UNKNOWN day: "the next free day" is an ordering claim, and a day we never fetched cannot be
+ * ordered against — better to stop than to skip past a hole and call a later day "the next one".
  *
  * @returns {{
  *   items: Array<{kind:'day', date, iso, starts:[{start,end}], span:Date[]|null, freeCount:number}
@@ -411,48 +405,4 @@ export function availableDays(fromDate, duration, avail, now, horizonDays = HORI
 
   const until = addDays(start, horizonDays - 1);
   return { items, count, statuses, truncated, exhausted: count === 0 && !truncated, knownThrough, until };
-}
-
-/** 'Heute' | 'Morgen' | null — a soft relative tag for the day card. */
-export function relativeDayLabel(date, now) {
-  const d0 = startOfDay(date), t0 = startOfDay(now);
-  if (sameDay(d0, t0)) return 'Heute';
-  if (sameDay(d0, addDays(t0, 1))) return 'Morgen';
-  return null;
-}
-
-/** '21.–26. Juli' (same month) · '28. Juli – 2. August' · '28. Dez. 2026 – 2. Jan. 2027'. */
-export function dateRangeLabel(a, b) {
-  const sameYear = a.getFullYear() === b.getFullYear();
-  if (sameYear && a.getMonth() === b.getMonth()) return `${a.getDate()}.–${b.getDate()}. ${MONTHS[a.getMonth()]}`;
-  const l = (d) => `${d.getDate()}. ${MONTHS[d.getMonth()]}${sameYear ? '' : ' ' + d.getFullYear()}`;
-  return `${l(a)} – ${l(b)}`;
-}
-
-/** Title + optional date-range subtitle for a week, keyed on its Monday. */
-export function weekGroupLabel(monday, now) {
-  const thisMon = weekStartMonday(now);
-  if (sameDay(monday, thisMon)) return { title: 'Diese Woche', sub: dateRangeLabel(monday, addDays(monday, 5)) };
-  if (sameDay(monday, addDays(thisMon, 7))) return { title: 'Nächste Woche', sub: dateRangeLabel(monday, addDays(monday, 5)) };
-  return { title: `Woche vom ${monday.getDate()}. ${MONTHS[monday.getMonth()]}`, sub: null };
-}
-
-/** Group rail items into weeks (Mon-anchored). A gap joins the group of the day that FOLLOWS it. */
-export function groupAvailableDays(items, now) {
-  const groups = [];
-  let cur = null;
-  let heldGap = null;
-  for (const it of items) {
-    if (it.kind === 'gap') { heldGap = it; continue; }
-    const monday = weekStartMonday(it.date);
-    const key = isoKey(monday);
-    if (!cur || cur.key !== key) {
-      const { title, sub } = weekGroupLabel(monday, now);
-      cur = { key, monday, title, sub, items: [] };
-      groups.push(cur);
-    }
-    if (heldGap) { cur.items.push(heldGap); heldGap = null; }
-    cur.items.push(it);
-  }
-  return groups;
 }
