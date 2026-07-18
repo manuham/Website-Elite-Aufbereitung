@@ -10,24 +10,21 @@ Live list of things to confirm. Resolve each line and note the answer + date.
   Make; the fallback can only throw 503. Safe to retire the scenario once you've confirmed nothing
   else feeds it.)
 
-- [ ] **Vercel env vars** — Are `GOOGLE_SERVICE_ACCOUNT_KEY` and `GOOGLE_CALENDAR_ID` set in
-  the Vercel project, and is the calendar shared with the service-account email? If not,
-  `/api/book.js` returns 500s and availability silently shows all slots. See
-  `SETUP-ANLEITUNG.md`.
+- [x] **Vercel env vars** — CONFIRMED (2026-07-16): the Google integration is set up and working
+  in production (`GOOGLE_SERVICE_ACCOUNT_KEY` / `GOOGLE_CALENDAR_ID` set, calendar shared with the
+  service account). Availability and booking read/write the live calendar.
 
 - [x] **Client's outside-booking workflow** — CONFIRMED (2026-06): the client enters phone
   appointments manually into **his own** calendar. Symptom reported: those appointments show
   only in his calendar, NOT on the website → the website was reading a different calendar.
   → Root cause = calendar mismatch (see below).
 
-- [ ] **ACTION: calendar ID mismatch** — Find out (a) which calendar `GOOGLE_CALENDAR_ID`
-  currently points to on Vercel, and (b) the ID of the calendar the client actually uses for
-  phone appointments. Then either:
-  - point `GOOGLE_CALENDAR_ID` at the client's own calendar (simplest), OR
-  - add the client's calendar ID to `GOOGLE_CALENDAR_ID` as a comma-separated list and share
-    it (≥ free/busy) with the service account.
-  The code (`api/_lib/calendar.js`) already supports a comma-separated list and unions busy
-  times across all of them.
+- [x] **ACTION: calendar ID mismatch** — RESOLVED (2026-07-16): `GOOGLE_CALENDAR_ID` points at the
+  correct calendar — the one Matthias actually enters phone/walk-in appointments and time-off into —
+  and it is already working. The website sees his real commitments, so "empty = free" is trustworthy
+  (this is what the availability-first rail and the 8-week horizon rest on). No further action.
+  (`api/_lib/calendar.js` reads busy from every calendar in the comma-separated list and writes new
+  bookings to the first.)
 
 ## Availability-first date picker (rail) — confirm before deploy
 
