@@ -26,6 +26,36 @@ Live list of things to confirm. Resolve each line and note the answer + date.
   The code (`api/_lib/calendar.js`) already supports a comma-separated list and unions busy
   times across all of them.
 
+## Availability-first date picker (rail) — confirm before deploy
+
+The Step-3 calendar was rebuilt from a time-axis week grid into an availability-first rail
+(`src/components/booking/AvailabilityRail.jsx`) that lists only bookable days. These need
+Matthias' sign-off before it goes live:
+
+- [ ] **Q1 — Calendar maintained how far ahead?** *(gates the rail)* The rail scans a 56-day
+  (8-week) horizon and presents empty days as *free*. That's only true if the calendar is
+  maintained that far out. If Matthias only enters events ~1–2 weeks ahead, far-out days are
+  *unplanned*, not free, and the rail would advertise openings that don't exist. There is no
+  holiday/vacation/blackout table in the repo (grep `feiertag|holiday|urlaub` → 0); days are
+  blocked only by Google events. If he doesn't maintain 8 weeks, shorten `HORIZON_DAYS`
+  (`src/lib/scheduling.js`, mirrored by the clamp in `api/availability.js`).
+- [ ] **Q2 — Multi-day tolerance (90 min).** A multi-day drop-off day now accepts up to
+  `MULTIDAY_TOLERANCE_MIN` (90) of existing bookings instead of demanding a totally empty day
+  (`scheduling.js` + `api/_lib/calendar.js`, kept in sync by a drift test). Right value? And is
+  he OK that the single spanning booking event will now visually **overlap** those tolerated
+  appointments in his calendar (Google allows it; nothing breaks, but the calendar looks busier)?
+- [ ] **Q3 — `VITE_MAKE_WEBHOOK_URL` set in production?** If unset, `submitViaMake`
+  (`src/lib/api.js`) already throws 503, so a customer can't book during a Google outage anyway —
+  which makes the rail's "refuse and show the phone" behaviour a strict improvement. If it *is*
+  set, revisit whether the outage path should offer a Wunschtermin request form. One `vercel env
+  ls` settles it.
+- [ ] **Q6 — Gap notes** ("kein freier Termin · 21.–24. Juli") between free days: keep for
+  orientation, or drop to honour "only show what's available" literally? One flip:
+  `SHOW_GAP_NOTES` in `AvailabilityRail.jsx`.
+- [ ] **Q9 — Per-day "Zeitachse anzeigen" toggle** was scoped but not built: at the flagship
+  durations (300–360 min) a day has one slot, so an axis would render a single block and the chip
+  already shows the duration. Recommend dropping unless Matthias wants it after seeing the rail.
+
 ## FAQ-Bot Inhalte (zu bestätigen mit Matthias)
 
 The FAQ bot (`src/data/faqKnowledge.js`) has entries for these topics, but with safe

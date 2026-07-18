@@ -18,9 +18,6 @@ import PhoneConsultModal from '../components/PhoneConsultModal';
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
-const DAYS_SHORT = ['Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa', 'So'];
-const MONTHS = ['Januar', 'Februar', 'März', 'April', 'Mai', 'Juni',
-    'Juli', 'August', 'September', 'Oktober', 'November', 'Dezember'];
 const MOBILE_SURCHARGE = 50;
 const MAX_PHOTO_BYTES = 10 * 1024 * 1024; // 10 MB per photo
 // Per-package Mobil-Aufpreis on top of the flat Anfahrtspauschale: the most equipment-intensive
@@ -41,9 +38,6 @@ const SIZE_SURCHARGE_IDS = new Set([
         cat.packages.flatMap((pkg, i) => (pkg.sizeSurcharge ? [`${cat.id}-${i}`] : []))
     ),
 ]);
-
-function getDaysInMonth(y, m) { return new Date(y, m + 1, 0).getDate(); }
-function getFirstDayOfMonth(y, m) { return (new Date(y, m, 1).getDay() + 6) % 7; }
 
 function parsePriceNum(priceStr) {
     const match = priceStr.replace(/\./g, '').match(/€(\d+)/);
