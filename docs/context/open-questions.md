@@ -5,7 +5,10 @@ Live list of things to confirm. Resolve each line and note the answer + date.
 - [ ] **Make.com role** — Does the Make.com scenario
   (`hook.eu1.make.com/ugto7s564hkhy94gvh6ldgyjqgx7dn8x`) create a Google Calendar event, or
   only send notifications? Determines whether we delete it or keep it as notification-only.
-  (As of the double-booking fix, the website no longer calls it.)
+  (As of the double-booking fix, the website no longer calls it. Confirmed 2026-07-16:
+  `VITE_MAKE_WEBHOOK_URL` is unset in production — see Q3 — so the site literally cannot reach
+  Make; the fallback can only throw 503. Safe to retire the scenario once you've confirmed nothing
+  else feeds it.)
 
 - [ ] **Vercel env vars** — Are `GOOGLE_SERVICE_ACCOUNT_KEY` and `GOOGLE_CALENDAR_ID` set in
   the Vercel project, and is the calendar shared with the service-account email? If not,
@@ -40,16 +43,19 @@ Matthias' sign-off before it goes live:
   an empty far week really is free) — only un-blocked time-off, which he enters early.
   ⚠️ **This trust holds only if `GOOGLE_CALENDAR_ID` points at the calendar he actually blocks
   time-off on** — still gated on the calendar-ID ACTION above. Resolve that before deploy.
-- [ ] **Q2 — Multi-day tolerance (90 min).** A multi-day drop-off day now accepts up to
-  `MULTIDAY_TOLERANCE_MIN` (90) of existing bookings instead of demanding a totally empty day
-  (`scheduling.js` + `api/_lib/calendar.js`, kept in sync by a drift test). Right value? And is
-  he OK that the single spanning booking event will now visually **overlap** those tolerated
-  appointments in his calendar (Google allows it; nothing breaks, but the calendar looks busier)?
-- [ ] **Q3 — `VITE_MAKE_WEBHOOK_URL` set in production?** If unset, `submitViaMake`
-  (`src/lib/api.js`) already throws 503, so a customer can't book during a Google outage anyway —
-  which makes the rail's "refuse and show the phone" behaviour a strict improvement. If it *is*
-  set, revisit whether the outage path should offer a Wunschtermin request form. One `vercel env
-  ls` settles it.
+- [x] **Q2 — Multi-day tolerance (90 min)** — CONFIRMED (2026-07-16): keep 90. A multi-day
+  drop-off day accepts up to `MULTIDAY_TOLERANCE_MIN` (90) of existing bookings instead of
+  demanding a totally empty day (`scheduling.js` + `api/_lib/calendar.js`, kept in sync by a drift
+  test). The single spanning booking event visually overlapping those short appointments in the
+  calendar is accepted — it reflects reality (car in the studio + a quick appointment). One line
+  to retune if the workflow changes.
+- [x] **Q3 — `VITE_MAKE_WEBHOOK_URL` set in production?** — CONFIRMED UNSET (2026-07-16, verified
+  in the deployed bundle at www.eliteaufbereitung.at: no `make.com` host present, and a `VITE_` var
+  is folded in at build time, so its absence is conclusive). `submitViaMake` (`src/lib/api.js`)
+  therefore already throws 503 during a Google outage today, so the rail's "refuse and show the
+  phone" is a strict improvement (an upfront honest CTA instead of an end-of-funnel 503) at zero
+  revenue cost — no Wunschtermin form needed. Spillover: the Make fallback is now dead weight (can
+  only 503) — see the Make.com role item at the top.
 - [ ] **Q6 — Gap notes** ("kein freier Termin · 21.–24. Juli") between free days: keep for
   orientation, or drop to honour "only show what's available" literally? One flip:
   `SHOW_GAP_NOTES` in `AvailabilityRail.jsx`.
