@@ -92,8 +92,10 @@ export default function GoogleReviews() {
                 if (!res.ok) throw new Error(`/api/reviews responded ${res.status}`);
                 setState(deriveReviewsState(await res.json()));
             } catch (err) {
-                // Browser console, not Vercel logs — this is a client component. The
-                // server-side counterpart lives in api/reviews.js.
+                // Browser console, not Vercel logs — this is a client component.
+                // The /api/reviews endpoint was intentionally removed (curated
+                // testimonials only), so this fetch now always 404s and the fallback
+                // below is the normal path, not an error condition.
                 console.error('Google reviews unavailable, showing curated testimonials:', err);
                 setState(deriveReviewsState(null));
             } finally {
