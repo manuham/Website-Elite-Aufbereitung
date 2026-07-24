@@ -38,7 +38,7 @@ or added to the comma-separated list) and shared with the service account.
 - **CORS** is no longer `*`. `vercel.json` sets only static security headers; each function reflects
   an allow-listed origin via `applyCors()`. Allowlist defaults to the prod domain(s); override with
   the `ALLOWED_ORIGINS` env var (comma-separated — add `http://localhost:5173` for local dev).
-- **Rate limits** (per-IP, per warm instance): book 8/h, faq-log 20/h, availability & reviews 120/min.
+- **Rate limits** (per-IP, per warm instance): book 8/h, faq-log 20/h, availability 120/min.
   This is a soft mitigation; back it with Vercel KV / Upstash for a hard guarantee.
 - **Booking validation**: `/api/book` fully validates + length-caps every field server-side, strips
   control chars (CRLF-injection), and drops any `photoUrls` not on our Cloudinary host. A hidden
