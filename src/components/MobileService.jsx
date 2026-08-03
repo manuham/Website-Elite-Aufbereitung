@@ -71,12 +71,21 @@ export default function MobileService() {
 
                 {/* Left — Image */}
                 <div className="mobile-image relative rounded-[2rem] overflow-hidden h-[420px] sm:h-[500px] lg:h-[580px] shadow-2xl group transform-gpu border border-ivory/5">
-                    <img
-                        src="/assets/VAN/VAN.png"
-                        alt="Mobiler Aufbereitungsservice"
-                        className="w-full h-[calc(100%+80px)] -translate-y-[40px] object-cover object-center transition-transform duration-1000 group-hover:scale-105"
-                        loading="lazy"
-                    />
+                    <picture>
+                        <source
+                            type="image/webp"
+                            srcSet="/assets/VAN/VAN-640.webp 640w, /assets/VAN/VAN-1024.webp 1024w"
+                            sizes="(min-width: 1024px) 50vw, 100vw"
+                        />
+                        <img
+                            src="/assets/VAN/VAN-1024.jpg"
+                            width="1024"
+                            height="1536"
+                            alt="Mobiler Aufbereitungsservice"
+                            className="w-full h-[calc(100%+80px)] -translate-y-[40px] object-cover object-center transition-transform duration-1000 group-hover:scale-105"
+                            loading="lazy"
+                        />
+                    </picture>
                     <div className="absolute inset-0 bg-gradient-to-t from-obsidian/90 via-obsidian/20 to-transparent mix-blend-multiply" />
                     <span className="mobile-badge absolute top-6 left-6 inline-flex items-center gap-2 bg-emerald-500/10 border border-emerald-500/30 backdrop-blur-md text-emerald-400 px-5 py-2 rounded-full font-sans font-black text-[10px] sm:text-xs uppercase tracking-widest shadow-[0_0_15px_rgba(16,185,129,0.6)] animate-pulse">
                         Neu

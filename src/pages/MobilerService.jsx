@@ -31,12 +31,24 @@ export default function MobilerService() {
 
             {/* Hero */}
             <div className="relative min-h-[70vh] sm:min-h-[80vh] flex items-center overflow-hidden">
-                {/* Background image */}
-                <img
-                    src="/assets/VAN/VAN.png"
-                    alt="Mobiler Aufbereitungsservice — Elité kommt zu Ihnen"
-                    className="absolute inset-0 w-full h-full object-cover object-center"
-                />
+                {/* Background image — this route's hero, and the one the preload in its <head> names */}
+                <picture>
+                    <source
+                        type="image/webp"
+                        srcSet="/assets/VAN/VAN-640.webp 640w, /assets/VAN/VAN-1024.webp 1024w"
+                        sizes="100vw"
+                    />
+                    <img
+                        src="/assets/VAN/VAN-1024.jpg"
+                        width="1024"
+                        height="1536"
+                        alt="Mobiler Aufbereitungsservice — Elité kommt zu Ihnen"
+                        className="absolute inset-0 w-full h-full object-cover object-center"
+                        loading="eager"
+                        fetchpriority="high"
+                        decoding="async"
+                    />
+                </picture>
                 {/* Overlay for readability */}
                 <div className="absolute inset-0 bg-gradient-to-r from-obsidian/85 via-obsidian/60 to-obsidian/30" />
                 <div className="absolute inset-0 bg-gradient-to-t from-obsidian via-transparent to-obsidian/40" />
@@ -147,12 +159,21 @@ export default function MobilerService() {
 
                         {/* Main — spans 2 cols & 2 rows */}
                         <div className="lg:col-span-2 lg:row-span-2 rounded-[1.75rem] overflow-hidden relative group h-[360px] lg:h-full">
-                            <img
-                                src="/assets/VAN/VAN.png"
-                                alt="Der Elité Aufbereitungs-Van"
-                                className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105"
-                                loading="lazy"
-                            />
+                            <picture>
+                                <source
+                                    type="image/webp"
+                                    srcSet="/assets/VAN/VAN-640.webp 640w, /assets/VAN/VAN-1024.webp 1024w"
+                                    sizes="(min-width: 1024px) 66vw, 100vw"
+                                />
+                                <img
+                                    src="/assets/VAN/VAN-1024.jpg"
+                                    width="1024"
+                                    height="1536"
+                                    alt="Der Elité Aufbereitungs-Van"
+                                    className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105"
+                                    loading="lazy"
+                                />
+                            </picture>
                             <div className="absolute inset-0 bg-gradient-to-t from-obsidian/80 via-obsidian/10 to-transparent" />
                             <div className="absolute bottom-6 left-6 flex flex-col gap-1">
                                 <span className="font-mono text-[10px] text-champagne uppercase tracking-widest">Der Van</span>
@@ -165,12 +186,21 @@ export default function MobilerService() {
 
                         {/* Top right */}
                         <div className="rounded-[1.75rem] overflow-hidden relative group h-[280px] lg:h-full">
-                            <img
-                                src="/assets/VAN/VAN_Auto.jpg"
-                                alt="Fahrzeugaufbereitung vor Ort"
-                                className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105"
-                                loading="lazy"
-                            />
+                            <picture>
+                                <source
+                                    type="image/webp"
+                                    srcSet="/assets/VAN/VAN_Auto-640.webp 640w, /assets/VAN/VAN_Auto-1024.webp 1024w"
+                                    sizes="(min-width: 1024px) 33vw, 100vw"
+                                />
+                                <img
+                                    src="/assets/VAN/VAN_Auto-1024.jpg"
+                                    width="1024"
+                                    height="1820"
+                                    alt="Fahrzeugaufbereitung vor Ort"
+                                    className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105"
+                                    loading="lazy"
+                                />
+                            </picture>
                             <div className="absolute inset-0 bg-gradient-to-t from-obsidian/70 via-transparent to-transparent" />
                             <div className="absolute bottom-5 left-5">
                                 <span className="font-mono text-[10px] text-champagne uppercase tracking-widest">Service</span>
@@ -180,12 +210,21 @@ export default function MobilerService() {
 
                         {/* Bottom right */}
                         <div className="rounded-[1.75rem] overflow-hidden relative group h-[280px] lg:h-full">
-                            <img
-                                src="/assets/VAN/VAN_Matthias.jpg"
-                                alt="Matthias — Ihr Aufbereitungsexperte"
-                                className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105"
-                                loading="lazy"
-                            />
+                            <picture>
+                                <source
+                                    type="image/webp"
+                                    srcSet="/assets/VAN/VAN_Matthias-640.webp 640w, /assets/VAN/VAN_Matthias-1024.webp 1024w"
+                                    sizes="(min-width: 1024px) 33vw, 100vw"
+                                />
+                                <img
+                                    src="/assets/VAN/VAN_Matthias-1024.jpg"
+                                    width="1024"
+                                    height="1820"
+                                    alt="Matthias — Ihr Aufbereitungsexperte"
+                                    className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105"
+                                    loading="lazy"
+                                />
+                            </picture>
                             <div className="absolute inset-0 bg-gradient-to-t from-obsidian/70 via-transparent to-transparent" />
                             <div className="absolute bottom-5 left-5">
                                 <span className="font-mono text-[10px] text-champagne uppercase tracking-widest">Team</span>

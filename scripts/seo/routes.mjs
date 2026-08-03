@@ -14,12 +14,18 @@
 
 export const SITE_ORIGIN = 'https://www.eliteaufbereitung.at';
 
-/** Hero image shared by / and /mobiler-service — preloaded only on those two routes. */
+/**
+ * Hero image shared by / and /mobiler-service — preloaded only on those two routes.
+ *
+ * Must stay in lockstep with the <picture> in Hero.jsx and MobilerService.jsx: the browser only
+ * reuses a preload when format, srcset and sizes resolve to the same candidate it would have picked
+ * anyway. A mismatch does not break the page, it just downloads the image twice.
+ */
 export const HERO_PRELOAD = {
-    href: '/assets/VAN/VAN.png',
-    type: null,
-    srcset: null,
-    sizes: null,
+    href: '/assets/VAN/VAN-1024.webp',
+    type: 'image/webp',
+    srcset: '/assets/VAN/VAN-640.webp 640w, /assets/VAN/VAN-1024.webp 1024w',
+    sizes: '100vw',
 };
 
 export const routes = [
