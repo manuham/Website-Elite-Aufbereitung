@@ -14,6 +14,29 @@ import gsap from 'gsap';
  * - trigger: 'scroll' | 'load' (default 'scroll')
  * - stagger, duration, delay, triggerStart, animation
  */
+/**
+ * Breathing room inside the reveal masks.
+ *
+ * Each unit sits in an overflow-hidden box so it can slide up into view. But Playfair Display
+ * Italic — every heading on the site — does not fit inside its own inline box: the italic slant
+ * pushes the 'W' past the left edge, the italic 'f' both ascends and descends beyond the line box,
+ * and the headings run at leading-[1.1] or tighter, which leaves essentially no clearance. The
+ * masks were shaving the edges off letters.
+ *
+ * Padding gives the glyphs somewhere to go; the matching negative margin means the element still
+ * occupies exactly the space it did before, so nothing reflows.
+ */
+const GLYPH_BLEED = {
+    paddingLeft: '0.12em',
+    marginLeft: '-0.12em',
+    paddingRight: '0.12em',
+    marginRight: '-0.12em',
+    paddingTop: '0.14em',
+    marginTop: '-0.14em',
+    paddingBottom: '0.14em',
+    marginBottom: '-0.14em',
+};
+
 export default function SplitText({
     children,
     as: Tag = 'span',
@@ -46,14 +69,18 @@ export default function SplitText({
             delay,
         };
 
+        // 130, not 110: GLYPH_BLEED adds 0.14em of padding below each unit, so the mask now
+        // reaches further down and a unit parked at 110% left a sliver of its ascenders showing
+        // before the reveal. Clearing it needs ~114% at the tightest leading in use; 130 leaves
+        // room to spare and the extra travel is invisible inside a 0.8s slide.
         if (animation === 'slideUp') {
-            fromVars = { yPercent: 110, opacity: 0 };
+            fromVars = { yPercent: 130, opacity: 0 };
             toVars = { ...toVars, yPercent: 0, opacity: 1 };
         } else if (animation === 'fadeIn') {
             fromVars = { opacity: 0, y: 20 };
             toVars = { ...toVars, opacity: 1, y: 0 };
         } else if (animation === 'clipReveal') {
-            fromVars = { yPercent: 100 };
+            fromVars = { yPercent: 130 };
             toVars = { ...toVars, yPercent: 0 };
         }
 
@@ -86,7 +113,7 @@ export default function SplitText({
                             <span
                                 key={`${wi}-${ci}`}
                                 className="inline-block overflow-hidden"
-                                style={{ lineHeight: 'inherit', verticalAlign: 'top', paddingLeft: '0.1em', marginLeft: '-0.1em', paddingRight: '0.1em', marginRight: '-0.1em' }}
+                                style={{ lineHeight: 'inherit', verticalAlign: 'top', ...GLYPH_BLEED }}
                             >
                                 <span className="split-unit inline-block">
                                     {char}
@@ -99,7 +126,7 @@ export default function SplitText({
                     </span>
                 ))
                 : words.map((word, i) => (
-                    <span key={i} className="inline-block overflow-hidden" style={{ verticalAlign: 'top' }}>
+                    <span key={i} className="inline-block overflow-hidden" style={{ verticalAlign: 'top', ...GLYPH_BLEED }}>
                         <span className="split-unit inline-block" style={{ lineHeight: 'inherit' }}>
                             {word}
                         </span>

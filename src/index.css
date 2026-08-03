@@ -135,9 +135,16 @@
   }
 
   /* Underline draw animation — accent underlines draw in from left on scroll */
+  /* Accent underline beneath a highlighted heading word.
+
+     bottom is in em, not rem. It used to be 0.25rem — a flat 4px regardless of type size, which on
+     a 48-60px Playfair italic heading landed *inside* the descenders and struck through the word
+     rather than underlining it. In em it scales with the heading, and the small negative value
+     clears the descender on the tightest leading in use (text-5xl ships line-height 1, so the
+     glyphs already overhang their own box). */
   .underline-draw {
     position: absolute;
-    bottom: 0.25rem;
+    bottom: -0.1em;
     left: 0;
     width: 100%;
     height: 1px;
