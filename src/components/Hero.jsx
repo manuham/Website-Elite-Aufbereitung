@@ -134,10 +134,21 @@ export default function Hero({ entranceReady = true }) {
         document.getElementById('pricing')?.scrollIntoView({ behavior: 'smooth' });
     };
 
+    // The section clips: overflow-hidden keeps the two overscanned parallax layers below from
+    // reaching page layout, rather than relying on body's overflow-x-hidden to mop up.
     return (
-        <section ref={containerRef} className="relative h-[100dvh] w-full flex flex-col justify-end pb-28 sm:pb-36 lg:pb-44 [@media(max-height:900px)]:!pb-24 px-6 sm:px-12 lg:px-24">
-            {/* Background Image — depth layer (slowest parallax) */}
-            <div className="hero-bg-layer absolute inset-0 z-0 overflow-hidden bg-obsidian pointer-events-none will-change-transform">
+        <section ref={containerRef} className="relative h-[100dvh] w-full overflow-hidden flex flex-col justify-end pb-28 sm:pb-36 lg:pb-44 [@media(max-height:900px)]:!pb-24 px-6 sm:px-12 lg:px-24">
+            {/* Background Image — depth layer (slowest parallax)
+
+                Overscanned 16px a side. The mouse parallax shifts this whole layer up to ±10px, and
+                at exactly inset-0 that uncovered a bare strip of the section behind it — a hard
+                vertical band down one edge of the hero.
+
+                The overscan must stay larger than the biggest translation in the mousemove handler
+                above (currently 10). Deliberately px, not rem: the translation is in px, so a rem
+                overscan would shrink below it on a browser with a smaller root font size and the
+                band would come back as a hairline. */}
+            <div className="hero-bg-layer absolute inset-y-0 -inset-x-[16px] z-0 overflow-hidden bg-obsidian pointer-events-none will-change-transform">
                 {/* The ref lands on the inner <img> — that is the element GSAP scales in the
                     breathing tween above. */}
                 <Img
@@ -159,8 +170,11 @@ export default function Hero({ entranceReady = true }) {
             {/* Floating dust particles */}
             <FloatingParticles count={15} className="z-[3] opacity-60" />
 
-            {/* Animated Blobs — mid-depth layer (medium parallax) */}
-            <div className="hero-blob-layer absolute inset-0 z-[1] overflow-hidden pointer-events-none will-change-transform">
+            {/* Animated Blobs — mid-depth layer (medium parallax)
+                Overscanned by 28px a side. This layer moves ±18px and its own overflow-hidden was
+                travelling with it, so the clip edge sliced the blurred blobs into a visible vertical
+                line. Wider than the translation, so the cut always happens off-screen. */}
+            <div className="hero-blob-layer absolute inset-y-0 -inset-x-[28px] z-[1] overflow-hidden pointer-events-none will-change-transform">
                 <div className="absolute inset-0 mix-blend-screen opacity-30">
                     <div className="absolute -top-[10%] -left-[10%] w-[500px] h-[500px] sm:w-[800px] sm:h-[800px] bg-accent/20 rounded-full filter blur-[100px] sm:blur-[140px] animate-blob" />
                     <div className="absolute top-[20%] -right-[10%] w-[400px] h-[400px] sm:w-[600px] sm:h-[600px] bg-sky-500/10 rounded-full filter blur-[90px] animate-blob" style={{ animationDelay: '2s' }} />
