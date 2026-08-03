@@ -7,6 +7,7 @@ import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 import useIsomorphicLayoutEffect from '../hooks/useIsomorphicLayoutEffect';
 import { tierPackages } from '../data/services';
+import Img from '../components/Img';
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -73,8 +74,9 @@ export default function EliteEndstufe() {
             <section ref={heroRef} className="relative min-h-screen flex items-center justify-center overflow-hidden">
                 {/* Background image */}
                 <div className="absolute inset-0">
-                    <img
+                    <Img
                         src="/assets/Autos/P1345640.jpg"
+                        sizes="100vw"
                         alt="Elite Aufbereitung Ergebnis"
                         className="w-full h-full object-cover"
                     />
@@ -208,8 +210,9 @@ export default function EliteEndstufe() {
                     <div className="reveal grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 lg:grid-rows-2 gap-4 lg:h-[600px]">
                         {/* Main large image */}
                         <div className="lg:col-span-2 lg:row-span-2 rounded-[1.75rem] overflow-hidden relative group">
-                            <img
+                            <Img
                                 src="/assets/Ergebnisse/P1345324.jpg"
+                                sizes="(min-width: 768px) 50vw, 100vw"
                                 alt="Elite Aufbereitung Ergebnis"
                                 className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105"
                                 loading="lazy"
@@ -223,8 +226,9 @@ export default function EliteEndstufe() {
 
                         {/* Top right */}
                         <div className="rounded-[1.75rem] overflow-hidden relative group">
-                            <img
+                            <Img
                                 src="/assets/Ergebnisse/P1345330.jpg"
+                                sizes="(min-width: 768px) 50vw, 100vw"
                                 alt="Keramikbeschichtung Ergebnis"
                                 className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105"
                                 loading="lazy"
@@ -237,8 +241,9 @@ export default function EliteEndstufe() {
 
                         {/* Bottom right */}
                         <div className="rounded-[1.75rem] overflow-hidden relative group">
-                            <img
+                            <Img
                                 src="/assets/Produkte/P1345425.jpg"
+                                sizes="(min-width: 768px) 50vw, 100vw"
                                 alt="Premium Produkte"
                                 className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105"
                                 loading="lazy"
@@ -254,13 +259,14 @@ export default function EliteEndstufe() {
                     <div className="reveal grid grid-cols-2 md:grid-cols-4 gap-4 mt-4">
                         {[
                             { src: '/assets/Ergebnisse/P1345319.jpg', label: 'Lackperfektion' },
-                            { src: '/assets/Innenreinigung/P1345270.jpg', label: 'Interieur' },
+                            { src: '/assets/Innenreinigung/P1345203.jpg', label: 'Interieur' },
                             { src: '/assets/Ergebnisse/P1345333.jpg', label: 'Spiegelglanz' },
                             { src: '/assets/Produkte/P1345452.jpg', label: 'Detailarbeit' },
                         ].map(img => (
                             <div key={img.label} className="rounded-[1.25rem] overflow-hidden relative group aspect-square">
-                                <img
+                                <Img
                                     src={img.src}
+                                    sizes="(min-width: 768px) 25vw, 50vw"
                                     alt={img.label}
                                     className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105"
                                     loading="lazy"
@@ -305,8 +311,9 @@ export default function EliteEndstufe() {
                         <div className="grid grid-cols-1 md:grid-cols-2 items-center">
                             {/* Image */}
                             <div className="aspect-square md:aspect-auto md:h-full relative overflow-hidden">
-                                <img
+                                <Img
                                     src="/assets/Produkte/pflegegeschenk.jpeg"
+                                    sizes="(min-width: 768px) 50vw, 100vw"
                                     alt="Pflegegeschenk"
                                     className="w-full h-full object-cover"
                                     loading="lazy"

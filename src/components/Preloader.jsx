@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import gsap from 'gsap';
 import useIsomorphicLayoutEffect from '../hooks/useIsomorphicLayoutEffect';
+import Img from './Img';
 
 export default function Preloader({ onComplete }) {
     const overlayRef = useRef(null);
@@ -95,8 +96,9 @@ export default function Preloader({ onComplete }) {
         >
             {/* Logo */}
             <div ref={logoRef} className="opacity-0">
-                <img
+                <Img
                     src="/assets/logo-new2.png"
+                    sizes="80px"
                     alt="Elite Aufbereitung"
                     className="h-16 sm:h-20 w-auto brightness-100 invert-0"
                 />

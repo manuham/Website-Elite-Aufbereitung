@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import SplitText from './SplitText';
+import Img from './Img';
 const stats = [
     { value: '500+', label: 'Fahrzeuge aufbereitet' },
     { value: '60k', label: 'km Keramik-Garantie' },
@@ -89,8 +90,9 @@ export default function Philosophy() {
             {/* Parallax background texture */}
             <div className="absolute inset-0 z-0">
                 <div className="parallax-bg absolute -top-[10vh] left-0 w-full h-[120vh]">
-                    <img
+                    <Img
                         src="/assets/Außenreinigung/P1334666.jpg"
+                        sizes="(min-width: 1024px) 50vw, 100vw"
                         alt="Elite Aufbereitung Hintergrund"
                         className="w-full h-full object-cover opacity-15 mix-blend-luminosity"
                     />
@@ -170,8 +172,9 @@ export default function Philosophy() {
                             aria-label="Video abspielen: Elite Auto Aufbereitung Showcase"
                             className="group relative block w-full h-full"
                         >
-                            <img
+                            <Img
                                 src="/assets/video-poster.jpg"
+                                sizes="(min-width: 1024px) 50vw, 100vw"
                                 alt="Elite Auto Aufbereitung Showcase"
                                 className="w-full h-full object-cover"
                                 loading="lazy"

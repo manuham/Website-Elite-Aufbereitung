@@ -9,6 +9,7 @@
     "lint": "eslint . --ext js,jsx --report-unused-disable-directives --max-warnings 0",
     "preview": "vite preview",
     "images:optimize": "node scripts/optimize-images.mjs",
+    "images:measure": "node scripts/seo/measure-images.mjs",
     "test": "vitest run"
   },
   "dependencies": {

@@ -5,6 +5,7 @@ import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
+import Img from '../components/Img';
 
 const projects = [
     {
@@ -114,8 +115,9 @@ function BeforeAfterSlider({ img, label, car, tag }) {
                 onTouchStart={(e) => updatePos(e.touches[0].clientX)}
             >
                 {/* Before — desaturated/faded */}
-                <img
+                <Img
                     src={img}
+                    sizes="(min-width: 1024px) 50vw, 100vw"
                     alt={`${label} vorher`}
                     draggable={false}
                     className="absolute inset-0 w-full h-full object-cover"
@@ -128,8 +130,9 @@ function BeforeAfterSlider({ img, label, car, tag }) {
                     className="absolute inset-0"
                     style={{ clipPath: `inset(0 0 0 ${pos}%)` }}
                 >
-                    <img
+                    <Img
                         src={img}
+                        sizes="(min-width: 1024px) 50vw, 100vw"
                         alt={`${label} nachher`}
                         draggable={false}
                         className="absolute inset-0 w-full h-full object-cover"

@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { X, Menu } from 'lucide-react';
 import gsap from 'gsap';
+import Img from './Img';
 
 // Ordered to match the homepage section flow: Philosophy → Gallery → Pricing → FAQ → Footer
 const navLinks = [
@@ -102,8 +103,9 @@ export default function Navbar() {
                 >
                     {/* Negative margins collapse the PNG's transparent padding so the bar stays slim
                         while the visible wordmark renders at full size */}
-                    <img
+                    <Img
                         src="/assets/logo-new2.png"
+                        sizes="112px"
                         alt="Elité Auto Aufbereitung"
                         className="h-[4.5rem] -my-5 sm:h-[5.5rem] sm:-my-6 lg:h-[7rem] lg:-my-8 w-auto object-contain -ml-2"
                     />

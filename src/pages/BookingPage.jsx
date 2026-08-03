@@ -7,6 +7,7 @@ import { useRecommendations } from '../hooks/useRecommendations';
 import { useAvailability } from '../hooks/useAvailability';
 import { submitBooking } from '../lib/api';
 import { summarizePhotoUploads } from '../lib/photoUploads';
+import Img from '../components/Img';
 import {
     computeBookingDuration, weekDays, weekStartMonday, addDays, startOfDay, workingSpan,
     sameDayPlan, multiDayStartState, DAY, HORIZON_DAYS, availableDays, minToTime, durLabel, daysLabel, germanFull,
@@ -1025,6 +1026,7 @@ function Step3({ contact, setContact, honeypot, setHoneypot, photos, setPhotos, 
                     <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                         {photoPreviews.map((src, i) => (
                             <div key={i} className="relative aspect-square rounded-xl overflow-hidden border border-slate/60 group">
+                                {/* A user-uploaded blob/Cloudinary URL, never a site asset — plain <img>, no manifest lookup. */}
                                 <img src={src} className="w-full h-full object-cover" alt={`Foto ${i + 1}`} />
                                 <button
                                     type="button"
@@ -1444,7 +1446,7 @@ export default function BookingPage() {
                     <ArrowLeft className="w-4 h-4" /> Zurück
                 </button>
                 <Link to="/">
-                    <img src="/assets/logo-new2.png" alt="Elité Auto Aufbereitung" className="h-[4rem] sm:h-[4.5rem] lg:h-[5.5rem] w-auto object-contain" />
+                    <Img src="/assets/logo-new2.png" sizes="88px" alt="Elité Auto Aufbereitung" className="h-[4rem] sm:h-[4.5rem] lg:h-[5.5rem] w-auto object-contain" />
                 </Link>
                 <div className="flex items-center gap-2 bg-obsidian/50 px-3 py-1.5 rounded-full border border-slate/50">
                     <span className="relative flex h-2 w-2">

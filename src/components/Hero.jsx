@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import gsap from 'gsap';
 import { Truck, Sparkles } from 'lucide-react';
 import FloatingParticles from './FloatingParticles';
+import Img from './Img';
 import useIsomorphicLayoutEffect from '../hooks/useIsomorphicLayoutEffect';
 
 export default function Hero({ entranceReady = true }) {
@@ -137,26 +138,18 @@ export default function Hero({ entranceReady = true }) {
         <section ref={containerRef} className="relative h-[100dvh] w-full flex flex-col justify-end pb-28 sm:pb-36 lg:pb-44 [@media(max-height:900px)]:!pb-24 px-6 sm:px-12 lg:px-24">
             {/* Background Image — depth layer (slowest parallax) */}
             <div className="hero-bg-layer absolute inset-0 z-0 overflow-hidden bg-obsidian pointer-events-none will-change-transform">
-                {/* The <picture> only picks the format — ref, classes and every attribute stay on
-                    the <img>, which is what GSAP scales (see the breathing tween above). */}
-                <picture>
-                    <source
-                        type="image/webp"
-                        srcSet="/assets/VAN/VAN-640.webp 640w, /assets/VAN/VAN-1024.webp 1024w"
-                        sizes="100vw"
-                    />
-                    <img
-                        ref={bgRef}
-                        src="/assets/VAN/VAN-1024.jpg"
-                        width="1024"
-                        height="1536"
-                        alt="Elite Aufbereitung mobiler Service Van"
-                        className="w-full h-full object-cover object-[center_48%] opacity-70 mix-blend-luminosity brightness-110 contrast-105 will-change-transform"
-                        loading="eager"
-                        fetchpriority="high"
-                        decoding="async"
-                    />
-                </picture>
+                {/* The ref lands on the inner <img> — that is the element GSAP scales in the
+                    breathing tween above. */}
+                <Img
+                    ref={bgRef}
+                    src="/assets/VAN/VAN.png"
+                    sizes="100vw"
+                    alt="Elite Aufbereitung mobiler Service Van"
+                    className="w-full h-full object-cover object-[center_48%] opacity-70 mix-blend-luminosity brightness-110 contrast-105 will-change-transform"
+                    loading="eager"
+                    fetchpriority="high"
+                    decoding="async"
+                />
                 {/* Vertical: darken the sky/houses at the top, keep the van zone open, ground the bottom for text */}
                 <div className="absolute inset-0 bg-gradient-to-t from-obsidian via-obsidian/40 to-obsidian/75" />
                 {/* Horizontal: legibility behind the bottom-left headline while the van side stays bright */}

@@ -3,6 +3,7 @@ import gsap from 'gsap';
 import { Instagram, Facebook } from 'lucide-react';
 import SplitText from './SplitText';
 import { useTilt } from '../hooks/useTilt';
+import Img from './Img';
 
 function TiltItem({ children, className }) {
     const tiltRef = useTilt(5, 900, true);
@@ -165,8 +166,9 @@ export default function Gallery() {
 
                     {/* Tall featured image — left */}
                     <TiltItem className="gallery-item col-span-1 row-span-1 sm:row-span-2 relative group rounded-[1.5rem] overflow-hidden">
-                        <img
+                        <Img
                             src={galleryItems[0].src}
+                            sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
                             alt={galleryItems[0].alt}
                             className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
                             loading="lazy"
@@ -179,8 +181,9 @@ export default function Gallery() {
                     {/* Regular images */}
                     {galleryItems.slice(1).map((item, i) => (
                         <TiltItem key={i} className="gallery-item col-span-1 row-span-1 relative group rounded-[1.5rem] overflow-hidden">
-                            <img
+                            <Img
                                 src={item.src}
+                                sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
                                 alt={item.alt}
                                 className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
                                 loading="lazy"

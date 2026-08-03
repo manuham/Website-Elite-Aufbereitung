@@ -3,6 +3,7 @@ import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import SplitText from './SplitText';
 import FloatingParticles from './FloatingParticles';
+import Img from './Img';
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -120,8 +121,9 @@ export default function Protocol() {
 
                             {/* Image */}
                             <div className="flex-1 w-full min-h-[200px] md:h-full relative overflow-hidden">
-                                <img
+                                <Img
                                     src={step.image}
+                                    sizes="(min-width: 1024px) 33vw, 100vw"
                                     alt={step.title}
                                     className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
                                     loading="lazy"

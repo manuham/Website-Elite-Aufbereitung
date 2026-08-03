@@ -14,17 +14,24 @@
 
 export const SITE_ORIGIN = 'https://www.eliteaufbereitung.at';
 
+import { imageManifest } from '../../src/data/imageManifest.js';
+
+/** The hero image shared by / and /mobiler-service. Both render it full-bleed. */
+const HERO_SRC = '/assets/VAN/VAN.png';
+
 /**
- * Hero image shared by / and /mobiler-service — preloaded only on those two routes.
+ * Hero preload, derived from the generated manifest rather than written out by hand.
  *
- * Must stay in lockstep with the <picture> in Hero.jsx and MobilerService.jsx: the browser only
- * reuses a preload when format, srcset and sizes resolve to the same candidate it would have picked
- * anyway. A mismatch does not break the page, it just downloads the image twice.
+ * It has to resolve to the exact candidate <Img> would have picked, or the browser preloads one
+ * file and then downloads a different one — a silent doubling rather than a visible break. Reading
+ * the same manifest the component reads is what makes that impossible.
  */
 export const HERO_PRELOAD = {
-    href: '/assets/VAN/VAN-1024.webp',
+    // The widest WebP candidate — href must name a WebP, not the raster fallback, or browsers that
+    // take the <source> would preload a file they then never use.
+    href: imageManifest[HERO_SRC].srcset.split(',').pop().trim().split(' ')[0],
     type: 'image/webp',
-    srcset: '/assets/VAN/VAN-640.webp 640w, /assets/VAN/VAN-1024.webp 1024w',
+    srcset: imageManifest[HERO_SRC].srcset,
     sizes: '100vw',
 };
 

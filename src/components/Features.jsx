@@ -4,6 +4,7 @@ import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { Droplets, ShieldCheck, CalendarCheck } from 'lucide-react';
 import SplitText from './SplitText';
 import { useTilt } from '../hooks/useTilt';
+import Img from './Img';
 
 function TiltCard({ children, className }) {
     const tiltRef = useTilt(6, 800, true);
@@ -164,8 +165,9 @@ export default function Features() {
                             {/* Image area */}
                             <div className="relative h-72 lg:h-80 overflow-hidden">
                                 <div className="absolute inset-0 bg-accent/20 mix-blend-overlay z-10 opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none" />
-                                <img
+                                <Img
                                     src={feature.image}
+                                    sizes="(min-width: 1024px) 33vw, 100vw"
                                     alt={feature.title}
                                     className="feature-card-img absolute inset-0 w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110 will-change-transform"
                                     loading="lazy"
