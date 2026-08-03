@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import gsap from 'gsap';
 import { Truck, Sparkles } from 'lucide-react';
 import FloatingParticles from './FloatingParticles';
+import useIsomorphicLayoutEffect from '../hooks/useIsomorphicLayoutEffect';
 
 export default function Hero({ entranceReady = true }) {
     const containerRef = useRef(null);
@@ -35,7 +36,9 @@ export default function Hero({ entranceReady = true }) {
         return () => container.removeEventListener('mousemove', onMouseMove);
     }, []);
 
-    useEffect(() => {
+    // Layout effect, not an ordinary one: the homepage is prerendered, so the hero text is already
+    // in the HTML and painted before React runs. Hiding it after paint would flash it.
+    useIsomorphicLayoutEffect(() => {
         const ctx = gsap.context(() => {
             // Hide entrance elements until the preloader has lifted (see entrance effect below)
             gsap.set('.hero-badge', { scale: 0, opacity: 0 });

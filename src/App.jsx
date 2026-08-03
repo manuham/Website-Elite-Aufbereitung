@@ -137,7 +137,14 @@ function NotFound() {
     );
 }
 
-export default function App() {
+/**
+ * Everything inside the router.
+ *
+ * Split out from App so the build-time prerenderer (src/entry-server.jsx) can render the same tree
+ * under a MemoryRouter without dragging BrowserRouter — and therefore the browser History API —
+ * into Node. The browser still mounts it through App below, unchanged.
+ */
+export function AppShell() {
     const [preloaderDone, setPreloaderDone] = useState(false);
     const handlePreloaderComplete = useCallback(() => {
         setPreloaderDone(true);
@@ -147,7 +154,7 @@ export default function App() {
     useMagneticGlobal();
 
     return (
-        <BrowserRouter>
+        <>
             <Preloader onComplete={handlePreloaderComplete} />
 
             <ScrollProgress />
@@ -165,6 +172,14 @@ export default function App() {
                 <Route path="/widerruf" element={<Widerruf />} />
                 <Route path="*" element={<NotFound />} />
             </Routes>
+        </>
+    );
+}
+
+export default function App() {
+    return (
+        <BrowserRouter>
+            <AppShell />
         </BrowserRouter>
     );
 }

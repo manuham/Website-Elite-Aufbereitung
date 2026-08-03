@@ -1,17 +1,36 @@
 import { useEffect, useRef, useState } from 'react';
 import gsap from 'gsap';
+import useIsomorphicLayoutEffect from '../hooks/useIsomorphicLayoutEffect';
 
 export default function Preloader({ onComplete }) {
     const overlayRef = useRef(null);
     const logoRef = useRef(null);
     const barRef = useRef(null);
     const barFillRef = useRef(null);
-    const [show, setShow] = useState(() => {
-        // Skip preloader on return visits within session
-        return !sessionStorage.getItem('elite-visited');
-    });
+    // Starts true so the prerendered HTML and the first client render agree — reading
+    // sessionStorage here would crash the build-time render and desync hydration. The overlay is a
+    // plain obsidian rectangle at this point (both children are opacity-0), so a prerendered page
+    // paints exactly like the empty shell it replaced.
+    const [show, setShow] = useState(true);
+    const [gateResolved, setGateResolved] = useState(false);
+
+    // Skip the preloader on return visits within the session. A layout effect, so the overlay is
+    // gone before the browser paints — an ordinary effect would flash it for one frame.
+    useIsomorphicLayoutEffect(() => {
+        let visited = false;
+        try {
+            visited = !!sessionStorage.getItem('elite-visited');
+        } catch {
+            // Private mode / storage blocked — treat as a first visit.
+        }
+        if (visited) setShow(false);
+        setGateResolved(true);
+    }, []);
 
     useEffect(() => {
+        // Nothing starts until we know whether this is a return visit.
+        if (!gateResolved) return;
+
         if (!show) {
             onComplete?.();
             return;
@@ -22,7 +41,11 @@ export default function Preloader({ onComplete }) {
 
         const tl = gsap.timeline({
             onComplete: () => {
-                sessionStorage.setItem('elite-visited', '1');
+                try {
+                    sessionStorage.setItem('elite-visited', '1');
+                } catch {
+                    // Storage blocked — the preloader simply plays again next navigation.
+                }
                 document.body.style.overflow = '';
                 setShow(false);
                 onComplete?.();
@@ -60,7 +83,7 @@ export default function Preloader({ onComplete }) {
             }, '+=0.1');
 
         return () => tl.kill();
-    }, [show, onComplete]);
+    }, [gateResolved, show, onComplete]);
 
     if (!show) return null;
 

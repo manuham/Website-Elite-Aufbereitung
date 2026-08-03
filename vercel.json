@@ -8,8 +8,17 @@
     { "source": "/jetzt-buchen", "destination": "/buchen", "statusCode": 301 },
     { "source": "/s-projects-side-by-side", "destination": "/projekte", "statusCode": 301 }
   ],
+  "trailingSlash": false,
   "rewrites": [
     { "source": "/api/(.*)", "destination": "/api/$1" },
+    { "source": "/mobiler-service", "destination": "/mobiler-service/index.html" },
+    { "source": "/elite-endstufe", "destination": "/elite-endstufe/index.html" },
+    { "source": "/projekte", "destination": "/projekte/index.html" },
+    { "source": "/buchen", "destination": "/buchen/index.html" },
+    { "source": "/impressum", "destination": "/impressum/index.html" },
+    { "source": "/datenschutz", "destination": "/datenschutz/index.html" },
+    { "source": "/agb", "destination": "/agb/index.html" },
+    { "source": "/widerruf", "destination": "/widerruf/index.html" },
     { "source": "/((?!assets/).*)", "destination": "/index.html" }
   ],
   "headers": [
