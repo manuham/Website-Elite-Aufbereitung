@@ -46,6 +46,60 @@ describe('vercel.json — legacy Wix redirects', () => {
     });
 });
 
+describe('vercel.json — caching', () => {
+    const cacheRules = config.headers.filter((rule) =>
+        rule.headers.some((h) => h.key === 'Cache-Control')
+    );
+
+    /** Vercel `source` is path-to-regexp; these two rules are a literal prefix plus a regex group. */
+    const matches = (source, path) => new RegExp(`^${source}$`).test(path);
+
+    it('caches the hashed build output immutably', () => {
+        const rule = cacheRules.find((r) => r.source.includes('js|css'));
+        expect(rule).toBeDefined();
+        const value = rule.headers.find((h) => h.key === 'Cache-Control').value;
+        expect(value).toContain('immutable');
+        expect(value).toContain('max-age=31536000');
+        expect(matches(rule.source, '/assets/index-Dhd0sRTq.js')).toBe(true);
+        expect(matches(rule.source, '/assets/index-Dhd0sRTq.css')).toBe(true);
+    });
+
+    it('caches images long, but NOT immutably', () => {
+        const rule = cacheRules.find((r) => r.source.includes('webp'));
+        expect(rule).toBeDefined();
+        const value = rule.headers.find((h) => h.key === 'Cache-Control').value;
+        // Files in public/assets have stable, unhashed names and can be overwritten in place.
+        // `immutable` would strand a replaced photo in caches for a year.
+        expect(value).not.toContain('immutable');
+        expect(value).toContain('max-age=2592000');
+        expect(matches(rule.source, '/assets/VAN/VAN-1024.webp')).toBe(true);
+        expect(matches(rule.source, '/assets/Autos/IMG_2195.jpg')).toBe(true);
+    });
+
+    it('never lets a cache rule catch an HTML document', () => {
+        // A cached HTML document is how a deploy silently fails to reach anyone. The prerendered
+        // route documents must keep Vercel's default max-age=0, must-revalidate.
+        const htmlPaths = [
+            '/',
+            '/index.html',
+            '/projekte',
+            '/projekte/index.html',
+            '/impressum/index.html',
+            '/assets/index.html',
+            '/sitemap.xml',
+            '/robots.txt',
+        ];
+        for (const rule of cacheRules) {
+            for (const path of htmlPaths) {
+                expect(
+                    matches(rule.source, path),
+                    `cache rule "${rule.source}" must not match ${path}`
+                ).toBe(false);
+            }
+        }
+    });
+});
+
 describe('vercel.json — security headers', () => {
     const globalRule = config.headers.find((h) => h.source === '/(.*)');
     const headerValue = (key) => globalRule.headers.find((h) => h.key === key)?.value;
