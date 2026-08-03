@@ -1,4 +1,13 @@
 {
+  "redirects": [
+    { "source": "/kopie-von-polieren", "destination": "/elite-endstufe", "statusCode": 301 },
+    { "source": "/kopie-von-innenreinigung", "destination": "/", "statusCode": 301 },
+    { "source": "/services-7", "destination": "/", "statusCode": 301 },
+    { "source": "/kopie-von-versiegeln-1", "destination": "/elite-endstufe", "statusCode": 301 },
+    { "source": "/kopie-von-versiegeln", "destination": "/elite-endstufe", "statusCode": 301 },
+    { "source": "/jetzt-buchen", "destination": "/buchen", "statusCode": 301 },
+    { "source": "/s-projects-side-by-side", "destination": "/projekte", "statusCode": 301 }
+  ],
   "rewrites": [
     { "source": "/api/(.*)", "destination": "/api/$1" },
     { "source": "/((?!assets/).*)", "destination": "/index.html" }
