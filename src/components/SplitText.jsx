@@ -78,6 +78,20 @@ export default function SplitText({
             stagger: actualStagger,
             ease: 'power4.out',
             delay,
+
+            // GSAP defaults to force3D:'auto', which animates with translate3d() and promotes each
+            // unit to its own GPU layer. Every one of those layers sits inside a clip-path, and a
+            // composited layer whose edge lands on a fractional pixel can leave a hairline seam
+            // along that edge — the kind of stray mark that never shows in software rendering and
+            // only appears on a real, GPU-accelerated browser. These are short text reveals; 2D
+            // transforms are plenty.
+            force3D: false,
+
+            // And once the reveal is done, take the transform off entirely rather than leaving a
+            // translate(0px, 0%) behind. A finished unit is then a plain, unpromoted inline-block.
+            onComplete() {
+                gsap.set(this.targets(), { clearProps: 'transform,willChange' });
+            },
         };
 
         // 130, not the original 110: REVEAL_CLIP holds the clip edge 0.24em below the box so
