@@ -4,7 +4,7 @@ import gsap from 'gsap';
 /**
  * SplitText — splits text into words/characters and animates them in with a mask reveal.
  *
- * Structure: outer mask (overflow-hidden) > inner .split-unit (animated)
+ * Structure: outer mask (clip-path, see REVEAL_CLIP) > inner .split-unit (animated)
  *
  * Props:
  * - children: string text to animate
@@ -15,26 +15,24 @@ import gsap from 'gsap';
  * - stagger, duration, delay, triggerStart, animation
  */
 /**
- * Breathing room inside the reveal masks.
+ * The reveal mask, as a clip-path rather than overflow: hidden.
  *
- * Each unit sits in an overflow-hidden box so it can slide up into view. But Playfair Display
- * Italic — every heading on the site — does not fit inside its own inline box: the italic slant
- * pushes the 'W' past the left edge, the italic 'f' both ascends and descends beyond the line box,
- * and the headings run at leading-[1.1] or tighter, which leaves essentially no clearance. The
- * masks were shaving the edges off letters.
+ * The reveal slides each unit up from below, so only the BOTTOM edge needs to clip. overflow:hidden
+ * cannot express that — it clips all four sides — and Playfair Display Italic, which every heading
+ * uses, does not fit inside its own inline box: the slant pushes the 'W' past the left edge, the
+ * italic 'f' runs past the line box top and bottom, and text-5xl/6xl ship line-height 1, so the
+ * glyphs already overhang. All four edges were shaving letters.
  *
- * Padding gives the glyphs somewhere to go; the matching negative margin means the element still
- * occupies exactly the space it did before, so nothing reflows.
+ * inset() takes top/right/bottom/left, and negative values push the clip edge outward. So: wide
+ * open on three sides, and just past the box bottom so descenders survive while anything parked
+ * below — a unit waiting to be revealed — stays hidden.
+ *
+ * Padding cannot do this job. Vertical padding with a compensating negative margin looks equivalent
+ * but is not: on an inline-block, negative vertical margins shrink the line box, and multi-line
+ * headings collapse into each other.
  */
-const GLYPH_BLEED = {
-    paddingLeft: '0.12em',
-    marginLeft: '-0.12em',
-    paddingRight: '0.12em',
-    marginRight: '-0.12em',
-    paddingTop: '0.14em',
-    marginTop: '-0.14em',
-    paddingBottom: '0.14em',
-    marginBottom: '-0.14em',
+const REVEAL_CLIP = {
+    clipPath: 'inset(-0.45em -0.45em -0.09em -0.45em)',
 };
 
 export default function SplitText({
@@ -69,18 +67,17 @@ export default function SplitText({
             delay,
         };
 
-        // 130, not 110: GLYPH_BLEED adds 0.14em of padding below each unit, so the mask now
-        // reaches further down and a unit parked at 110% left a sliver of its ascenders showing
-        // before the reveal. Clearing it needs ~114% at the tightest leading in use; 130 leaves
-        // room to spare and the extra travel is invisible inside a 0.8s slide.
+        // 120, not the original 110: REVEAL_CLIP holds the clip edge 0.09em below the box so
+        // descenders survive, which a unit parked at 110% would just barely peek through at
+        // line-height 1. 120 clears it with room to spare and reads identically at 0.8s.
         if (animation === 'slideUp') {
-            fromVars = { yPercent: 130, opacity: 0 };
+            fromVars = { yPercent: 120, opacity: 0 };
             toVars = { ...toVars, yPercent: 0, opacity: 1 };
         } else if (animation === 'fadeIn') {
             fromVars = { opacity: 0, y: 20 };
             toVars = { ...toVars, opacity: 1, y: 0 };
         } else if (animation === 'clipReveal') {
-            fromVars = { yPercent: 130 };
+            fromVars = { yPercent: 120 };
             toVars = { ...toVars, yPercent: 0 };
         }
 
@@ -112,8 +109,8 @@ export default function SplitText({
                         {word.split('').map((char, ci) => (
                             <span
                                 key={`${wi}-${ci}`}
-                                className="inline-block overflow-hidden"
-                                style={{ lineHeight: 'inherit', verticalAlign: 'top', ...GLYPH_BLEED }}
+                                className="inline-block"
+                                style={{ lineHeight: 'inherit', verticalAlign: 'top', ...REVEAL_CLIP }}
                             >
                                 <span className="split-unit inline-block">
                                     {char}
@@ -126,7 +123,7 @@ export default function SplitText({
                     </span>
                 ))
                 : words.map((word, i) => (
-                    <span key={i} className="inline-block overflow-hidden" style={{ verticalAlign: 'top', ...GLYPH_BLEED }}>
+                    <span key={i} className="inline-block" style={{ verticalAlign: 'top', ...REVEAL_CLIP }}>
                         <span className="split-unit inline-block" style={{ lineHeight: 'inherit' }}>
                             {word}
                         </span>
