@@ -19,7 +19,7 @@
     { "source": "/datenschutz", "destination": "/datenschutz/index.html" },
     { "source": "/agb", "destination": "/agb/index.html" },
     { "source": "/widerruf", "destination": "/widerruf/index.html" },
-    { "source": "/((?!assets/).*)", "destination": "/index.html" }
+    { "source": "/((?!assets/|api/).*)", "destination": "/index.html" }
   ],
   "headers": [
     {

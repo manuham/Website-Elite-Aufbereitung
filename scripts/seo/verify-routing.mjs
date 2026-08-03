@@ -63,14 +63,19 @@ export function resolveRequest(pathname) {
 
     // 3. rewrites, in order; the first whose destination resolves wins.
     for (const rule of config.rewrites ?? []) {
-        if (!sourceToRegExp(rule.source).test(pathname)) continue;
-        if (rule.destination.startsWith('/api/')) {
-            // Serverless functions live in api/ and are not part of dist/.
-            const fn = join(repoRoot, `${rule.destination.replace(/^\//, '')}.js`);
-            if (existsSync(fn)) return { status: 200, file: rule.destination };
+        const match = pathname.match(sourceToRegExp(rule.source));
+        if (!match) continue;
+
+        // Substitute the capture groups, e.g. /api/(.*) -> /api/$1.
+        const destination = rule.destination.replace(/\$(\d+)/g, (_, n) => match[Number(n)] ?? '');
+
+        if (destination.startsWith('/api/')) {
+            // Serverless functions live in api/ and are never part of dist/.
+            const fn = join(repoRoot, `${destination.replace(/^\//, '')}.js`);
+            if (existsSync(fn)) return { status: 200, fn: destination };
             continue; // no such function — keep looking, and 404 if nothing else matches
         }
-        const target = filesystemHit(rule.destination);
+        const target = filesystemHit(destination);
         if (target) return { status: 200, file: target };
     }
 
@@ -146,11 +151,11 @@ function main() {
         else bad(path, `got ${res.status}${res.file ? ` (${res.file})` : ''}, expected 404`);
     }
 
-    console.log('\nLive API routes (must still resolve):');
+    console.log('\nLive API routes (must still reach their function, not the SPA shell):');
     for (const path of ['/api/availability', '/api/book', '/api/faq-log']) {
         const res = resolveRequest(path);
-        if (res.status === 200) ok(`${path} -> function`);
-        else bad(path, `got ${res.status}, expected the serverless function`);
+        if (res.status === 200 && res.fn === path) ok(`${path} -> ${res.fn}`);
+        else bad(path, `got ${res.status}${res.file ? ` (${res.file})` : ''}, expected the serverless function`);
     }
 
     console.log('\nUnknown page paths (expect the SPA shell, which renders the 404 page):');

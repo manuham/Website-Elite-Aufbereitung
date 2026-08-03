@@ -46,6 +46,46 @@ describe('vercel.json — legacy Wix redirects', () => {
     });
 });
 
+describe('vercel.json — SPA rewrites', () => {
+    const catchAll = config.rewrites.at(-1);
+
+    it('falls back to the SPA shell last, after every explicit route', () => {
+        expect(catchAll.destination).toBe('/index.html');
+    });
+
+    it('excludes /assets and /api from the catch-all', () => {
+        const pattern = new RegExp(`^${catchAll.source}$`);
+        // Unknown /api/* must 404 honestly rather than being handed the SPA shell — which is what
+        // GET /api/reviews did after that endpoint was deleted.
+        expect(pattern.test('/api/reviews')).toBe(false);
+        expect(pattern.test('/api/availability')).toBe(false);
+        expect(pattern.test('/assets/VAN/VAN-1024.webp')).toBe(false);
+        // Unknown page paths still get the shell, which renders the in-app 404.
+        expect(pattern.test('/gibt-es-nicht')).toBe(true);
+    });
+
+    it('routes every prerendered page to its own document', () => {
+        for (const path of [
+            '/mobiler-service',
+            '/elite-endstufe',
+            '/projekte',
+            '/buchen',
+            '/impressum',
+            '/datenschutz',
+            '/agb',
+            '/widerruf',
+        ]) {
+            const rule = config.rewrites.find((r) => r.source === path);
+            expect(rule, `no explicit rewrite for ${path}`).toBeDefined();
+            expect(rule.destination).toBe(`${path}/index.html`);
+        }
+    });
+
+    it('normalises trailing slashes, so /projekte/ is not a duplicate URL', () => {
+        expect(config.trailingSlash).toBe(false);
+    });
+});
+
 describe('vercel.json — caching', () => {
     const cacheRules = config.headers.filter((rule) =>
         rule.headers.some((h) => h.key === 'Cache-Control')
