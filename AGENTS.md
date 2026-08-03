@@ -8,6 +8,8 @@ Read `docs/context/` before working on the booking flow or integrations:
 - `docs/context/booking-architecture.md` — how the booking flow + availability + write path work.
 - `docs/context/integrations.md` — Google Calendar, Make.com, Cloudinary, FormSubmit.
 - `docs/context/open-questions.md` — live checklist of things to confirm.
+- `docs/context/build-and-seo.md` — the three-stage build (prerender + guard), the invariants that
+  keep it invisible to visitors, and how `vercel.json` routes.
 
 Keep these files updated when the booking flow, services, or integrations change.
 

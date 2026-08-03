@@ -89,6 +89,26 @@ export function runGuard(distDir) {
         if (/<meta\s+name="robots"[^>]*noindex/i.test(html)) {
             problems.push(`${route.path}: carries noindex`);
         }
+
+        // 7. The invariant that keeps prerendering invisible.
+        //
+        //    Before this build step, #root was empty and the first paint was a bare obsidian page.
+        //    Now #root holds the whole page — which would be visible before React hydrates, except
+        //    that the preloader overlay is the first thing in it: fixed inset-0, z-[10000],
+        //    bg-obsidian, with both of its children at opacity-0. It paints as a plain obsidian
+        //    rectangle, exactly what a visitor saw before.
+        //
+        //    If someone later makes the preloader conditional on the server, or renders it
+        //    somewhere other than first, the page content starts flashing before hydration. That is
+        //    a visual regression nothing else here would catch.
+        if (
+            !/^<div class="fixed inset-0 z-\[10000\] bg-obsidian[^"]*"/.test(rendered) ||
+            !/^<div class="fixed inset-0 z-\[10000\][^>]*>\s*<div class="opacity-0"/.test(rendered)
+        ) {
+            problems.push(
+                `${route.path}: the preloader overlay is not the first thing in #root — prerendered content would paint before hydration`
+            );
+        }
     }
 
     // 7. The sitemap lists every route, on the www host.
