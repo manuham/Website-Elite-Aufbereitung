@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import {
   DAY, HORIZON_DAYS, WORKDAY_MIN, MULTIDAY_TOLERANCE_MIN,
-  addDays, isoKey, workingSpan, startOfDay,
+  addDays, isoKey, workingSpan,
   makeAvailability, dayStatus, multiDayStartState, multiDayStartFree,
   sameDayPlan, freeStartCount, computeBookingDuration, multiDayTerms,
   availableDays,

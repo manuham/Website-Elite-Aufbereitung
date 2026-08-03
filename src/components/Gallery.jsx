@@ -1,6 +1,5 @@
 import { useEffect, useRef } from 'react';
 import gsap from 'gsap';
-import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { Instagram, Facebook } from 'lucide-react';
 import SplitText from './SplitText';
 import { useTilt } from '../hooks/useTilt';

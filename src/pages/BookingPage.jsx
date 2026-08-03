@@ -1,8 +1,8 @@
 import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { Link, useSearchParams, useNavigate } from 'react-router-dom';
-import { Check, ChevronLeft, ChevronRight, ChevronDown, ArrowLeft, Phone, Mail, MapPin, Plus, X as XIcon, Sparkles, AlertTriangle, Truck, Zap, Gift, Construction, Camera } from 'lucide-react';
+import { Check, ChevronLeft, ChevronDown, ArrowLeft, Phone, Mail, MapPin, Plus, X as XIcon, Sparkles, AlertTriangle, Truck, Zap, Gift, Construction, Camera } from 'lucide-react';
 import gsap from 'gsap';
-import { serviceCategories, tierPackages, allInOnePackages } from '../data/services';
+import { serviceCategories, tierPackages } from '../data/services';
 import { useRecommendations } from '../hooks/useRecommendations';
 import { useAvailability } from '../hooks/useAvailability';
 import { submitBooking } from '../lib/api';
@@ -1373,7 +1373,6 @@ export default function BookingPage() {
         }
         setUploadingPhotos(false);
 
-        const dateStr = datetime.date?.toLocaleDateString('de-AT', { weekday: 'long', day: '2-digit', month: '2-digit', year: 'numeric' });
         const yyyy = datetime.date.getFullYear();
         const mm = String(datetime.date.getMonth() + 1).padStart(2, '0');
         const dd = String(datetime.date.getDate()).padStart(2, '0');
@@ -1397,16 +1396,6 @@ export default function BookingPage() {
 
         // Effective duration → same-day block vs. multi-day span
         const duration = computeBookingDuration(selectedItems, serviceMode);
-        const terms = multiDayTerms(serviceMode);
-        let terminLabel;
-        if (duration.multiDay) {
-            const span = workingSpan(datetime.date, duration.spanDays);
-            const fmtDay = (d) => d.toLocaleDateString('de-AT', { weekday: 'long', day: '2-digit', month: '2-digit', year: 'numeric' });
-            terminLabel = `${terms.start} ${fmtDay(span[0])} ${terms.startTime} · ${terms.end} ${fmtDay(span[span.length - 1])} ${terms.endTime}`;
-        } else {
-            const [hh, mmn] = datetime.time.split(':').map(Number);
-            terminLabel = `${datetime.time}–${minToTime(hh * 60 + mmn + duration.durationMin)} Uhr`;
-        }
 
         try {
             // Create Google Calendar event (primary booking action, with double-booking guard).

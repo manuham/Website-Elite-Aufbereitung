@@ -1,7 +1,6 @@
-import { useEffect, useRef, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { useRef, useState } from 'react';
 import PhoneConsultModal from '../components/PhoneConsultModal';
-import { Check, Zap, Gift, Shield, Sparkles, ArrowRight, Phone, Clock, Droplets, Star, Gem, Car, CircleDot, Handshake } from 'lucide-react';
+import { Check, Zap, Gift, Shield, Sparkles, ArrowRight, Phone, Droplets, Star, Gem, Car, CircleDot, Handshake } from 'lucide-react';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import Navbar from '../components/Navbar';

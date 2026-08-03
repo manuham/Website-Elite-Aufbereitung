@@ -58,8 +58,6 @@ export default function Philosophy() {
             const counters = containerRef.current.querySelectorAll('.stat-counter');
             counters.forEach(el => {
                 const target = el.getAttribute('data-target');
-                const isK = target.includes('k');
-                const isPercent = target.includes('%');
                 const numericTarget = parseInt(target.replace(/[^0-9]/g, ''));
                 const suffix = target.replace(/[0-9]/g, '');
 

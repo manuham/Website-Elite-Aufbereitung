@@ -104,7 +104,9 @@ export default function WeekCalendar({
       if (!p.closed && !p.fullyPast && !p.unknown && p.free.length) earliest = Math.min(earliest, p.free[0].start);
     }
     if (earliest !== Infinity) el.scrollTop = Math.max(0, (earliest - AXIS_START) * MIN_PX - 40);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    // Deps are deliberately partial — this only re-scrolls when the week or the block length
+    // changes, not on every availability tick. (react-hooks/exhaustive-deps is currently off; see
+    // the note in eslint.config.js.)
   }, [weekKey, activeIdx, duration.durationMin, multi, compact, pending]);
 
   // ── same-day column ──

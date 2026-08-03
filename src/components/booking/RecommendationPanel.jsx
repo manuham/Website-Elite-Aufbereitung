@@ -1,5 +1,5 @@
 import { useRef, useEffect } from 'react';
-import { Plus, ArrowUp, Sparkles, ShieldCheck, Package, ChevronDown, ArrowRight } from 'lucide-react';
+import { Plus, ArrowUp, Sparkles, ShieldCheck, ChevronDown, ArrowRight } from 'lucide-react';
 import gsap from 'gsap';
 
 const TYPE_CONFIG = {
@@ -9,7 +9,7 @@ const TYPE_CONFIG = {
     protect:    { label: 'Langzeitschutz', icon: ShieldCheck, color: 'text-sky-400',    bg: 'bg-sky-400/10',    border: 'border-sky-400/25' },
 };
 
-function RecommendationCard({ rec, onAdd, index }) {
+function RecommendationCard({ rec, onAdd }) {
     const { label, icon: Icon, color, bg, border } = TYPE_CONFIG[rec.type] || TYPE_CONFIG.addon;
 
     return (

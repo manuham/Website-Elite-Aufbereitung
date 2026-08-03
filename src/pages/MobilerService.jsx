@@ -94,7 +94,7 @@ export default function MobilerService() {
             <div className="px-6 sm:px-12 lg:px-24 py-24 sm:py-32 bg-slate/20">
                 <div className="max-w-7xl mx-auto flex flex-col gap-16">
                     <div className="flex flex-col gap-4 text-center">
-                        <span className="font-mono text-xs text-champagne uppercase tracking-widest">So funktioniert's</span>
+                        <span className="font-mono text-xs text-champagne uppercase tracking-widest">So funktioniert&apos;s</span>
                         <h2 className="font-drama italic text-4xl sm:text-5xl text-ivory">
                             In drei Schritten zum <span className="text-champagne">Glanz.</span>
                         </h2>
