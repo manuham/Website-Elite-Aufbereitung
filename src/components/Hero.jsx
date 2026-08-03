@@ -182,14 +182,18 @@ export default function Hero({ entranceReady = true }) {
                     <div className="h-px bg-accent/40 w-8" />
                 </div>
 
-                <div className="flex flex-col relative w-full -mt-1">
-                    <h1 className="hero-fade font-drama italic text-2xl sm:text-4xl lg:text-5xl text-ivory/75 leading-tight mb-0">
+                {/* One heading, two lines. The wrapper is the <h1> and each line is a <span>, so
+                    „Perfektion trifft Präzision." reads as one sentence to a crawler and a screen
+                    reader. Every class string is unchanged and both lines keep .hero-fade, so the
+                    layout and the GSAP stagger are exactly what they were. */}
+                <h1 className="flex flex-col relative w-full -mt-1">
+                    <span className="hero-fade font-drama italic text-2xl sm:text-4xl lg:text-5xl text-ivory/75 leading-tight mb-0">
                         Perfektion trifft
-                    </h1>
-                    <p className="hero-fade font-drama italic text-[5.5rem] sm:text-[8rem] lg:text-[10rem] xl:text-[12rem] leading-[0.88] text-transparent bg-clip-text bg-gradient-to-br from-ivory via-ivory/95 to-ivory/70 drop-shadow-2xl -ml-1">
+                    </span>
+                    <span className="hero-fade font-drama italic text-[5.5rem] sm:text-[8rem] lg:text-[10rem] xl:text-[12rem] leading-[0.88] text-transparent bg-clip-text bg-gradient-to-br from-ivory via-ivory/95 to-ivory/70 drop-shadow-2xl -ml-1">
                         Präzision.
-                    </p>
-                </div>
+                    </span>
+                </h1>
 
                 <p className="hero-fade font-sans font-normal text-lg sm:text-xl text-ivory/90 max-w-xl leading-relaxed text-balance drop-shadow-md">
                     Professionelle Fahrzeugaufbereitung in Vorarlberg — Kratzerfreie Handwäsche, Politur & Keramikversiegelung.
