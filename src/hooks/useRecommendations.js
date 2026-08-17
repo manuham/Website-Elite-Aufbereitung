@@ -6,17 +6,23 @@ import {
     packageDetectionRules,
 } from '../data/recommendations';
 
-/** Parse "ab €75,-" or "ab €1.395,-" → 75 or 1395 */
-function parsePriceNum(priceStr) {
-    const match = priceStr.replace(/\./g, '').match(/€(\d+)/);
-    return match ? parseInt(match[1]) : 0;
-}
-
-/** Resolve a service ID to its full data (name, price, priceNum). */
+/**
+ * Resolve a service ID to a full CART ITEM — accepting a recommendation drops this object
+ * straight into `selectedItems`, so it must carry the scheduling and mobile-surcharge fields
+ * too. (`priceNum` is the base price; the vehicle-size factor is applied later by pricing.js.)
+ * Omitting the durations here used to make a recommended service count as zero minutes, so the
+ * calendar booked a slot too short for the work.
+ */
 function resolveService(id) {
     // AIO packages
     const aio = allInOnePackages.find(p => p.id === id);
-    if (aio) return { id: aio.id, name: aio.name, price: aio.price, priceNum: aio.priceNum, type: 'aio', phoneOnly: aio.phoneOnly };
+    if (aio) {
+        return {
+            id: aio.id, name: aio.name, priceNum: aio.price, type: 'aio', phoneOnly: aio.phoneOnly,
+            durationMin: aio.durationMin ?? null, durationDays: aio.durationDays ?? null,
+            mobilExtraMin: aio.mobilExtraMin ?? 0, mobilSurcharge: aio.mobilSurcharge ?? 0,
+        };
+    }
 
     // Individual service: "{categoryId}-{index}"
     const match = id.match(/^(.+)-(\d+)$/);
@@ -27,7 +33,12 @@ function resolveService(id) {
     const pkg = category.packages[parseInt(idxStr)];
     if (!pkg) return null;
 
-    return { id, name: pkg.name, price: pkg.price, priceNum: parsePriceNum(pkg.price), type: 'service', phoneOnly: !!pkg.phoneOnly };
+    return {
+        id, name: pkg.name, priceNum: pkg.price, type: 'service', phoneOnly: !!pkg.phoneOnly,
+        priceSuffix: pkg.priceSuffix ?? null,
+        durationMin: pkg.durationMin ?? null, durationDays: pkg.durationDays ?? null,
+        mobilExtraMin: pkg.mobilExtraMin ?? 0, mobilSurcharge: pkg.mobilSurcharge ?? 0,
+    };
 }
 
 /**
@@ -108,9 +119,9 @@ export function useRecommendations(selectedItems) {
                 }, 0);
 
                 const pkg = allInOnePackages.find(p => p.id === rule.packageId);
-                if (!pkg || pkg.phoneOnly || pkg.priceNum >= currentCost) continue;
+                if (!pkg || pkg.phoneOnly || pkg.price >= currentCost) continue;
 
-                const savings = currentCost - pkg.priceNum;
+                const savings = currentCost - pkg.price;
                 if (!best || savings > best.savings) {
                     best = {
                         package: pkg,

@@ -226,7 +226,7 @@ export async function multiDaySpanFree(startDateString, spanDays) {
 
 export async function createBookingEvent({
   date, time, services, contact,
-  serviceMode, location, vehicleCategory, vehicleAufpreis, mobileSurcharge, mobilePackageSurcharge, totalStr, photoUrls,
+  serviceMode, location, vehicleCategory, vehicleSizeFactor, mobileSurcharge, mobilePackageSurcharge, totalStr, photoUrls,
   durationMin, multiDay, spanDays,
 }) {
   // Without this, events.insert is called with calendarId: undefined and fails opaquely.
@@ -236,9 +236,13 @@ export async function createBookingEvent({
   const calendar = google.calendar({ version: 'v3', auth });
 
   const isMobile = serviceMode === 'mobil';
+  // Prices arrive already multiplied by the vehicle-size factor (see src/lib/pricing.js), so the
+  // studio reads exactly what the customer confirmed. vehicleSizeFactor is e.g. "×1,15 (Kompaktklasse)".
   const serviceList = services.map((s) => `  - ${s.name} (${s.price})`).join('\n');
-  const vehicleLine = vehicleAufpreis ? `${vehicleCategory} (${vehicleAufpreis})` : vehicleCategory;
-  const fallbackTotal = `ab €${services.reduce((sum, s) => sum + (s.priceNum || 0), 0).toLocaleString('de-AT')},-`;
+  const vehicleLine = vehicleSizeFactor ? `${vehicleCategory} (${vehicleSizeFactor})` : vehicleCategory;
+  // de-DE, not de-AT: current ICU groups de-AT thousands with a narrow no-break space ("1 250").
+  // Mirrors formatEuro() in src/lib/pricing.js, which api/ cannot import.
+  const fallbackTotal = `ab €${services.reduce((sum, s) => sum + (s.priceNum || 0), 0).toLocaleString('de-DE')},-`;
 
   let startDateTime;
   let endDateTime;

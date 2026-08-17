@@ -1,6 +1,7 @@
 import { useRef, useEffect } from 'react';
 import { Plus, ArrowUp, Sparkles, ShieldCheck, ChevronDown, ArrowRight } from 'lucide-react';
 import gsap from 'gsap';
+import { formatEuro, formatFrom, formatServicePrice } from '../../lib/pricing';
 
 const TYPE_CONFIG = {
     upgrade:    { label: 'Upgrade',        icon: ArrowUp,     color: 'text-emerald-400',  bg: 'bg-emerald-400/10',  border: 'border-emerald-400/25' },
@@ -33,7 +34,9 @@ function RecommendationCard({ rec, onAdd }) {
 
             {/* Price + Add button */}
             <div className="flex items-center justify-between pt-2 border-t border-slate/30">
-                <span className="font-mono text-lg font-bold text-accent">{rec.service.price}</span>
+                <span className="font-mono text-lg font-bold text-accent">
+                    {formatServicePrice({ price: rec.service.priceNum, priceSuffix: rec.service.priceSuffix })}
+                </span>
                 <div className="flex items-center gap-2 bg-accent/15 group-hover:bg-accent group-hover:text-obsidian text-accent px-4 py-2 rounded-full transition-all duration-200">
                     <Plus className="w-3.5 h-3.5" />
                     <span className="font-sans font-bold text-xs">Hinzufügen</span>
@@ -74,7 +77,7 @@ function PackageSuggestionBanner({ suggestion, onAccept }) {
                 <div className="flex items-center gap-4 flex-1 min-w-0">
                     {/* Savings badge */}
                     <div ref={pulseRef} className="w-14 h-14 rounded-2xl bg-accent/20 border border-accent/40 flex flex-col items-center justify-center shrink-0">
-                        <span className="font-mono text-lg font-black text-accent leading-none">€{suggestion.savings}</span>
+                        <span className="font-mono text-sm font-black text-accent leading-none">{formatEuro(suggestion.savings)}</span>
                         <span className="font-mono text-[8px] text-accent/70 uppercase tracking-wider">gespart</span>
                     </div>
                     <div className="flex flex-col gap-1 min-w-0">
@@ -83,8 +86,8 @@ function PackageSuggestionBanner({ suggestion, onAccept }) {
                         </span>
                         <span className="font-sans text-xs text-ivory/40">
                             Alles in einem Paket für{' '}
-                            <span className="font-mono text-accent font-bold">{suggestion.package.price}</span>{' '}
-                            statt <span className="line-through text-ivory/30">€{suggestion.currentCost.toLocaleString('de-AT')},–</span>
+                            <span className="font-mono text-accent font-bold">{formatFrom(suggestion.package.price)}</span>{' '}
+                            statt <span className="line-through text-ivory/30">{formatEuro(suggestion.currentCost)}</span>
                         </span>
                     </div>
                 </div>

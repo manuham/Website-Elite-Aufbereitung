@@ -7,22 +7,47 @@ React 18 + Vite, JavaScript (no TS), Tailwind, React Router, GSAP. Serverless AP
 under `/api` (Vercel). Main flow component: `src/pages/BookingPage.jsx` (5 steps).
 
 ## Flow
-Step0 Location (Studio/Mobil) → Step1 Services → StepVehicle (category/Aufpreis) →
+Step0 Location (Studio/Mobil) → Step1 Services → StepVehicle (class/Größenfaktor) →
 Step2 Date & time → Step3 Contact + photos → Step4 Confirmation.
 
-## Vehicle size surcharge (StepVehicle) — conditional
-`VEHICLE_CATEGORIES` (`BookingPage.jsx`) carries `aufpreis` per size: Kleinwagen 0, Kompakt 55,
-Mittelklasse 75, SUV 95, Großfahrzeuge `null` ("auf Anfrage"). The size Aufpreis applies **only**
-when the cart contains a service/package flagged `sizeSurcharge: true` in `src/data/services.js` —
-currently every full-car service flagged `sizeSurcharge: true`: all All-in-One tiers, all Handwäsche
-& Innenreinigung, *Leichte* & *Schwere Politur*, all Keramik coatings, and *Verkaufsaufbereitung*
-(`verkauf-0`) — but **not** *Spot-Politur* (`politur-2`), *Scheinwerfer* (`politur-3`), or the
-Zusatzpakete add-ons. The size Aufpreis is a flat amount charged **once per booking** (not per line
-item). `SIZE_SURCHARGE_IDS` in `BookingPage.jsx` is **derived from that flag** (single source
-of truth), so flipping the flag in the data updates every surface at once. For every other selection
-no size surcharge is added (the step still asks for the size so the operator knows the vehicle). The
-gate is recomputed identically in `StepVehicle`, `handleSubmit`, and the `Step4` confirmation.
-Keep the marketing copy (`Pricing.jsx`) and FAQ answers (`faqKnowledge.js`) in sync with the flag.
+## Money: `src/lib/pricing.js` is the single source of truth
+Prices in `src/data/services.js` are plain **numbers** (`price: 350`). Nothing formats a euro
+string or applies the size factor on its own — it all goes through `src/lib/pricing.js`, which owns
+`VEHICLE_SIZES`, `MOBILE_SURCHARGE`, `SIZED_IDS`, `applyFactor`, `linePrice`, `computeTotals` and
+the `format*` helpers. Two traps that module exists to keep solved, both pinned by
+`src/lib/pricing.test.js`:
+
+- **Float error.** `350 * 1.15` is `402.49999999999994`, which rounds *down* to 400 € where the
+  client's own table says 405 €. `applyFactor` snaps the product to cents before rounding to 5 €.
+- **Locale.** Current ICU groups `de-AT` thousands with a narrow no-break space ("1 250"), so
+  prices used to render as "ab €1 890,-". Money is formatted with `de-DE` to get "1.250". Dates
+  stay on `de-AT`.
+
+`pricing.test.js` reproduces all 24 cells of the client's worked example ("So sieht das gerechnet
+aus" in `preisliste-eliteaufbereitung.md`). Treat a failure there as a real regression.
+
+## Vehicle size factor (StepVehicle) — conditional
+Since the August 2026 price list, size is a **multiplier applied per line item**, not a flat amount
+charged once per booking. `VEHICLE_SIZES` (`src/lib/pricing.js`) carries `factor` per class:
+Kleinwagen 1,0 · Kompakt 1,15 · Mittelklasse 1,3 · SUV/Van 1,5 · Großfahrzeuge `null`
+("auf Anfrage"). `Endpreis = Grundpreis × Faktor`, rounded half-up to 5 € **per service**.
+
+It applies only to services flagged `sizeSurcharge: true` in `src/data/services.js`. That is now
+almost everything; exactly four are exempt, because there the effort does not depend on car size:
+*Scheinwerfer-Aufbereitung* (`politur-3`), *Textilimprägnierung* (`zusatz-5`),
+*Türverkleidung & Armaturen* (`zusatz-6`), *Dachhimmel* (`zusatz-7`). The Anfahrtspauschale and the
+per-package Mobil-Aufpreis are never multiplied either.
+
+`SIZED_IDS` is **derived from that flag** (single source of truth), so flipping it in the data
+updates every surface at once — and `pricing.test.js` asserts both that exactly those four are
+exempt and that the four IDs still name the services we think they do (IDs are array indices, so a
+reorder would otherwise move the exemption silently). `computeTotals` is the one implementation,
+called from Step 1, `StepVehicle`, `Step4` and `handleSubmit`. Keep the marketing copy
+(`Pricing.jsx` disclaimer) and the FAQ (`faqKnowledge.js` → `faq-aufpreis-groesse`) in sync.
+
+Step 1 shows **base** prices (no vehicle chosen yet) with a hint that the factor follows; from
+StepVehicle on, every line and the total are the sized figures — including what is written to the
+calendar event and the notification mail, so the studio sees what the customer confirmed.
 
 ## Services: bookable vs. appointment-only
 Services live in `src/data/services.js`. Some carry `phoneOnly: true` (Gold & Élite tiers,
@@ -56,11 +81,13 @@ collapsible folders; the booking Step-1 still lists them flat.
   Beginn/Fertigstellung "vor Ort"; `chooseDay`/`chooseDayPlural` for "Abgabetag"/"Starttag"). Used
   by `AvailabilityRail`, Step 3, Step 4 confirmation, the email, and the calendar event — change
   wording there, not per surface.
-- **Mobile surcharge** = flat `MOBILE_SURCHARGE` (€50 Anfahrtspauschale) **plus** a per-package
-  Mobil-Aufpreis (`mobilePackageSurchargeOf` = MAX of the cart's `mobilSurcharge`, €45–85, shown as
-  its own line on every surface). Both are included in every total (Step 1 / StepVehicle / Step 4 /
-  email / calendar). A duration-shape change resets the date pick (parent-level guard in
-  `BookingPage`), so a stale same-day pick can't leak into a multi-day booking.
+- **Mobile surcharge** = flat `MOBILE_SURCHARGE` (€65 Anfahrtspauschale, `src/lib/pricing.js`)
+  **plus** a per-package Mobil-Aufpreis (`mobilePackageSurchargeOf` = MAX of the cart's
+  `mobilSurcharge`, €45–85, shown as its own line on every surface; a test pins the data to that
+  advertised range because the FAQ quotes it verbatim). Neither is multiplied by the size factor.
+  Both are included in every total (Step 1 / StepVehicle / Step 4 / email / calendar). A
+  duration-shape change resets the date pick (parent-level guard in `BookingPage`), so a stale
+  same-day pick can't leak into a multi-day booking.
 - `src/components/booking/WeekCalendar.jsx` is an Apple-Calendar-style **week time-axis grid** (day
   columns, hour rows 08–18). It was briefly replaced by an availability-first list (`AvailabilityRail`)
   but the client preferred the calendar layout, so the grid is back — with **inverted visual
@@ -112,9 +139,11 @@ collapsible folders; the booking Step-1 still lists them flat.
   busy interval (incl. 30-min buffer); multi-day rejects if any working day in the span has
   bookings (`sameDayIntervalFree` / `multiDaySpanFree` in `calendar.js`).
 - `createBookingEvent()` in `api/_lib/calendar.js` writes a Google Calendar event with full
-  details: service mode, location/address, vehicle + Aufpreis, services, total, notes, photo
-  URLs. Same-day events span `[start, start+durationMin]`; multi-day creates ONE spanning
-  event from day-1 09:00 to last-working-day 16:00.
+  details: service mode, location/address, vehicle + `vehicleSizeFactor` ("×1,15 (Kompaktklasse)"),
+  services at their **sized** prices, total, notes, photo URLs. Same-day events span
+  `[start, start+durationMin]`; multi-day creates ONE spanning event from day-1 09:00 to
+  last-working-day 16:00. (`api/book.js` still accepts the pre-factor field name
+  `vehicleAufpreis` as a fallback, for clients cached across the deploy.)
 - A FormSubmit.co email (`info.eliteaufbereitung@gmail.com`) is sent fire-and-forget as a
   notification backup. It does **not** touch the calendar.
 - Photos upload to Cloudinary first (`uploadPhoto`).

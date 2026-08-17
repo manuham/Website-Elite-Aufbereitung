@@ -35,8 +35,9 @@ export const serviceRecommendations = {
     ],
     'innenreinigung-1': [ // Premium Innenreinigung
         { recommend: 'innenreinigung-2', reason: 'Leder langfristig schützen — Beschichtung hält Monate', type: 'protect', priority: 1 },
-        { recommend: 'handwaesche-1', reason: 'Komplett-Pflege: Premium Handwäsche für außen', type: 'complement', priority: 2 },
-        { recommend: 'zusatz-16', reason: 'Ozonbehandlung gegen Gerüche & Schimmel', type: 'addon', priority: 3 },
+        { recommend: 'lenkrad-0', reason: 'Abgenutztes Lenkrad neu färben & versiegeln — fällt sofort auf', type: 'complement', priority: 2 },
+        { recommend: 'handwaesche-1', reason: 'Komplett-Pflege: Premium Handwäsche für außen', type: 'complement', priority: 3 },
+        { recommend: 'zusatz-16', reason: 'Ozonbehandlung gegen Gerüche & Schimmel', type: 'addon', priority: 4 },
     ],
     'innenreinigung-2': [ // Ledersitz Beschichtung
         { recommend: 'innenreinigung-1', reason: 'Premium Innenreinigung vor der Beschichtung empfohlen', type: 'complement', priority: 1 },
@@ -47,15 +48,15 @@ export const serviceRecommendations = {
     // ─── POLITUR ─────────────────────────────────────────────────────────────────
     'politur-0': [ // Leichte Politur
         { recommend: 'keramik-0', reason: 'Polierten Lack dauerhaft schützen — Keramikversiegelung', type: 'protect', priority: 1 },
-        { recommend: 'politur-3', reason: 'Scheinwerfer gleich mitpolieren', type: 'addon', priority: 2 },
+        { recommend: 'politur-3', reason: 'Scheinwerfer gleich mit aufbereiten — inkl. UV-Schutz', type: 'addon', priority: 2 },
         { recommend: 'zusatz-0', reason: 'Fenster beschichten für bessere Sicht bei Regen', type: 'addon', priority: 3 },
     ],
     'politur-2': [ // Spot-Politur
         { recommend: 'politur-0', reason: 'Für rundum perfekten Glanz: komplette Leichte Politur', type: 'upgrade', priority: 1 },
         { recommend: 'handwaesche-1', reason: 'Premium Handwäsche für den frischen Look', type: 'complement', priority: 2 },
-        { recommend: 'politur-3', reason: 'Scheinwerfer gleich mitpolieren', type: 'addon', priority: 3 },
+        { recommend: 'politur-3', reason: 'Scheinwerfer gleich mit aufbereiten — inkl. UV-Schutz', type: 'addon', priority: 3 },
     ],
-    'politur-3': [ // Scheinwerfer Polieren
+    'politur-3': [ // Scheinwerfer-Aufbereitung mit UV-Schutz
         { recommend: 'politur-0', reason: 'Kompletter Lackglanz dazu? Leichte Politur', type: 'complement', priority: 1 },
         { recommend: 'zusatz-1', reason: 'Windschutzscheibe beschichten für klare Sicht', type: 'addon', priority: 2 },
         { recommend: 'handwaesche-1', reason: 'Premium Handwäsche für den kompletten Look', type: 'complement', priority: 3 },
@@ -67,12 +68,12 @@ export const serviceRecommendations = {
     // ─── ZUSATZPAKETE ────────────────────────────────────────────────────────────
     'zusatz-0': [ // Autofenster beschichten
         { recommend: 'handwaesche-1', reason: 'Premium Handwäsche für den kompletten Außenglanz', type: 'complement', priority: 1 },
-        { recommend: 'politur-3', reason: 'Scheinwerfer gleich mitpolieren', type: 'addon', priority: 2 },
+        { recommend: 'politur-3', reason: 'Klare Scheinwerfer dazu — mehr Licht bei Nacht und Regen', type: 'addon', priority: 2 },
         { recommend: 'keramik-1', reason: 'Komplettschutz: Keramikversiegelung für den Lack', type: 'protect', priority: 3 },
     ],
     'verkauf-0': [ // Verkaufsaufbereitung / Leasingrückläufer
-        { recommend: 'politur-3', reason: 'Scheinwerfer polieren — wertet das Auto weiter auf', type: 'addon', priority: 1 },
-        { recommend: 'zusatz-0', reason: 'Fenster beschichten — beeindruckt Käufer', type: 'addon', priority: 2 },
+        { recommend: 'politur-3', reason: 'Klare Scheinwerfer — häufiger Beanstandungsgrund beim Pickerl', type: 'addon', priority: 1 },
+        { recommend: 'lenkrad-0', reason: 'Lenkrad neu färben — Käufer greifen als Erstes dort hin', type: 'addon', priority: 2 },
         { recommend: 'zusatz-16', reason: 'Ozonbehandlung für frischen Duft', type: 'addon', priority: 3 },
     ],
 
@@ -80,7 +81,7 @@ export const serviceRecommendations = {
     'tier-bronze': [ // Wash & Clean (Innen & Außen Basis)
         { recommend: 'zusatz-5', reason: 'Textilimprägnierung für langfristigen Schutz', type: 'addon', priority: 1 },
         { recommend: 'zusatz-0', reason: 'Fensterbeschichtung gegen Regen', type: 'addon', priority: 2 },
-        { recommend: 'politur-3', reason: 'Scheinwerfer gleich mitpolieren', type: 'addon', priority: 3 },
+        { recommend: 'politur-3', reason: 'Scheinwerfer gleich mit aufbereiten — inkl. UV-Schutz', type: 'addon', priority: 3 },
     ],
     'tier-silber': [ // Deep Clean (Glanz & Pflege)
         { recommend: 'innenreinigung-2', reason: 'Ledersitz Beschichtung für langfristigen Schutz', type: 'protect', priority: 1 },
@@ -124,15 +125,18 @@ export const exclusionRules = [
  * package actually bundles — Bronze = Premium wash + Premium interior; Silber = that + a light
  * polish. (Basic constituents summed cheaper than the package, so the old basic-id rules could
  * never fire.) Gold/Élite are phone-only and can't be cart-suggested, so they have no rule.
+ *
+ * Both comparisons use BASE prices — the vehicle-size factor is not known yet in Step 1, and it
+ * scales package and constituents alike, so it cannot flip which side is cheaper.
  */
 export const packageDetectionRules = [
     {
-        // Premium Handwäsche (115) + Premium Innenreinigung (155) = 270 > Bronze 230 → save ~40.
+        // Premium Handwäsche (155) + Premium Innenreinigung (230) = 385 > Bronze 350 → save ~35.
         packageId: 'tier-bronze',
         requiredServiceIds: ['handwaesche-1', 'innenreinigung-1'],
     },
     {
-        // + Leichte Politur (395): 665 > Silber 420 → save ~245. Needs all three (full match).
+        // + Leichte Politur (420): 805 > Silber 620 → save ~185. Needs all three (full match).
         packageId: 'tier-silber',
         requiredServiceIds: ['handwaesche-1', 'innenreinigung-1', 'politur-0'],
     },

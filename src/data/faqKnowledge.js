@@ -1,11 +1,14 @@
 import { tierPackages, serviceCategories } from './services.js';
+import { formatFrom, formatServicePrice, MOBILE_SURCHARGE } from '../lib/pricing.js';
 
 /*
     Knowledge base for the FAQ bot (FAQBot.jsx) and the FAQ accordion.
 
-    - Package prices are interpolated from services.js where possible so they
-      can't drift; hand-written prose still mentions prices in a few places —
-      when prices change in services.js, search this file for "€" and sync.
+    - EVERY price here is interpolated from services.js via price()/tier() (or
+      MOBILE_SURCHARGE from lib/pricing.js), so none of them can drift. The third
+      argument to price()/tier() is only a rename guard — keep it equal to the
+      live value, and watch the console for its dev warning after renaming a
+      service. Never hard-code a euro amount in an answer.
     - Entries with `confirm: true` cover topics not yet confirmed by the client
       (see docs/context/open-questions.md → "FAQ-Bot Inhalte"). Their answers
       deflect to a personal contact and never state unverified facts.
@@ -20,9 +23,26 @@ import { tierPackages, serviceCategories } from './services.js';
 */
 
 const cat = (id) => serviceCategories.find((c) => c.id === id);
-const price = (catId, name, fallback) =>
-    cat(catId)?.packages.find((p) => p.name === name)?.price ?? fallback;
-const tier = (id, fallback) => tierPackages.find((t) => t.id === id)?.price ?? fallback;
+
+/**
+ * Price of one service, looked up by its EXACT name in services.js → "ab €155,-".
+ * `fallbackNum` only guards against a rename; it warns in dev so the drift surfaces
+ * instead of silently freezing an outdated price into the FAQ answers.
+ */
+const price = (catId, name, fallbackNum) => {
+    const pkg = cat(catId)?.packages.find((p) => p.name === name);
+    if (pkg) return formatServicePrice(pkg);
+    if (import.meta.env?.DEV) console.warn(`[faqKnowledge] no service "${name}" in "${catId}" — falling back`);
+    return formatFrom(fallbackNum);
+};
+
+/** Price of an All-in-One tier by id → "ab €350,-". Same fallback contract as price(). */
+const tier = (id, fallbackNum) => {
+    const t = tierPackages.find((p) => p.id === id);
+    if (t) return formatFrom(t.price);
+    if (import.meta.env?.DEV) console.warn(`[faqKnowledge] no tier "${id}" — falling back`);
+    return formatFrom(fallbackNum);
+};
 
 const LINK_BUCHEN = { label: 'Jetzt Termin buchen', to: '/buchen' };
 const LINK_TEL = { label: 'Anrufen', href: 'tel:+436642546078' };
@@ -44,7 +64,7 @@ export const FAQ_KNOWLEDGE = [
     {
         id: 'faq-preis-aufbereitung',
         q: 'Was kostet eine Aufbereitung?',
-        a: 'Unsere Einstiegspreise: Handwäsche ab €75,–, Innenreinigung ab €75,–, das Komplettpaket „Deep Clean" ab €420,–. Alle Preise sind Endpreise und Richtwerte für durchschnittlich verschmutzte Pkw. Der finale Preis richtet sich nach Aufwand, Verschmutzungsgrad und – bei allen Fahrzeugaufbereitungen (Wäsche, Innenreinigung, Politur, Keramik, Verkaufsaufbereitung & All-in-One-Pakete) – nach der Fahrzeuggröße. Eine genaue Übersicht findest du im Bereich Services & Preise.',
+        a: `Unsere Einstiegspreise: Handwäsche ${price('handwaesche', 'Basic Handwäsche', 95)}, Innenreinigung ${price('innenreinigung', 'Basic Innenreinigung', 95)}, das Komplettpaket „Deep Clean" ${tier('tier-silber', 620)}. Alle Preise sind Endpreise und Richtwerte für Kleinwagen in durchschnittlichem Zustand. Der finale Preis richtet sich nach Aufwand, Verschmutzungsgrad und der Fahrzeuggröße: bei größeren Fahrzeugen wird der Preis je Leistung mit einem Größenfaktor multipliziert (Kompaktklasse ×1,15, Mittelklasse ×1,3, SUV/Van ×1,5). Eine genaue Übersicht findest du im Bereich Services & Preise.`,
         keywords: ['preis', 'preise', 'kosten', 'kostet', 'teuer', 'aufbereitung', 'einstiegspreis', 'preisliste'],
         category: 'preise',
         links: [LINK_BUCHEN],
@@ -53,7 +73,7 @@ export const FAQ_KNOWLEDGE = [
     {
         id: 'faq-mobil-ablauf',
         q: 'Wie wäscht Elité mein Auto mobil bei mir in der Einfahrt?',
-        a: 'Beim mobilen Service kommen wir mit unserem voll ausgestatteten Van direkt zu dir – in die Einfahrt, zum Stellplatz oder vor die Haustür. Wir bringen das komplette Equipment mit und arbeiten weitgehend autark. Ein Strom- bzw. Wasseranschluss ist hilfreich, aber nicht zwingend nötig. Es gilt eine Anfahrtspauschale von €50,–. Alle Leistungen sind auch mobil buchbar.',
+        a: `Beim mobilen Service kommen wir mit unserem voll ausgestatteten Van direkt zu dir – in die Einfahrt, zum Stellplatz oder vor die Haustür. Wir bringen das komplette Equipment mit und arbeiten weitgehend autark. Ein Strom- bzw. Wasseranschluss ist hilfreich, aber nicht zwingend nötig. Es gilt eine Anfahrtspauschale von €${MOBILE_SURCHARGE},–. Alle Leistungen sind auch mobil buchbar.`,
         keywords: ['mobil', 'mobiler', 'einfahrt', 'zuhause', 'hause', 'daheim', 'van', 'kommt', 'kommen', 'strom', 'wasser', 'vorbeikommen'],
         category: 'mobil',
         links: [LINK_MOBIL],
@@ -78,8 +98,8 @@ export const FAQ_KNOWLEDGE = [
     {
         id: 'faq-aufpreis-groesse',
         q: 'Warum gibt es einen Aufpreis nach Fahrzeuggröße?',
-        a: 'Größere Fahrzeuge bedeuten mehr Fläche und Arbeitsaufwand. Ein größenabhängiger Aufpreis fällt bei allen Fahrzeugaufbereitungen an — Wäsche-, Innenreinigungs-, Politur-, Keramik- und Verkaufspakete sowie die All-in-One-Pakete: Kompaktklasse +55,–, Mittelklasse +75,–, SUV/Van +95,–, Großfahrzeuge auf Anfrage. Kleinwagen sind ohne Aufpreis, und der Aufpreis wird einmal pro Buchung berechnet. Für einzelne Zusatzleistungen/Add-ons (z. B. Spot-Politur oder Scheinwerfer aufbereiten) fällt kein größenabhängiger Aufpreis an.',
-        keywords: ['aufpreis', 'größe', 'fahrzeuggröße', 'suv', 'kombi', 'transporter', 'kleinwagen', 'zuschlag', 'größer'],
+        a: 'Größere Fahrzeuge bedeuten mehr Fläche und Arbeitsaufwand — anteilig mehr Zeit, nicht einen festen Betrag mehr. Deshalb wird der Preis je Leistung mit einem Größenfaktor multipliziert: Kleinwagen ×1,0, Kompaktklasse ×1,15, Mittelklasse ×1,3, SUV/Van ×1,5. Großfahrzeuge, Transporter und Wohnmobile kalkulieren wir auf Anfrage. Ausgenommen sind die Anfahrtspauschale und vier Leistungen, bei denen die Fahrzeuggröße keine Rolle spielt: Scheinwerfer-Aufbereitung, Textilimprägnierung, Armaturenbrett- und Türverkleidungspflege sowie Dachhimmel.',
+        keywords: ['aufpreis', 'größe', 'fahrzeuggröße', 'faktor', 'größenfaktor', 'suv', 'kombi', 'transporter', 'kleinwagen', 'zuschlag', 'größer'],
         category: 'preise',
         featured: true,
     },
@@ -114,7 +134,7 @@ export const FAQ_KNOWLEDGE = [
     {
         id: 'preis-handwaesche',
         q: 'Was kostet eine Handwäsche?',
-        a: `Basic Handwäsche ${price('handwaesche', 'Basic Handwäsche', 'ab €75,-')} (ca. 60 Min.), Premium Handwäsche ${price('handwaesche', 'Premium Handwäsche', 'ab €115,-')} (ca. 90 Min., inkl. Teer- & Flugrostentfernung und Sprühwachs-Versiegelung), Premium + Basic Interieur ${price('handwaesche', 'Premium + Basic Interieur', 'ab €175,-')}. Gewaschen wird immer kratzfrei per Hand mit der 2-Eimer-Methode.`,
+        a: `Basic Handwäsche ${price('handwaesche', 'Basic Handwäsche', 95)} (ca. 60 Min.), Premium Handwäsche ${price('handwaesche', 'Premium Handwäsche', 155)} (ca. 90 Min., inkl. Teer- & Flugrostentfernung und Sprühwachs-Versiegelung), Premium + Basic Interieur ${price('handwaesche', 'Premium + Basic Interieur', 175)}. Gewaschen wird immer kratzfrei per Hand mit der 2-Eimer-Methode.`,
         keywords: ['handwäsche', 'waschen', 'wäsche', 'außenreinigung', 'preis', 'kosten', 'kostet', 'teuer'],
         category: 'preise',
         links: [LINK_BUCHEN],
@@ -122,7 +142,7 @@ export const FAQ_KNOWLEDGE = [
     {
         id: 'preis-innenreinigung',
         q: 'Was kostet eine Innenreinigung?',
-        a: `Basic Innenreinigung ${price('innenreinigung', 'Basic Innenreinigung', 'ab €75,-')} (Staubsaugen, Armaturen, Fenster, Automatten), Premium Innenreinigung ${price('innenreinigung', 'Premium Innenreinigung', 'ab €155,-')} (zusätzlich Lederpflege, Nassreinigung der Sitze, Kunststoffbehandlung). Eine Ledersitz-Beschichtung gibt es ${price('innenreinigung', 'Ledersitz Beschichtung', 'ab €85,-')}.`,
+        a: `Basic Innenreinigung ${price('innenreinigung', 'Basic Innenreinigung', 95)} (Staubsaugen, Armaturen, Fenster, Automatten), Premium Innenreinigung ${price('innenreinigung', 'Premium Innenreinigung', 230)} (zusätzlich Lederpflege, Nassreinigung der Sitze, Kunststoffbehandlung). Eine Ledersitz-Beschichtung gibt es ${price('innenreinigung', 'Ledersitz Beschichtung', 85)}.`,
         keywords: ['innenreinigung', 'innenraum', 'preis', 'kosten', 'kostet', 'teuer', 'saugen', 'polster', 'sitze'],
         category: 'preise',
         links: [LINK_BUCHEN],
@@ -130,7 +150,7 @@ export const FAQ_KNOWLEDGE = [
     {
         id: 'preis-politur',
         q: 'Was kostet eine Politur?',
-        a: `Leichte Politur ${price('politur', 'Leichte Politur', 'ab €395,-')} (1-stufig, entfernt sehr feine Kratzer, inkl. Wachsbeschichtung), Schwere Politur ${price('politur', 'Schwere Politur', 'ab €595,-')} (mehrstufig, entfernt mittlere bis tiefe Kratzer, Oxidation & Hologramme – wird telefonisch abgestimmt). Für einzelne Stellen gibt es die Spot-Politur ${price('politur', 'Spot-Politur', 'ab €45,-')}.`,
+        a: `Leichte Politur ${price('politur', 'Leichte Politur', 420)} (1-stufig, entfernt sehr feine Kratzer, inkl. Wachsbeschichtung), Schwere Politur ${price('politur', 'Schwere Politur', 680)} (mehrstufig, entfernt mittlere bis tiefe Kratzer, Oxidation & Hologramme – wird telefonisch abgestimmt). Für einzelne Stellen gibt es die Spot-Politur ${price('politur', 'Spot-Politur', 65)}.`,
         keywords: ['politur', 'polieren', 'kratzer', 'preis', 'kosten', 'kostet', 'teuer', 'lackkratzer'],
         category: 'preise',
         links: [LINK_BUCHEN, LINK_TEL],
@@ -138,7 +158,7 @@ export const FAQ_KNOWLEDGE = [
     {
         id: 'preis-keramik',
         q: 'Was kostet eine Keramikversiegelung?',
-        a: `Neuwagen Beschichtung ${price('keramik', 'Neuwagen Beschichtung', 'ab €795,-')} (für Autos bis 3–4 Monate / 4.000 km), Beschichtungspaket ${price('keramik', 'Beschichtungspaket', 'ab €895,-')} (Lebensdauer 2–3 Jahre, inkl. 3-Gang Politur), Matt Beschichtung ${price('keramik', 'Matt Beschichtung', 'ab €795,-')} für matte Lacke. Wir arbeiten mit FIREBALL – Haltbarkeit 40.000–60.000 km. Keramik-Pakete stimmen wir vorab kurz telefonisch ab.`,
+        a: `Neuwagen Beschichtung ${price('keramik', 'Neuwagen Beschichtung', 860)} (für Autos bis 3–4 Monate / 4.000 km), Beschichtungspaket ${price('keramik', 'Beschichtungspaket', 1250)} (Lebensdauer 2–3 Jahre, inkl. 3-Gang Politur), Matt Beschichtung ${price('keramik', 'Matt Beschichtung', 900)} für matte Lacke. Wir arbeiten mit FIREBALL – Haltbarkeit 40.000–60.000 km. Keramik-Pakete stimmen wir vorab kurz telefonisch ab.`,
         keywords: ['keramik', 'keramikversiegelung', 'keramikbeschichtung', 'versiegelung', 'beschichtung', 'fireball', 'preis', 'kosten', 'kostet', 'teuer', 'coating'],
         category: 'preise',
         links: [LINK_TEL, LINK_BUCHEN],
@@ -146,7 +166,7 @@ export const FAQ_KNOWLEDGE = [
     {
         id: 'preis-komplettpakete',
         q: 'Welche Komplettpakete gibt es?',
-        a: `Vier Stufen: Bronze „Wash & Clean" (${tier('tier-bronze', 'ab 230,–')} €, Handwäsche + Innenreinigung), Silber „Deep Clean" (${tier('tier-silber', 'ab 420,–')} €, zusätzlich 1-Schritt Politur & Sprühversiegelung), Gold „Deep Polish" (${tier('tier-gold', 'ab 890,–')} €, 2-stufige Politur, Fenster- & Kunststoffbeschichtung) und Élite „Endstufe" (${tier('tier-elite', 'ab 1.890,–')} €, 3-Gang Politur + FIREBALL Keramik, das Maximum). Gold & Endstufe stimmen wir telefonisch ab.`,
+        a: `Vier Stufen: Bronze „Wash & Clean" (${tier('tier-bronze', 350)}, Handwäsche + Innenreinigung), Silber „Deep Clean" (${tier('tier-silber', 620)}, zusätzlich 1-Schritt Politur & Sprühversiegelung), Gold „Deep Polish" (${tier('tier-gold', 980)}, 2-stufige Politur, Fenster- & Kunststoffbeschichtung) und Élite „Endstufe" (${tier('tier-elite', 2600)}, 3-Gang Politur + FIREBALL Keramik, das Maximum). Gold & Endstufe stimmen wir telefonisch ab.`,
         keywords: ['komplettpaket', 'komplettpakete', 'paket', 'pakete', 'bronze', 'silber', 'gold', 'endstufe', 'deep clean', 'deep polish', 'wash', 'alles', 'teuer', 'kostet', 'kosten', 'preis', 'preise'],
         intent: 'price', // "Welche … gibt es?" leitet keinen Intent ab
         category: 'preise',
@@ -155,7 +175,7 @@ export const FAQ_KNOWLEDGE = [
     {
         id: 'leistung-verkaufsaufbereitung',
         q: 'Bietet ihr eine Verkaufsaufbereitung an?',
-        a: `Ja – die Verkaufsaufbereitung bzw. Aufbereitung für Leasingrückläufer gibt es ${price('verkauf', 'Verkaufsaufbereitung / Leasingrückläufer', 'ab €295,-')}: gründliche Innen- & Außenreinigung, Flecken und Gebrauchsspuren entfernen, Lackpolitur für glänzende Inserate-Fotos. Leasingrückläufer bereiten wir rückgabefertig auf – das vermeidet teure Nachzahlungen.`,
+        a: `Ja – die Verkaufsaufbereitung bzw. Aufbereitung für Leasingrückläufer gibt es ${price('verkauf', 'Verkaufsaufbereitung / Leasingrückläufer', 390)}: gründliche Innen- & Außenreinigung, Flecken und Gebrauchsspuren entfernen, Lackpolitur für glänzende Inserate-Fotos. Leasingrückläufer bereiten wir rückgabefertig auf – das vermeidet teure Nachzahlungen.`,
         keywords: ['verkauf', 'verkaufen', 'verkaufsaufbereitung', 'leasing', 'leasingrückgabe', 'rückgabe', 'inserat', 'nachzahlung'],
         category: 'leistungen',
         links: [LINK_BUCHEN],
@@ -163,7 +183,7 @@ export const FAQ_KNOWLEDGE = [
     {
         id: 'leistung-zusatzpakete',
         q: 'Welche Zusatzpakete gibt es?',
-        a: 'Eine ganze Reihe: Fenster beschichten (ab €85,– bzw. alle Scheiben ab €185,–), Felgen-Keramik (ab €245,–), Textilimprägnierung (ab €35,–/Sitz), Dachhimmel-Reinigung (ab €55,–), Leder-Keramik (ab €125,–), Hundehaare entfernen (ab €40,–), Motorwäsche (ab €50,–), Cabrio-Verdeck imprägnieren (ab €70,–), Ozonbehandlung (ab €75,–), PPF-Lackschutzfolie (ab €80,–) u. v. m. Zusatzpakete lassen sich direkt bei der Buchung dazubuchen.',
+        a: `Eine ganze Reihe: Fenster beschichten (${price('zusatz', 'Windschutzscheibe beschichten', 85)} bzw. alle Scheiben ${price('zusatz', 'Alle Fenster beschichten', 185)}), Felgen-Keramik (${price('zusatz', 'Felgen-Keramik 1 Schicht', 310)}), Textilimprägnierung (${price('zusatz', 'Textilimprägnierung (pro Sitz)', 50)}), Dachhimmel-Reinigung (${price('zusatz', 'Dachhimmel Intensivreinigung', 60)}), Leder-Keramik (${price('zusatz', 'Leder-Keramik versiegeln', 125)}), Hundehaare entfernen (${price('zusatz', 'Hundehaare entfernen', 40)}), Motorwäsche (${price('zusatz', 'Motorwäsche + Konservierung', 50)}), Cabrio-Verdeck imprägnieren (${price('zusatz', 'Cabrio-Verdeck imprägnieren', 150)}), Ozonbehandlung (${price('zusatz', 'Ozonbehandlung', 95)}), PPF-Lackschutzfolie (${price('zusatz', 'PPF Türgriffmulden', 80)}) u. v. m. Zusatzpakete lassen sich direkt bei der Buchung dazubuchen.`,
         keywords: ['zusatzpaket', 'zusatzpakete', 'zusatz', 'extras', 'zusätzlich', 'dazubuchen', 'optionen', 'kostet', 'kosten', 'preis'],
         category: 'leistungen',
         links: [LINK_BUCHEN],
@@ -171,7 +191,7 @@ export const FAQ_KNOWLEDGE = [
     {
         id: 'leistung-hundehaare',
         q: 'Entfernt ihr auch Hundehaare?',
-        a: `Ja, gründliche Tierhaar-Entfernung aus Polstern, Teppichen & Kofferraum gibt es als Zusatzpaket ${price('zusatz', 'Hundehaare entfernen', 'ab €40,-')}. Bei der Premium Innenreinigung und den Komplettpaketen ist das Entfernen von Tierhaaren bereits inklusive.`,
+        a: `Ja, gründliche Tierhaar-Entfernung aus Polstern, Teppichen & Kofferraum gibt es als Zusatzpaket ${price('zusatz', 'Hundehaare entfernen', 40)}. Bei der Premium Innenreinigung und den Komplettpaketen ist das Entfernen von Tierhaaren bereits inklusive.`,
         keywords: ['hund', 'hunde', 'hundehaare', 'tierhaare', 'haare', 'katze', 'katzenhaare', 'tier', 'fell'],
         category: 'leistungen',
         links: [LINK_BUCHEN],
@@ -179,7 +199,7 @@ export const FAQ_KNOWLEDGE = [
     {
         id: 'leistung-geruch-ozon',
         q: 'Bekommt ihr Gerüche aus dem Auto (Rauch, Tier, Feuchtigkeit)?',
-        a: `Ja – mit der Ozonbehandlung (${price('zusatz', 'Ozonbehandlung', 'ab €75,-')}). Sie beseitigt hartnäckige Gerüche wie Nikotin, Tiergeruch oder Feuchtigkeit, desinfiziert in der Tiefe (Bakterien, Pilze, Keime) und dringt in Polster, Teppiche und Lüftungsschächte ein. Die Wirkung hält über Wochen an.`,
+        a: `Ja – mit der Ozonbehandlung (${price('zusatz', 'Ozonbehandlung', 95)}). Sie beseitigt hartnäckige Gerüche wie Nikotin, Tiergeruch oder Feuchtigkeit, desinfiziert in der Tiefe (Bakterien, Pilze, Keime) und dringt in Polster, Teppiche und Lüftungsschächte ein. Die Wirkung hält über Wochen an.`,
         keywords: ['geruch', 'gerüche', 'stinkt', 'riecht', 'rauch', 'raucher', 'nikotin', 'zigaretten', 'ozon', 'ozonbehandlung', 'muffig', 'desinfektion'],
         category: 'leistungen',
         links: [LINK_BUCHEN],
@@ -187,15 +207,15 @@ export const FAQ_KNOWLEDGE = [
     {
         id: 'leistung-scheinwerfer',
         q: 'Poliert ihr stumpfe Scheinwerfer?',
-        a: `Ja, Scheinwerfer polieren wir ${price('politur', 'Scheinwerfer Polieren', 'ab €60,- (je Stück)')}: Mit Schleif- und Poliertechniken bringen wir vergilbte, stumpfe Scheinwerfer zurück auf Glanz – auch ideal vor der §57a-Begutachtung (Pickerl).`,
-        keywords: ['scheinwerfer', 'stumpf', 'vergilbt', 'milchig', 'licht', 'pickerl', 'blind'],
+        a: `Ja — die Scheinwerfer-Aufbereitung mit UV-Schutz gibt es ${price('politur', 'Scheinwerfer-Aufbereitung mit UV-Schutz', 150)} für beide Scheinwerfer. Wir kleben ab, schleifen mehrstufig nass und polieren bis zur klaren Oberfläche; die UV-Schutzversiegelung sorgt dafür, dass sie klar bleiben und nicht nach ein paar Monaten wieder eintrüben. Blinde Scheinwerfer sind ein häufiger Beanstandungsgrund bei der §57a-Überprüfung (Pickerl) – und die Aufbereitung kostet einen Bruchteil neuer Scheinwerfer. Der Preis gilt unabhängig von der Fahrzeuggröße.`,
+        keywords: ['scheinwerfer', 'stumpf', 'vergilbt', 'milchig', 'licht', 'pickerl', 'blind', 'uv', 'versiegelung'],
         category: 'leistungen',
         links: [LINK_BUCHEN],
     },
     {
         id: 'leistung-felgenversiegelung',
         q: 'Macht ihr Felgenversiegelungen?',
-        a: `Ja: Felgen-Keramik mit 1 Schicht ${price('zusatz', 'Felgen-Keramik 1 Schicht', 'ab €245,-')} (Haltbarkeit 2,5–3 Jahre) oder 2 Schichten ${price('zusatz', 'Felgen-Keramik 2 Schichten', 'ab €345,-')} (3,5–4 Jahre). Die Felgen werden demontiert und gereinigt; die Versiegelung verhindert haftenden Bremsstaub und macht die Reinigung deutlich leichter.`,
+        a: `Ja: Felgen-Keramik mit 1 Schicht ${price('zusatz', 'Felgen-Keramik 1 Schicht', 310)} (Haltbarkeit 2,5–3 Jahre) oder 2 Schichten ${price('zusatz', 'Felgen-Keramik 2 Schichten', 345)} (3,5–4 Jahre). Die Felgen werden demontiert und gereinigt; die Versiegelung verhindert haftenden Bremsstaub und macht die Reinigung deutlich leichter.`,
         keywords: ['felgen', 'felgenversiegelung', 'felgenkeramik', 'bremsstaub', 'räder', 'alufelgen'],
         category: 'leistungen',
         links: [LINK_BUCHEN],
@@ -203,7 +223,7 @@ export const FAQ_KNOWLEDGE = [
     {
         id: 'leistung-scheibenversiegelung',
         q: 'Was bringt eine Scheibenversiegelung?',
-        a: `Bessere Sicht bei Regen: Wasser perlt ab ca. ±70 km/h einfach ab. Windschutzscheibe oder Seitenscheiben ${price('zusatz', 'Windschutzscheibe beschichten', 'ab €85,-')}, alle Fenster ${price('zusatz', 'Alle Fenster beschichten', 'ab €185,-')}. Haltbarkeit ca. 12 Monate bzw. 20.000 km.`,
+        a: `Bessere Sicht bei Regen: Wasser perlt ab ca. ±70 km/h einfach ab. Windschutzscheibe oder Seitenscheiben ${price('zusatz', 'Windschutzscheibe beschichten', 85)}, alle Fenster ${price('zusatz', 'Alle Fenster beschichten', 185)}. Haltbarkeit ca. 12 Monate bzw. 20.000 km.`,
         keywords: ['scheiben', 'scheibe', 'scheibenversiegelung', 'fenster', 'windschutzscheibe', 'glas', 'glasversiegelung', 'regen', 'abperlen', 'sicht'],
         category: 'leistungen',
         links: [LINK_BUCHEN],
@@ -211,7 +231,7 @@ export const FAQ_KNOWLEDGE = [
     {
         id: 'leistung-lederpflege',
         q: 'Pflegt und schützt ihr Ledersitze?',
-        a: `Ja. Die Ledersitz-Beschichtung (${price('innenreinigung', 'Ledersitz Beschichtung', 'ab €85,-')}) macht Leder wasser- & schmutzabweisend und schützt vor UV-Strahlung und Farbübertragung (z. B. von Jeans) – inkl. Reinigung der Sitze. Noch langlebiger ist die Leder-Keramik-Versiegelung (${price('zusatz', 'Leder-Keramik versiegeln', 'ab €125,-')}). Lederreinigung & -pflege ist außerdem Teil der Premium Innenreinigung.`,
+        a: `Ja. Die Ledersitz-Beschichtung (${price('innenreinigung', 'Ledersitz Beschichtung', 85)}) macht Leder wasser- & schmutzabweisend und schützt vor UV-Strahlung und Farbübertragung (z. B. von Jeans) – inkl. Reinigung der Sitze. Noch langlebiger ist die Leder-Keramik-Versiegelung (${price('zusatz', 'Leder-Keramik versiegeln', 125)}). Lederreinigung & -pflege ist außerdem Teil der Premium Innenreinigung.`,
         keywords: ['leder', 'ledersitze', 'lederpflege', 'ledersitz', 'sitze', 'jeans', 'lederreinigung'],
         category: 'leistungen',
         links: [LINK_BUCHEN],
@@ -219,7 +239,7 @@ export const FAQ_KNOWLEDGE = [
     {
         id: 'leistung-cabrio',
         q: 'Imprägniert ihr Cabrio-Verdecke?',
-        a: `Ja, Reinigung & Imprägnierung des Stoffverdecks gibt es ${price('zusatz', 'Cabrio-Verdeck imprägnieren', 'ab €70,-')} – danach ist das Verdeck wieder wasser- und schmutzabweisend.`,
+        a: `Ja, Reinigung & Imprägnierung des Stoffverdecks gibt es ${price('zusatz', 'Cabrio-Verdeck imprägnieren', 150)} – danach ist das Verdeck wieder wasser- und schmutzabweisend.`,
         keywords: ['cabrio', 'verdeck', 'stoffdach', 'imprägnieren', 'cabriodach'],
         category: 'leistungen',
         links: [LINK_BUCHEN],
@@ -227,7 +247,7 @@ export const FAQ_KNOWLEDGE = [
     {
         id: 'leistung-motorwaesche',
         q: 'Macht ihr auch Motorwäschen?',
-        a: `Ja, die schonende Motorraumreinigung mit anschließender Konservierung gibt es ${price('zusatz', 'Motorwäsche + Konservierung', 'ab €50,-')}.`,
+        a: `Ja, die schonende Motorraumreinigung mit anschließender Konservierung gibt es ${price('zusatz', 'Motorwäsche + Konservierung', 50)}.`,
         keywords: ['motor', 'motorraum', 'motorwäsche', 'motorreinigung'],
         category: 'leistungen',
         links: [LINK_BUCHEN],
@@ -235,7 +255,7 @@ export const FAQ_KNOWLEDGE = [
     {
         id: 'leistung-neuwagen',
         q: 'Lohnt sich eine Keramikbeschichtung für meinen Neuwagen?',
-        a: `Gerade beim Neuwagen lohnt es sich: Der Lack ist noch nahezu makellos und kann optimal geschützt werden, bevor erste Waschanlagen-Kratzer entstehen. Die Neuwagen Beschichtung (${price('keramik', 'Neuwagen Beschichtung', 'ab €795,-')}) gilt für Autos bis 3–4 Monate bzw. 4.000 km und beinhaltet Politur, Dekontamination und die FIREBALL-Keramikschicht.`,
+        a: `Gerade beim Neuwagen lohnt es sich: Der Lack ist noch nahezu makellos und kann optimal geschützt werden, bevor erste Waschanlagen-Kratzer entstehen. Die Neuwagen Beschichtung (${price('keramik', 'Neuwagen Beschichtung', 860)}) gilt für Autos bis 3–4 Monate bzw. 4.000 km und beinhaltet Politur, Dekontamination und die FIREBALL-Keramikschicht.`,
         keywords: ['neuwagen', 'neues', 'neu', 'neukauf', 'abholung', 'werksneu'],
         category: 'leistungen',
         links: [LINK_TEL],
@@ -243,7 +263,7 @@ export const FAQ_KNOWLEDGE = [
     {
         id: 'leistung-matt',
         q: 'Behandelt ihr auch matte Lacke und Folierungen?',
-        a: `Ja, für matte Lacke gibt es die spezielle Matt Beschichtung (${price('keramik', 'Matt Beschichtung', 'ab €795,-')}) – sie schützt, ohne den matten Look zu verändern (kein Glanz-Effekt). Wird telefonisch abgestimmt.`,
+        a: `Ja, für matte Lacke gibt es die spezielle Matt Beschichtung (${price('keramik', 'Matt Beschichtung', 900)}) – sie schützt, ohne den matten Look zu verändern (kein Glanz-Effekt). Wird telefonisch abgestimmt.`,
         keywords: ['matt', 'mattlack', 'matte', 'folie', 'folierung', 'mattfolie'],
         category: 'leistungen',
         links: [LINK_TEL],
@@ -251,7 +271,7 @@ export const FAQ_KNOWLEDGE = [
     {
         id: 'leistung-ppf',
         q: 'Bietet ihr Lackschutzfolie (PPF) an?',
-        a: `Ja, punktuell für die meistbelasteten Stellen: PPF für die Einstiege ${price('zusatz', 'PPF Einstiege', 'ab €90,-')} und für die Türgriffmulden ${price('zusatz', 'PPF Türgriffmulden', 'ab €80,-')}. PPF (Paint Protection Film) ist eine transparente, selbstheilende Folie, die den Lack unsichtbar vor Kratzern und Steinschlag schützt.`,
+        a: `Ja, punktuell für die meistbelasteten Stellen: PPF für die Einstiege ${price('zusatz', 'PPF Einstiege', 90)} und für die Türgriffmulden ${price('zusatz', 'PPF Türgriffmulden', 80)}. PPF (Paint Protection Film) ist eine transparente, selbstheilende Folie, die den Lack unsichtbar vor Kratzern und Steinschlag schützt.`,
         keywords: ['ppf', 'lackschutzfolie', 'folie', 'steinschlag', 'steinschlagschutz', 'schutzfolie', 'einstiege'],
         category: 'leistungen',
         links: [LINK_BUCHEN],
@@ -278,7 +298,7 @@ export const FAQ_KNOWLEDGE = [
     {
         id: 'standort-einzugsgebiet',
         q: 'In welchem Gebiet seid ihr mobil unterwegs?',
-        a: 'Mit dem mobilen Service sind wir in ganz Vorarlberg unterwegs – von Bludenz über Feldkirch, Rankweil, Götzis, Hohenems und Dornbirn bis Bregenz. Es gilt eine Anfahrtspauschale von €50,–.',
+        a: `Mit dem mobilen Service sind wir in ganz Vorarlberg unterwegs – von Bludenz über Feldkirch, Rankweil, Götzis, Hohenems und Dornbirn bis Bregenz. Es gilt eine Anfahrtspauschale von €${MOBILE_SURCHARGE},–.`,
         keywords: ['einzugsgebiet', 'gebiet', 'vorarlberg', 'dornbirn', 'bregenz', 'bludenz', 'hohenems', 'lustenau', 'rankweil', 'götzis', 'umgebung', 'nähe', 'kommt', 'region'],
         intent: 'location', // "In welchem Gebiet …?" leitet keinen Intent ab
         category: 'mobil',
@@ -296,7 +316,7 @@ export const FAQ_KNOWLEDGE = [
     {
         id: 'mobil-kosten',
         q: 'Was kostet der mobile Service zusätzlich?',
-        a: 'Beim mobilen Service gilt eine Anfahrtspauschale von €50,–. Bei einzelnen Premium-Paketen (z. B. Deep Clean, Politur- und Keramik-Pakete) kommt zusätzlich ein paketabhängiger Mobil-Aufpreis von €45,– bis €85,– dazu, weil dort mehr Equipment vor Ort nötig ist. Beide Posten siehst du transparent bei der Online-Buchung.',
+        a: `Beim mobilen Service gilt eine Anfahrtspauschale von €${MOBILE_SURCHARGE},–. Bei einzelnen Premium-Paketen (z. B. Deep Clean, Politur- und Keramik-Pakete) kommt zusätzlich ein paketabhängiger Mobil-Aufpreis von €45,– bis €85,– dazu, weil dort mehr Equipment vor Ort nötig ist. Die Anfahrtspauschale wird nicht mit dem Größenfaktor multipliziert. Beide Posten siehst du transparent bei der Online-Buchung.`,
         keywords: ['anfahrt', 'anfahrtspauschale', 'mobil', 'aufpreis', 'mobilaufpreis', 'zusatzkosten', 'pauschale'],
         category: 'mobil',
         links: [LINK_MOBIL, LINK_BUCHEN],
@@ -350,7 +370,7 @@ export const FAQ_KNOWLEDGE = [
     {
         id: 'wissen-lederpflege-tipps',
         q: 'Wie pflege ich Ledersitze richtig?',
-        a: 'Regelmäßig Staub absaugen und mit einem leicht feuchten Mikrofasertuch abwischen; 2–3× im Jahr mit mildem Lederreiniger reinigen und anschließend eine Lederpflege auftragen, damit das Leder geschmeidig bleibt und nicht reißt. Direkte Sonne meiden (UV bleicht aus). Den besten Langzeitschutz bietet eine professionelle Leder-Beschichtung – die gibt es bei uns ab €85,–.',
+        a: `Regelmäßig Staub absaugen und mit einem leicht feuchten Mikrofasertuch abwischen; 2–3× im Jahr mit mildem Lederreiniger reinigen und anschließend eine Lederpflege auftragen, damit das Leder geschmeidig bleibt und nicht reißt. Direkte Sonne meiden (UV bleicht aus). Den besten Langzeitschutz bietet eine professionelle Leder-Beschichtung – die gibt es bei uns ${price('innenreinigung', 'Ledersitz Beschichtung', 85)}.`,
         keywords: ['leder', 'lederpflege', 'pflegen', 'ledersitze', 'reinigen', 'risse', 'tipps'],
         category: 'wissen',
     },
@@ -364,14 +384,14 @@ export const FAQ_KNOWLEDGE = [
     {
         id: 'wissen-vogelkot',
         q: 'Was tun bei Vogelkot, Baumharz oder Insekten auf dem Lack?',
-        a: 'So schnell wie möglich entfernen! Vogelkot ist stark ätzend und kann den Klarlack innerhalb weniger Stunden (besonders bei Sonne) dauerhaft beschädigen. Einweichen mit Wasser oder Detailer-Spray und sanft mit einem Mikrofasertuch abnehmen – niemals trocken reiben. Sind bereits matte Flecken oder Ätzränder entstanden, lassen sie sich meist mit einer Spot-Politur (ab €45,–) beheben.',
+        a: `So schnell wie möglich entfernen! Vogelkot ist stark ätzend und kann den Klarlack innerhalb weniger Stunden (besonders bei Sonne) dauerhaft beschädigen. Einweichen mit Wasser oder Detailer-Spray und sanft mit einem Mikrofasertuch abnehmen – niemals trocken reiben. Sind bereits matte Flecken oder Ätzränder entstanden, lassen sie sich meist mit einer Spot-Politur (${price('politur', 'Spot-Politur', 65)}) beheben.`,
         keywords: ['vogelkot', 'vogeldreck', 'harz', 'baumharz', 'insekten', 'flecken', 'ätzend', 'lackschaden'],
         category: 'wissen',
     },
     {
         id: 'wissen-aufbereitung-verkauf',
         q: 'Lohnt sich eine Aufbereitung vor dem Autoverkauf?',
-        a: 'Fast immer. Ein gepflegtes, glänzendes Auto erzielt nachweislich höhere Verkaufspreise und verkauft sich schneller – der Mehrerlös liegt meist deutlich über den Aufbereitungskosten. Käufer schließen vom Pflegezustand aufs ganze Fahrzeug. Unsere Verkaufsaufbereitung gibt es ab €295,–, inklusive Politur für perfekte Inserate-Fotos.',
+        a: `Fast immer. Ein gepflegtes, glänzendes Auto erzielt nachweislich höhere Verkaufspreise und verkauft sich schneller – der Mehrerlös liegt meist deutlich über den Aufbereitungskosten. Käufer schließen vom Pflegezustand aufs ganze Fahrzeug. Unsere Verkaufsaufbereitung gibt es ${price('verkauf', 'Verkaufsaufbereitung / Leasingrückläufer', 390)}, inklusive Politur für perfekte Inserate-Fotos.`,
         keywords: ['verkauf', 'autoverkauf', 'wert', 'wertsteigerung', 'lohnt', 'verkaufspreis', 'wiederverkauf'],
         category: 'wissen',
         links: [LINK_BUCHEN],
@@ -424,7 +444,7 @@ export const FAQ_KNOWLEDGE = [
     {
         id: 'wissen-spot-politur',
         q: 'Was ist eine Spot-Politur?',
-        a: `Bei der Spot-Politur polieren wir einzelne Stellen statt des ganzen Fahrzeugs – ideal bei einzelnen Kratzern, matten Flecken oder Ätzrändern von Vogelkot. Gibt es ${price('politur', 'Spot-Politur', 'ab €45,-')}.`,
+        a: `Bei der Spot-Politur polieren wir einzelne Stellen statt des ganzen Fahrzeugs – ideal bei einzelnen Kratzern, matten Flecken oder Ätzrändern von Vogelkot. Gibt es ${price('politur', 'Spot-Politur', 65)}.`,
         keywords: ['spot', 'spotpolitur', 'stelle', 'stellen', 'teilpolitur'],
         category: 'wissen',
     },

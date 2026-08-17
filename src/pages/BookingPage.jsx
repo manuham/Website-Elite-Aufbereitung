@@ -16,34 +16,18 @@ import {
 import RecommendationPanel from '../components/booking/RecommendationPanel';
 import WeekCalendar from '../components/booking/WeekCalendar';
 import PhoneConsultModal from '../components/PhoneConsultModal';
+import {
+    MOBILE_SURCHARGE, VEHICLE_SIZES, computeTotals, linePrice,
+    formatEuro, formatFrom, formatServicePrice, sizeFactorLabel, sizeFactorForRecord,
+} from '../lib/pricing';
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
-const MOBILE_SURCHARGE = 50;
 const MAX_PHOTO_BYTES = 10 * 1024 * 1024; // 10 MB per photo
-// Per-package Mobil-Aufpreis on top of the flat Anfahrtspauschale: the most equipment-intensive
-// package in the cart sets it (published €45–85). Max, not sum, so overlapping equipment for two
-// premium jobs isn't double-charged and the value stays within the advertised range.
-function mobilePackageSurchargeOf(items, serviceMode) {
-    if (serviceMode !== 'mobil') return 0;
-    return (items || []).reduce((max, i) => Math.max(max, i.mobilSurcharge || 0), 0);
-}
-// Size-based Aufpreis applies to any package/service flagged `sizeSurcharge: true` in the data.
-// The set is DERIVED from that flag (single source of truth) so StepVehicle, Step4 and handleSubmit
-// stay in sync automatically — flip the flag in services.js and every surface follows.
-// Applies to all full-car services (all tier packages, Handwäsche, Innenreinigung, Politur except
-// Spot/Scheinwerfer, Keramik, Verkauf). The per-unit Zusatzpakete add-ons stay surcharge-free.
-const SIZE_SURCHARGE_IDS = new Set([
-    ...tierPackages.filter(p => p.sizeSurcharge).map(p => p.id),
-    ...serviceCategories.flatMap(cat =>
-        cat.packages.flatMap((pkg, i) => (pkg.sizeSurcharge ? [`${cat.id}-${i}`] : []))
-    ),
-]);
 
-function parsePriceNum(priceStr) {
-    const match = priceStr.replace(/\./g, '').match(/€(\d+)/);
-    return match ? parseInt(match[1]) : 0;
-}
+// All money — the vehicle-size factor, the Anfahrtspauschale, the per-package Mobil-Aufpreis and
+// every euro string — comes from src/lib/pricing.js. `computeTotals` is called in Step 1,
+// StepVehicle, Step 4 and handleSubmit; four hand-rolled copies of this sum used to drift apart.
 
 // ─── Cloudinary photo upload ──────────────────────────────────────────────────
 
@@ -207,7 +191,7 @@ function Step0({ serviceMode, setServiceMode, studioLocation, setStudioLocation,
                     <div className="flex flex-col gap-2">
                         <h3 className="font-sans font-bold text-2xl text-ivory">Mobiler Service</h3>
                         <p className="font-sans text-sm text-ivory/50">Wir kommen direkt zu Ihnen</p>
-                        <span className="font-mono text-xs text-champagne mt-1">+€{MOBILE_SURCHARGE},- Anfahrtspauschale</span>
+                        <span className="font-mono text-xs text-champagne mt-1">+{formatEuro(MOBILE_SURCHARGE)} Anfahrtspauschale</span>
                     </div>
                     <div className="flex items-center gap-2 mt-auto pt-2">
                         <Truck className="w-4 h-4 text-ivory/40" />
@@ -247,11 +231,10 @@ function Step1({ selectedItems, toggleItem, onNext, onBack, recommendations, pac
 
     const isSelected = (id) => selectedItems.some(i => i.id === id);
 
-    const serviceNum = selectedItems.reduce((sum, i) => sum + i.priceNum, 0);
-    const mobileSurcharge = serviceMode === 'mobil' ? MOBILE_SURCHARGE : 0;
-    const mobilePkgSurcharge = mobilePackageSurchargeOf(selectedItems, serviceMode);
-    const totalNum = serviceNum + mobileSurcharge + mobilePkgSurcharge;
-    const totalStr = totalNum > 0 ? `ab €${totalNum.toLocaleString('de-AT')},-` : null;
+    // No vehicle chosen yet, so these are base prices: the size factor arrives in the next step.
+    const { total: totalNum, mobilPkg: mobilePkgSurcharge, anySized } =
+        computeTotals(selectedItems, serviceMode, null);
+    const totalStr = totalNum > 0 ? formatFrom(totalNum) : null;
 
     // Show disclaimer when adding, toggle directly when removing
     const addWithDisclaimer = (item) => {
@@ -269,11 +252,11 @@ function Step1({ selectedItems, toggleItem, onNext, onBack, recommendations, pac
         setShowDisclaimer(false);
     };
 
-    // Toggle an All-in-One package
+    // Cart items carry the BASE price as `priceNum`; the size factor is applied at render/submit
+    // time via linePrice(), because the vehicle class is only known from the next step onwards.
     const toggleAIO = (pkg) => {
-        const priceNum = parseInt(pkg.price.replace(/[^\d]/g, ''));
         addWithDisclaimer({
-            id: pkg.id, name: `${pkg.tier} – ${pkg.name}`, price: pkg.price, priceNum, type: 'aio',
+            id: pkg.id, name: `${pkg.tier} – ${pkg.name}`, priceNum: pkg.price, type: 'aio',
             durationMin: pkg.durationMin ?? null, durationDays: pkg.durationDays ?? null,
             mobilExtraMin: pkg.mobilExtraMin ?? 0, mobilSurcharge: pkg.mobilSurcharge ?? 0,
         });
@@ -281,10 +264,9 @@ function Step1({ selectedItems, toggleItem, onNext, onBack, recommendations, pac
 
     // Toggle an individual service package
     const toggleService = (cat, pkg, idx) => {
-        const id = `${cat.id}-${idx}`;
-        const priceNum = parsePriceNum(pkg.price);
         addWithDisclaimer({
-            id, name: pkg.name, price: pkg.price, priceNum, type: 'service',
+            id: `${cat.id}-${idx}`, name: pkg.name, priceNum: pkg.price, type: 'service',
+            priceSuffix: pkg.priceSuffix ?? null,
             durationMin: pkg.durationMin ?? null, durationDays: pkg.durationDays ?? null,
             mobilExtraMin: pkg.mobilExtraMin ?? 0, mobilSurcharge: pkg.mobilSurcharge ?? 0,
         });
@@ -367,7 +349,7 @@ function Step1({ selectedItems, toggleItem, onNext, onBack, recommendations, pac
                                 {/* Body */}
                                 <div className="p-5 flex flex-col gap-3 flex-1">
                                     <div className="flex items-start justify-between gap-3">
-                                        <div className="font-mono text-2xl font-bold text-accent">{pkg.price}</div>
+                                        <div className="font-mono text-2xl font-bold text-accent">{formatFrom(pkg.price)}</div>
                                         {pkg.phoneOnly ? (
                                             <span className="flex items-center gap-1 shrink-0 mt-0.5 px-2.5 py-1 rounded-full border border-champagne/40 bg-champagne/10 text-champagne font-sans text-[10px] font-bold uppercase tracking-wider">
                                                 <Phone className="w-3 h-3" /> Nur auf Termin
@@ -448,7 +430,7 @@ function Step1({ selectedItems, toggleItem, onNext, onBack, recommendations, pac
                                         </div>
                                     )}
                                 </div>
-                                <div className="font-mono text-2xl font-bold text-accent">{pkg.price}</div>
+                                <div className="font-mono text-2xl font-bold text-accent">{formatServicePrice(pkg)}</div>
                                 <ul className="flex flex-col gap-1.5 flex-1">
                                     {visibleFeatures.map((f, fi) => (
                                         <li key={fi} className="font-sans text-xs text-ivory/50 flex items-start gap-2">
@@ -495,7 +477,7 @@ function Step1({ selectedItems, toggleItem, onNext, onBack, recommendations, pac
                         {selectedItems.map(item => (
                             <div key={item.id} className="flex items-center gap-2 bg-obsidian border border-slate/60 rounded-full pl-4 pr-2 py-1.5">
                                 <span className="font-sans text-sm text-ivory">{item.name}</span>
-                                <span className="font-mono text-xs text-accent">{item.price}</span>
+                                <span className="font-mono text-xs text-accent">{formatFrom(item.priceNum)}</span>
                                 <button
                                     onClick={() => toggleItem(item)}
                                     className="w-5 h-5 rounded-full bg-slate/60 hover:bg-accent/20 flex items-center justify-center transition-colors ml-1"
@@ -509,20 +491,27 @@ function Step1({ selectedItems, toggleItem, onNext, onBack, recommendations, pac
                         <div className="flex items-center gap-2 bg-accent/10 border border-accent/30 rounded-full pl-4 pr-4 py-1.5">
                             <Truck className="w-3.5 h-3.5 text-accent" />
                             <span className="font-sans text-sm text-ivory">Anfahrtspauschale</span>
-                            <span className="font-mono text-xs text-champagne font-semibold ml-auto">+€{MOBILE_SURCHARGE},-</span>
+                            <span className="font-mono text-xs text-champagne font-semibold ml-auto">+{formatEuro(MOBILE_SURCHARGE)}</span>
                         </div>
                     )}
                     {mobilePkgSurcharge > 0 && (
                         <div className="flex items-center gap-2 bg-accent/10 border border-accent/30 rounded-full pl-4 pr-4 py-1.5">
                             <Truck className="w-3.5 h-3.5 text-accent" />
                             <span className="font-sans text-sm text-ivory">Mobil-Aufpreis (Premium-Paket)</span>
-                            <span className="font-mono text-xs text-champagne font-semibold ml-auto">+€{mobilePkgSurcharge},-</span>
+                            <span className="font-mono text-xs text-champagne font-semibold ml-auto">+{formatEuro(mobilePkgSurcharge)}</span>
                         </div>
                     )}
                     {totalStr && (
-                        <div className="flex items-center justify-between pt-2 border-t border-slate/50">
-                            <span className="font-sans text-sm text-ivory/50">Geschätzte Gesamtsumme</span>
-                            <span className="font-mono text-xl font-bold text-accent">{totalStr}</span>
+                        <div className="flex flex-col gap-1 pt-2 border-t border-slate/50">
+                            <div className="flex items-center justify-between">
+                                <span className="font-sans text-sm text-ivory/50">Geschätzte Gesamtsumme</span>
+                                <span className="font-mono text-xl font-bold text-accent">{totalStr}</span>
+                            </div>
+                            {anySized && (
+                                <p className="font-sans text-[11px] text-ivory/40">
+                                    Im nächsten Schritt kommt der Größenfaktor Ihrer Fahrzeugklasse dazu.
+                                </p>
+                            )}
                         </div>
                     )}
                 </div>
@@ -574,21 +563,11 @@ function Step1({ selectedItems, toggleItem, onNext, onBack, recommendations, pac
 }
 
 // ─── Step 2: Vehicle Category ────────────────────────────────────────────────
-
-const VEHICLE_CATEGORIES = [
-    { id: 'kleinwagen', name: 'Kleinwagen', examples: 'z. B. VW Polo, Ford Fiesta', description: 'Kurze Autos, 2–4 Türen', aufpreis: 0 },
-    { id: 'kompakt', name: 'Kompaktklasse', examples: 'z. B. VW Golf, Audi A3', description: 'Standardgröße, die meisten Autos', aufpreis: 55 },
-    { id: 'mittelklasse', name: 'Mittelklasse / Limousine', examples: 'z. B. BMW 3er, Mercedes C-Klasse, Audi A6', description: 'Länger, oft 4 Türen + Kofferraum', aufpreis: 75 },
-    { id: 'suv', name: 'SUV / Van', examples: 'z. B. VW Tiguan, BMW X5, Sharan', description: 'Höher, größer, mehr Innenraum', aufpreis: 95 },
-    { id: 'gross', name: 'Großfahrzeuge / Transporter', examples: 'z. B. VW Bus, Sprinter, Transporter', description: 'Deutlich größer, gewerblich/Family Vans', aufpreis: null },
-];
+// VEHICLE_SIZES and the factor maths live in src/lib/pricing.js.
 
 function StepVehicle({ vehicleCategory, setVehicleCategory, selectedItems, onNext, onBack, serviceMode }) {
-    const serviceTotal = selectedItems.reduce((sum, i) => sum + i.priceNum, 0);
-    const mobileSurcharge = serviceMode === 'mobil' ? MOBILE_SURCHARGE : 0;
-    const mobilePkgSurcharge = mobilePackageSurchargeOf(selectedItems, serviceMode);
-    // Size surcharge only counts when a sizeSurcharge-flagged service/package is in the cart.
-    const appliesSurcharge = selectedItems.some(i => SIZE_SURCHARGE_IDS.has(i.id));
+    const t = computeTotals(selectedItems, serviceMode, vehicleCategory);
+    const { mobilPkg: mobilePkgSurcharge, anySized: appliesSurcharge } = t;
 
     return (
         <div className="flex flex-col gap-10 w-full">
@@ -596,13 +575,13 @@ function StepVehicle({ vehicleCategory, setVehicleCategory, selectedItems, onNex
                 <h2 className="font-drama italic text-4xl sm:text-5xl text-ivory mb-2">Ihr Fahrzeug</h2>
                 <p className="font-sans text-sm text-ivory/50">
                     {appliesSurcharge
-                        ? 'Der Größen-Aufpreis richtet sich nach der Fahrzeuggröße.'
-                        : 'Hilft uns bei der Planung. Ein Größen-Aufpreis fällt nur bei bestimmten Leistungen an.'}
+                        ? 'Der Preis wird mit dem Größenfaktor Ihrer Fahrzeugklasse multipliziert — ein großes Auto braucht anteilig mehr Zeit.'
+                        : 'Hilft uns bei der Planung. Ein Größenfaktor fällt nur bei bestimmten Leistungen an.'}
                 </p>
             </div>
 
             <div className="flex flex-col gap-3">
-                {VEHICLE_CATEGORIES.map(cat => {
+                {VEHICLE_SIZES.map(cat => {
                     const selected = vehicleCategory?.id === cat.id;
                     return (
                         <button
@@ -622,13 +601,11 @@ function StepVehicle({ vehicleCategory, setVehicleCategory, selectedItems, onNex
                             </div>
                             <div className="shrink-0">
                                 {!appliesSurcharge ? (
-                                    <span className="font-mono text-sm text-ivory/40 font-semibold">kein Aufpreis</span>
-                                ) : cat.aufpreis === null ? (
-                                    <span className="font-mono text-sm text-champagne font-semibold">auf Anfrage</span>
-                                ) : cat.aufpreis === 0 ? (
-                                    <span className="font-mono text-sm text-accent font-semibold">kein Aufpreis</span>
+                                    <span className="font-mono text-sm text-ivory/40 font-semibold">kein Größenfaktor</span>
                                 ) : (
-                                    <span className="font-mono text-sm text-accent font-semibold">+€{cat.aufpreis},-</span>
+                                    <span className={`font-mono text-sm font-semibold ${cat.factor === null ? 'text-champagne' : 'text-accent'}`}>
+                                        {sizeFactorLabel(cat)}
+                                    </span>
                                 )}
                             </div>
                         </button>
@@ -636,41 +613,41 @@ function StepVehicle({ vehicleCategory, setVehicleCategory, selectedItems, onNex
                 })}
             </div>
 
-            {vehicleCategory && serviceTotal > 0 && (
+            {vehicleCategory && t.baseTotal > 0 && (
                 <div className="bg-slate/40 border border-accent/30 rounded-[1.5rem] p-5 flex flex-col gap-3">
                     {serviceMode === 'mobil' && (
                         <div className="flex items-center justify-between">
                             <span className="font-sans text-sm text-ivory/50 inline-flex items-center gap-2"><Truck className="w-3.5 h-3.5 text-accent" /> Anfahrtspauschale</span>
-                            <span className="font-mono text-sm text-champagne font-semibold">+€{MOBILE_SURCHARGE},-</span>
+                            <span className="font-mono text-sm text-champagne font-semibold">+{formatEuro(MOBILE_SURCHARGE)}</span>
                         </div>
                     )}
                     {mobilePkgSurcharge > 0 && (
                         <div className="flex items-center justify-between">
                             <span className="font-sans text-sm text-ivory/50 inline-flex items-center gap-2"><Truck className="w-3.5 h-3.5 text-accent" /> Mobil-Aufpreis (Premium-Paket)</span>
-                            <span className="font-mono text-sm text-champagne font-semibold">+€{mobilePkgSurcharge},-</span>
+                            <span className="font-mono text-sm text-champagne font-semibold">+{formatEuro(mobilePkgSurcharge)}</span>
                         </div>
                     )}
-                    {appliesSurcharge && vehicleCategory.aufpreis > 0 && (
+                    {t.sizeDelta > 0 && (
                         <div className="flex items-center justify-between">
-                            <span className="font-sans text-sm text-ivory/50">Größen-Aufpreis ({vehicleCategory.name})</span>
-                            <span className="font-mono text-sm text-champagne font-semibold">+€{vehicleCategory.aufpreis},-</span>
+                            <span className="font-sans text-sm text-ivory/50">
+                                Größenfaktor ({vehicleCategory.name} {sizeFactorLabel(vehicleCategory)})
+                            </span>
+                            <span className="font-mono text-sm text-champagne font-semibold">+{formatEuro(t.sizeDelta)}</span>
                         </div>
                     )}
                     <div className="flex items-center justify-between">
                         <span className="font-sans text-sm text-ivory/50">Geschätzte Gesamtsumme</span>
-                        {appliesSurcharge && vehicleCategory.aufpreis === null ? (
+                        {t.onRequest ? (
                             <div className="flex flex-col items-end gap-0.5">
-                                <span className="font-mono text-lg font-bold text-accent">ab €{(serviceTotal + mobileSurcharge + mobilePkgSurcharge).toLocaleString('de-AT')},-</span>
+                                <span className="font-mono text-lg font-bold text-accent">{formatFrom(t.total)}</span>
                                 <span className="font-mono text-[10px] text-champagne">+ Aufpreis auf Anfrage</span>
                             </div>
                         ) : (
-                            <span className="font-mono text-xl font-bold text-accent">
-                                ab €{(serviceTotal + (appliesSurcharge ? (vehicleCategory.aufpreis || 0) : 0) + mobileSurcharge + mobilePkgSurcharge).toLocaleString('de-AT')},-
-                            </span>
+                            <span className="font-mono text-xl font-bold text-accent">{formatFrom(t.total)}</span>
                         )}
                     </div>
                     {!appliesSurcharge && (
-                        <p className="font-sans text-[11px] text-ivory/40">Für die gewählten Leistungen fällt kein Größen-Aufpreis an.</p>
+                        <p className="font-sans text-[11px] text-ivory/40">Für die gewählten Leistungen fällt kein Größenfaktor an.</p>
                     )}
                 </div>
             )}
@@ -1083,13 +1060,8 @@ const STUDIO_ADDRESSES = {
 };
 
 function Step4({ selectedItems, datetime, serviceMode, contact, vehicleCategory, studioLocation, photoWarning }) {
-    const serviceTotal = selectedItems.reduce((s, i) => s + i.priceNum, 0);
-    const appliesSurcharge = selectedItems.some(i => SIZE_SURCHARGE_IDS.has(i.id));
-    const onRequestSurcharge = appliesSurcharge && vehicleCategory?.aufpreis === null;
-    const aufpreis = appliesSurcharge ? (vehicleCategory?.aufpreis || 0) : 0;
-    const mobileSurcharge = serviceMode === 'mobil' ? MOBILE_SURCHARGE : 0;
-    const mobilePkgSurcharge = mobilePackageSurchargeOf(selectedItems, serviceMode);
-    const total = serviceTotal + aufpreis + mobileSurcharge + mobilePkgSurcharge;
+    const t = computeTotals(selectedItems, serviceMode, vehicleCategory);
+    const { anySized: appliesSurcharge, onRequest: onRequestSurcharge, mobilPkg: mobilePkgSurcharge, total } = t;
     const terms = multiDayTerms(serviceMode);
 
     return (
@@ -1125,10 +1097,12 @@ function Step4({ selectedItems, datetime, serviceMode, contact, vehicleCategory,
 
                 {/* Services list */}
                 <div className="flex flex-col gap-2">
+                    {/* Sized prices: what the customer saw in StepVehicle is what lands here, in
+                        the calendar event and in the notification mail. */}
                     {selectedItems.map((item, i) => (
                         <div key={i} className="flex justify-between items-center">
                             <span className="font-sans text-sm text-ivory/70">{item.name}</span>
-                            <span className="font-mono text-sm text-accent font-semibold">{item.price}</span>
+                            <span className="font-mono text-sm text-accent font-semibold">{formatFrom(linePrice(item, vehicleCategory))}</span>
                         </div>
                     ))}
                 </div>
@@ -1137,7 +1111,7 @@ function Step4({ selectedItems, datetime, serviceMode, contact, vehicleCategory,
                     <div className="flex justify-between items-center">
                         <span className="font-sans text-sm text-ivory/70">{vehicleCategory.name}</span>
                         <span className="font-mono text-sm text-accent font-semibold">
-                            {!appliesSurcharge ? 'kein Aufpreis' : vehicleCategory.aufpreis === null ? 'auf Anfrage' : vehicleCategory.aufpreis === 0 ? 'kein Aufpreis' : `+€${vehicleCategory.aufpreis},-`}
+                            {!appliesSurcharge ? 'kein Größenfaktor' : sizeFactorLabel(vehicleCategory)}
                         </span>
                     </div>
                 )}
@@ -1145,14 +1119,14 @@ function Step4({ selectedItems, datetime, serviceMode, contact, vehicleCategory,
                 {serviceMode === 'mobil' && (
                     <div className="flex justify-between items-center">
                         <span className="font-sans text-sm text-ivory/70 inline-flex items-center gap-2"><Truck className="w-3.5 h-3.5 text-accent" /> Anfahrtspauschale</span>
-                        <span className="font-mono text-sm text-champagne font-semibold">+€{MOBILE_SURCHARGE},-</span>
+                        <span className="font-mono text-sm text-champagne font-semibold">+{formatEuro(MOBILE_SURCHARGE)}</span>
                     </div>
                 )}
 
                 {mobilePkgSurcharge > 0 && (
                     <div className="flex justify-between items-center">
                         <span className="font-sans text-sm text-ivory/70 inline-flex items-center gap-2"><Truck className="w-3.5 h-3.5 text-accent" /> Mobil-Aufpreis (Premium-Paket)</span>
-                        <span className="font-mono text-sm text-champagne font-semibold">+€{mobilePkgSurcharge},-</span>
+                        <span className="font-mono text-sm text-champagne font-semibold">+{formatEuro(mobilePkgSurcharge)}</span>
                     </div>
                 )}
 
@@ -1161,11 +1135,11 @@ function Step4({ selectedItems, datetime, serviceMode, contact, vehicleCategory,
                     <span className="font-sans text-sm font-bold text-ivory">Gesamtsumme</span>
                     {onRequestSurcharge ? (
                         <div className="flex flex-col items-end gap-0.5">
-                            <span className="font-mono text-lg font-bold text-accent">ab €{(serviceTotal + mobileSurcharge + mobilePkgSurcharge).toLocaleString('de-AT')},-</span>
+                            <span className="font-mono text-lg font-bold text-accent">{formatFrom(total)}</span>
                             <span className="font-mono text-[10px] text-champagne">+ Aufpreis auf Anfrage</span>
                         </div>
                     ) : (
-                        <span className="font-mono text-lg font-bold text-accent">ab €{total.toLocaleString('de-AT')},-</span>
+                        <span className="font-mono text-lg font-bold text-accent">{formatFrom(total)}</span>
                     )}
                 </div>
 
@@ -1351,7 +1325,7 @@ export default function BookingPage() {
         setSelectedItems(prev => {
             const filtered = prev.filter(i => !replaceIds.includes(i.id));
             return [...filtered, {
-                id: pkg.id, name: pkg.name, price: pkg.price, priceNum: pkg.priceNum, type: 'aio',
+                id: pkg.id, name: pkg.name, priceNum: pkg.price, type: 'aio',
                 durationMin: pkg.durationMin ?? null, durationDays: pkg.durationDays ?? null,
                 mobilExtraMin: pkg.mobilExtraMin ?? 0, mobilSurcharge: pkg.mobilSurcharge ?? 0,
             }];
@@ -1379,22 +1353,27 @@ export default function BookingPage() {
         const mm = String(datetime.date.getMonth() + 1).padStart(2, '0');
         const dd = String(datetime.date.getDate()).padStart(2, '0');
         const isoDate = `${yyyy}-${mm}-${dd}`;
-        const serviceTotal = selectedItems.reduce((s, i) => s + i.priceNum, 0);
-        // Size-based Aufpreis only applies to sizeSurcharge-flagged services (see SIZE_SURCHARGE_IDS).
-        const appliesSurcharge = selectedItems.some(i => SIZE_SURCHARGE_IDS.has(i.id));
-        const onRequestSurcharge = appliesSurcharge && vehicleCategory?.aufpreis === null;
-        const aufpreis = appliesSurcharge ? (vehicleCategory?.aufpreis || 0) : 0;
-        const mobileSurchargeVal = serviceMode === 'mobil' ? MOBILE_SURCHARGE : 0;
-        const mobilePkgSurchargeVal = mobilePackageSurchargeOf(selectedItems, serviceMode);
-        const total = serviceTotal + aufpreis + mobileSurchargeVal + mobilePkgSurchargeVal;
-        const aufpreisStr = onRequestSurcharge ? 'auf Anfrage' : aufpreis > 0 ? `+€${aufpreis},-` : 'kein Aufpreis';
+        // Size factor per line item (see src/lib/pricing.js). The studio must see the same numbers
+        // the customer just confirmed, so the recorded prices are the SIZED ones.
+        const t = computeTotals(selectedItems, serviceMode, vehicleCategory);
+        const mobileSurchargeVal = t.anfahrt;
+        const mobilePkgSurchargeVal = t.mobilPkg;
+        const sizeFactorStr = sizeFactorForRecord(vehicleCategory, t.anySized);
+        const sizedServices = selectedItems.map(i => {
+            const priceNum = linePrice(i, vehicleCategory);
+            return {
+                ...i,
+                priceNum,
+                price: i.priceSuffix ? `${formatFrom(priceNum)} ${i.priceSuffix}` : formatFrom(priceNum),
+            };
+        });
 
         const location = serviceMode === 'mobil'
             ? contact.address
             : (STUDIO_ADDRESSES[studioLocation] || STUDIO_ADDRESSES.feldkirch);
-        const totalStr = onRequestSurcharge
-            ? `ab €${(serviceTotal + mobileSurchargeVal + mobilePkgSurchargeVal).toLocaleString('de-AT')},- + Aufpreis auf Anfrage`
-            : `ab €${total.toLocaleString('de-AT')},-`;
+        const totalStr = t.onRequest
+            ? `${formatFrom(t.total)} + Aufpreis auf Anfrage`
+            : formatFrom(t.total);
 
         // Effective duration → same-day block vs. multi-day span
         const duration = computeBookingDuration(selectedItems, serviceMode);
@@ -1406,13 +1385,13 @@ export default function BookingPage() {
             await submitBooking({
                 date: isoDate,
                 time: datetime.time,
-                services: selectedItems,
+                services: sizedServices,
                 contact,
                 website: honeypot, // spam trap; server silently rejects if non-empty
                 serviceMode,
                 location,
                 vehicleCategory: vehicleCategory?.name,
-                vehicleAufpreis: aufpreisStr,
+                vehicleSizeFactor: sizeFactorStr,
                 mobileSurcharge: mobileSurchargeVal,
                 mobilePackageSurcharge: mobilePkgSurchargeVal,
                 totalStr,

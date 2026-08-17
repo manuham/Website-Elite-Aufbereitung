@@ -2,6 +2,7 @@ import { useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import gsap from 'gsap';
 import { Truck, Clock, ShieldCheck } from 'lucide-react';
+import { MOBILE_SURCHARGE } from '../lib/pricing';
 import SplitText from './SplitText';
 import Img from './Img';
 
@@ -128,7 +129,7 @@ export default function MobileService() {
 
                     {/* Anfahrtspauschale */}
                     <div className="mobile-benefit bg-accent/5 border border-accent/20 rounded-2xl p-5 sm:p-6 flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-5">
-                        <span className="font-mono text-2xl sm:text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-accent to-accent-glow shrink-0">50 €</span>
+                        <span className="font-mono text-2xl sm:text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-accent to-accent-glow shrink-0">{MOBILE_SURCHARGE} €</span>
                         <div className="flex flex-col gap-1">
                             <span className="font-sans font-bold text-sm text-ivory">Anfahrtspauschale</span>
                             <span className="font-sans text-[13px] text-ivory/60 leading-relaxed">

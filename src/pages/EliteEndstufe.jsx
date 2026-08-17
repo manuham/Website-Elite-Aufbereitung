@@ -7,23 +7,25 @@ import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 import useIsomorphicLayoutEffect from '../hooks/useIsomorphicLayoutEffect';
 import { tierPackages } from '../data/services';
+import { formatFrom } from '../lib/pricing';
 import Img from '../components/Img';
 
 gsap.registerPlugin(ScrollTrigger);
 
 const elite = tierPackages.find(p => p.id === 'tier-elite');
 
-// Map feature text to icons for visual interest
+// Map feature text to icons for visual interest.
+// ⚠ Keyed on the EXACT bullet text in services.js — reword a bullet there and the icon silently
+// falls back to Sparkles (see `featureIcons[feat.text] || Sparkles` below). Keep the two in sync.
 const featureIcons = {
-    '3-Gang Politur': Sparkles,
+    'Kratzfreie Handwäsche, Tonbehandlung und Entfettung': Droplets,
+    '3-Gang Politur für maximalen Glanz': Sparkles,
     'FIREBALL Keramikbeschichtung': Shield,
-    'Felgen zerlegt, poliert & beschichtet': CircleDot,
-    'Bremssättel beschichtet': Car,
-    'Einstiege poliert & beschichtet': Gem,
-    'Ledersitze Keramikbeschichtung': Star,
-    'Kunststoffteile beschichtet (UV-Schutz)': Shield,
-    'Stoff- & Textilbeschichtung': Droplets,
-    'Persönliche Übergabe & Pflegeberatung': Handshake,
+    'Felgen zerlegt, poliert und beschichtet, Bremssättel beschichtet': CircleDot,
+    'Einstiegsleisten und Motorraum gereinigt und beschichtet': Gem,
+    'Fenster-, Kunststoff-, Leder- und Textilbeschichtung': Star,
+    'Innenreinigung komplett: Sitze, Teppiche, Armaturen, Fenster': Car,
+    'Persönliche Übergabe mit Pflegeberatung und Geschenkpaket': Handshake,
 };
 
 const processSteps = [
@@ -100,7 +102,7 @@ export default function EliteEndstufe() {
                         </p>
 
                         <div className="hero-anim flex items-baseline gap-3">
-                            <span className="font-mono text-4xl sm:text-5xl font-black text-champagne">{elite.price}</span>
+                            <span className="font-mono text-4xl sm:text-5xl font-black text-champagne">{formatFrom(elite.price)}</span>
                             <span className="font-sans text-sm text-ivory/40">Endpreis</span>
                         </div>
 

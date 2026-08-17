@@ -38,7 +38,7 @@ function validateBooking(body) {
 
   const {
     date, time, services, contact, serviceMode, location,
-    vehicleCategory, vehicleAufpreis, mobileSurcharge, mobilePackageSurcharge,
+    vehicleCategory, vehicleSizeFactor, vehicleAufpreis, mobileSurcharge, mobilePackageSurcharge,
     totalStr, photoUrls, durationMin, multiDay, spanDays,
   } = body;
 
@@ -93,7 +93,9 @@ function validateBooking(body) {
       serviceMode: mode,
       location: cleanStr(location, 200),
       vehicleCategory: vehicle,
-      vehicleAufpreis: cleanStr(vehicleAufpreis, 60),
+      // "×1,15 (Kompaktklasse)". `vehicleAufpreis` is the pre-factor field name a client cached
+      // across the deploy may still send — accepted so its calendar line keeps the suffix.
+      vehicleSizeFactor: cleanStr(vehicleSizeFactor ?? vehicleAufpreis, 60),
       mobileSurcharge: toNum(mobileSurcharge, { min: 0, max: 100000, fallback: 0 }),
       mobilePackageSurcharge: toNum(mobilePackageSurcharge, { min: 0, max: 100000, fallback: 0 }),
       totalStr: cleanStr(totalStr, 120),
