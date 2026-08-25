@@ -5,6 +5,7 @@ import { Droplets, ShieldCheck, CalendarCheck } from 'lucide-react';
 import SplitText from './SplitText';
 import { useTilt } from '../hooks/useTilt';
 import Img from './Img';
+import { prefersReducedMotion } from '../lib/motion';
 
 function TiltCard({ children, className }) {
     const tiltRef = useTilt(6, 800, true);
@@ -21,6 +22,7 @@ export default function Features() {
 
     useEffect(() => {
         if (!containerRef.current) return;
+        if (prefersReducedMotion()) return;
 
         ScrollTrigger.refresh();
 
@@ -58,32 +60,8 @@ export default function Features() {
                 }
             );
 
-            // --- Horizontal scroll on desktop (lg+) ---
+            // Parallax on the card images, below lg only.
             const mm = gsap.matchMedia();
-
-            mm.add('(min-width: 1024px)', () => {
-                const track = trackRef.current;
-                if (!track) return;
-
-                const getScrollAmount = () => track.scrollWidth - track.offsetWidth;
-
-                if (getScrollAmount() <= 0) return;
-
-                gsap.to(track, {
-                    x: () => -getScrollAmount(),
-                    ease: 'none',
-                    scrollTrigger: {
-                        trigger: containerRef.current,
-                        start: 'top top',
-                        end: () => `+=${getScrollAmount()}`,
-                        pin: true,
-                        scrub: 1,
-                        invalidateOnRefresh: true,
-                    },
-                });
-            });
-
-            // Mobile: keep vertical parallax on images
             mm.add('(max-width: 1023px)', () => {
                 gsap.utils.toArray('.feature-card-img').forEach(img => {
                     gsap.to(img, {
@@ -114,15 +92,15 @@ export default function Features() {
         {
             icon: ShieldCheck,
             title: 'Keramik-Schutzschild',
-            description: 'FIREBALL Keramikversiegelung mit 40.000 – 60.000 km Garantie. Extremer Glanz, wasser- und schmutzabweisend, UV-Schutz — Ihr Lack bleibt makellos.',
+            description: 'FIREBALL Keramikversiegelung, hält je nach Paket 40.000 – 60.000 km. Wasser und Schmutz perlen ab, UV-Schutz gegen Ausbleichen — dein Lack bleibt länger geschützt.',
             highlights: ['40.000 – 60.000 km Schutz', 'Hydrophobe Oberfläche', 'UV-Beständig'],
             image: '/assets/Produkte/P1345270.jpg',
         },
         {
             icon: CalendarCheck,
             title: 'Termin in 60 Sekunden',
-            description: 'Online-Terminbuchung in Sekunden. Wählen Sie Ihr Paket und Ihren Wunschtermin — wir kümmern uns um den Rest.',
-            highlights: ['Online buchen', 'Flexible Zeiten', 'Mo–Sa geöffnet'],
+            description: 'Online-Terminbuchung in unter einer Minute. Wähl dein Paket und deinen Wunschtermin — den Rest übernehmen wir.',
+            highlights: ['Online buchen', 'Mo–Fr 08:00–18:00', 'Wunschtermin wählbar'],
             image: '/assets/Autos/IMG_2195.jpg',
         },
     ];
@@ -150,8 +128,7 @@ export default function Features() {
             {/* Cards — horizontal scroll track on lg, vertical grid on mobile */}
             <div
                 ref={trackRef}
-                className="grid grid-cols-1 gap-6 px-4 sm:px-8 pb-24 sm:pb-32
-                           lg:flex lg:flex-nowrap lg:justify-center lg:gap-8 lg:px-12 xl:px-16 lg:pb-24"
+                className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8 px-4 sm:px-8 lg:px-12 xl:px-16 pb-24 sm:pb-32 lg:pb-24 max-w-7xl mx-auto"
                 style={{ perspective: '800px' }}
             >
                 {features.map((feature) => {
@@ -159,8 +136,7 @@ export default function Features() {
                     return (
                         <TiltCard
                             key={feature.title}
-                            className="feature-card glass-panel rounded-[2rem] flex flex-col overflow-hidden group hover:shadow-2xl transition-shadow duration-500
-                                       lg:min-w-[min(420px,80vw)] lg:max-w-[420px] lg:flex-shrink-0"
+                            className="feature-card glass-panel rounded-[2rem] flex flex-col overflow-hidden group hover:shadow-2xl transition-shadow duration-500"
                         >
                             {/* Image area */}
                             <div className="relative h-72 lg:h-80 overflow-hidden">

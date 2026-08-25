@@ -4,7 +4,6 @@ import { Check, Zap, Gift } from 'lucide-react';
 import gsap from 'gsap';
 import { serviceCategories, tierPackages } from '../data/services';
 import { MOBILE_SURCHARGE, formatEuro, formatFrom, formatServicePrice } from '../lib/pricing';
-import SplitText from './SplitText';
 import PhoneConsultModal from './PhoneConsultModal';
 import Disclosure from './Disclosure';
 
@@ -130,13 +129,9 @@ export default function Pricing() {
                 <div className="flex flex-col gap-4 items-center text-center">
                     <h3 className="font-sans font-bold text-lg text-ivory/60 uppercase tracking-widest">Unsere Pakete</h3>
                     <h2 className="font-drama italic text-4xl sm:text-5xl lg:text-6xl text-ivory">
-                        <SplitText type="words" triggerStart="top 85%">
-                            Services &
-                        </SplitText>{' '}
+                        Services &{' '}
                         <span className="text-accent relative inline-block">
-                            <SplitText type="chars" triggerStart="top 85%" delay={0.2}>
-                                Preise
-                            </SplitText>
+                            Preise
                             <span className="underline-draw bg-accent" />
                         </span>
                     </h2>
@@ -332,11 +327,11 @@ export default function Pricing() {
                 <div className="w-full bg-slate/30 border border-slate/50 rounded-2xl p-6 sm:p-8 mt-12 text-center">
                     <p className="font-sans text-[13px] sm:text-sm text-ivory/60 leading-relaxed mx-auto max-w-3xl">
                         <strong className="text-ivory/80 block mb-2">Wichtiger Hinweis zu unseren Preisen:</strong>
-                        Alle angegebenen Preise sind Endpreise (keine Umsatzsteuer gemäß § 6 Abs. 1 Z 27 UStG) und Richtpreise. Die Einstiegspreise gelten für Kleinwagen in durchschnittlichem Zustand. Bei größeren Fahrzeugen wird der Preis <strong className="text-ivory/80">je Leistung mit einem Größenfaktor multipliziert</strong> — Kleinwagen ×1,0, Kompaktklasse ×1,15, Mittelklasse ×1,3, SUV/Van ×1,5; Großfahrzeuge, Transporter und Wohnmobile auf Anfrage. Ein großes Fahrzeug kostet anteilig mehr Zeit, deshalb ein Faktor statt eines Pauschalbetrags. Vom Größenfaktor ausgenommen sind die Anfahrtspauschale sowie Scheinwerfer-Aufbereitung, Textilimprägnierung, Armaturenbrett- und Türverkleidungspflege und Dachhimmel — dort hängt der Aufwand nicht von der Fahrzeuggröße ab. Extremverschmutzungen kalkulieren wir gerne individuell auf Anfrage. Der finale Endpreis basiert stets auf dem tatsächlichen Arbeitsaufwand und Verschmutzungsgrad Ihres Fahrzeugs.
+                        Alle angegebenen Preise sind Endpreise (keine Umsatzsteuer gemäß § 6 Abs. 1 Z 27 UStG) und Richtpreise. Die Einstiegspreise gelten für Kleinwagen in durchschnittlichem Zustand. Bei größeren Fahrzeugen wird der Preis <strong className="text-ivory/80">je Leistung mit einem Größenfaktor multipliziert</strong> — Kleinwagen ×1,0, Kompaktklasse ×1,15, Mittelklasse ×1,3, SUV/Van ×1,5; Großfahrzeuge, Transporter und Wohnmobile auf Anfrage. Ein großes Fahrzeug kostet anteilig mehr Zeit, deshalb ein Faktor statt eines Pauschalbetrags. Vom Größenfaktor ausgenommen sind die Anfahrtspauschale sowie Scheinwerfer-Aufbereitung, Textilimprägnierung, Armaturenbrett- und Türverkleidungspflege und Dachhimmel — dort hängt der Aufwand nicht von der Fahrzeuggröße ab. Extremverschmutzungen kalkulieren wir gerne individuell auf Anfrage. Der finale Endpreis basiert stets auf dem tatsächlichen Arbeitsaufwand und Verschmutzungsgrad deines Fahrzeugs.
                     </p>
                     <p className="font-sans text-[13px] sm:text-sm text-ivory/60 leading-relaxed mx-auto max-w-3xl mt-3">
                         <span className="inline-flex items-center gap-1.5 bg-emerald-500 text-obsidian px-3 py-1 rounded-full font-sans text-xs font-black uppercase tracking-widest shadow-[0_0_15px_rgba(16,185,129,0.6)] animate-pulse mr-2">NEU</span>
-                        Alle Services sind auch als <strong className="text-ivory/80">Mobiler Service</strong> verfügbar — wir kommen mit unserem voll ausgestatteten Van direkt zu Ihnen.
+                        Alle Services sind auch als <strong className="text-ivory/80">Mobiler Service</strong> verfügbar — wir kommen mit unserem voll ausgestatteten Van direkt zu dir.
                         <strong className="text-ivory/80"> Anfahrtspauschale: {formatEuro(MOBILE_SURCHARGE)}</strong>
                     </p>
                 </div>

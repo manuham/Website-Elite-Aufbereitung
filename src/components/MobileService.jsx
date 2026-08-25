@@ -3,12 +3,11 @@ import { Link } from 'react-router-dom';
 import gsap from 'gsap';
 import { Truck, Clock, ShieldCheck } from 'lucide-react';
 import { MOBILE_SURCHARGE } from '../lib/pricing';
-import SplitText from './SplitText';
 import Img from './Img';
 
 const benefits = [
-    { icon: Truck, title: 'Wir kommen zu Ihnen', desc: 'Kein Weg, kein Stress' },
-    { icon: Clock, title: 'Flexible Termine', desc: 'Mo–Sa, auch nach Feierabend' },
+    { icon: Truck, title: 'Wir kommen zu dir', desc: 'Kein Weg, kein Stress' },
+    { icon: Clock, title: 'Termin online wählen', desc: 'Mo–Fr 08:00–18:00 buchbar' },
     { icon: ShieldCheck, title: 'Gleicher Service', desc: 'Identische Qualität & Produkte' },
 ];
 
@@ -93,20 +92,12 @@ export default function MobileService() {
                             Neu bei Elite
                         </span>
                         <h2 className="mobile-text font-drama italic text-4xl sm:text-5xl lg:text-6xl text-ivory">
-                            <SplitText type="words" triggerStart="top 75%">
-                                Wir kommen
-                            </SplitText>{' '}
-                            <SplitText
-                                className="text-transparent bg-clip-text bg-gradient-to-r from-accent to-accent-glow relative inline-block drop-shadow-lg"
-                                type="chars" triggerStart="top 75%" delay={0.2}
-                                animation="clipReveal"
-                            >
-                                zu Ihnen.
-                            </SplitText>
+                            Wir kommen{' '}
+                            zu dir.
                         </h2>
                         <p className="mobile-text font-sans text-sm sm:text-base text-ivory/60 leading-relaxed max-w-lg">
                             Ab sofort bieten wir unseren kompletten Service auch mobil an.
-                            Unser voll ausgestatteter Aufbereitungs-Van kommt direkt zu Ihnen
+                            Unser voll ausgestatteter Aufbereitungs-Van kommt direkt zu dir
                             nach Hause oder ins Büro — <strong className="font-medium text-ivory/80">bequem und ohne Aufwand.</strong>
                         </p>
                     </div>

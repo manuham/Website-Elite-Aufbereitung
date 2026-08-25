@@ -29,10 +29,10 @@ const featureIcons = {
 };
 
 const processSteps = [
-    { num: '01', title: 'Beratung', description: 'Persönliche Analyse Ihres Fahrzeugs und individuelle Abstimmung aller Details.', icon: Phone },
+    { num: '01', title: 'Beratung', description: 'Wir schauen uns Lack und Innenraum an, messen die Lackdicke und legen fest, welche Schritte dein Fahrzeug wirklich braucht.', icon: Phone },
     { num: '02', title: 'Vorbereitung', description: 'Dekontamination, Tonbehandlung und professionelle Tiefenreinigung innen & aussen.', icon: Droplets },
     { num: '03', title: 'Aufbereitung', description: '3-Gang Politur, FIREBALL Keramikbeschichtung, Felgen, Leder — jedes Detail perfektioniert.', icon: Sparkles },
-    { num: '04', title: 'Übergabe', description: 'Persönliche Übergabe mit Pflegeberatung und Ihrem exklusiven Pflegegeschenk.', icon: Gift },
+    { num: '04', title: 'Übergabe', description: 'Übergabe mit Pflegeberatung und dem Pflegeset für zu Hause: Shampoo, Quickdetailer, Mikrofasertücher, Anleitung.', icon: Gift },
 ];
 
 export default function EliteEndstufe() {
@@ -98,7 +98,7 @@ export default function EliteEndstufe() {
                         </h1>
 
                         <p className="hero-anim font-sans text-lg sm:text-xl text-ivory/60 leading-relaxed max-w-lg">
-                            {elite.subtitle} — Das ultimative Aufbereitungspaket für Ihr Fahrzeug. Kein Detail bleibt unberührt.
+                            {elite.subtitle} — acht Arbeitsschritte über fünf Werktage. Die Felgen kommen ab, Motorraum und Einstiege werden beschichtet.
                         </p>
 
                         <div className="hero-anim flex items-baseline gap-3">
@@ -328,12 +328,12 @@ export default function EliteEndstufe() {
                                 <div className="w-16 h-16 rounded-2xl bg-champagne/10 border border-champagne/30 flex items-center justify-center">
                                     <Gift className="w-8 h-8 text-champagne" strokeWidth={1.5} />
                                 </div>
-                                <span className="font-mono text-xs text-champagne uppercase tracking-widest">Exklusiv für Sie</span>
+                                <span className="font-mono text-xs text-champagne uppercase tracking-widest">Im Paket enthalten</span>
                                 <h3 className="font-drama italic text-3xl sm:text-4xl">
                                     {elite.gift.title}
                                 </h3>
                                 <p className="font-sans text-ivory/50 leading-relaxed">
-                                    Als Dankeschön für Ihr Vertrauen erhalten Sie ein hochwertiges Pflegeset zur Heimanwendung — damit Ihr Fahrzeug auch zwischen den Aufbereitungen in Bestform bleibt.
+                                    Zur Übergabe bekommst du ein Pflegeset für zu Hause — damit die Beschichtung zwischen den Aufbereitungen länger hält.
                                 </p>
                                 <div className="flex flex-wrap gap-3 mt-2">
                                     {['Shampoo', 'Quickdetailer', 'Mikrofasertücher', 'Pflegeanleitung'].map(item => (
@@ -358,7 +358,7 @@ export default function EliteEndstufe() {
                                 Bereit für die <span className="text-champagne">Endstufe?</span>
                             </h2>
                             <p className="font-sans text-ivory/50 leading-relaxed">
-                                Vereinbaren Sie jetzt Ihren Termin und erleben Sie, was möglich ist, wenn kein Kompromiss gemacht wird.
+                                Ruf an oder schreib uns — wir gehen dein Fahrzeug gemeinsam durch und legen den Termin fest. Die Endstufe planen wir immer persönlich.
                             </p>
                         </div>
                         <div className="flex flex-col sm:flex-row gap-4 shrink-0">

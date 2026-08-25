@@ -6,7 +6,7 @@ import Img from './Img';
 
 // Ordered to match the homepage section flow: Philosophy → Gallery → Pricing → FAQ → Footer
 const navLinks = [
-    { label: 'Über Uns', id: 'philosophy' },
+    { label: 'Über Uns', id: 'ueber-uns' },
     { label: 'Unsere Arbeit', href: '/projekte' },
     { label: 'Leistungen', id: 'pricing' },
     { label: 'FAQ', id: 'faq' },

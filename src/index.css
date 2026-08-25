@@ -105,9 +105,30 @@
     animation-play-state: paused;
   }
 
+  /* Hover alone is hover-only functionality: a keyboard or touch visitor could never pause the
+     strip. Anything focusable inside it pauses it too. */
+  .reviews-marquee-wrapper:focus-within .marquee-track {
+    animation-play-state: paused;
+  }
+
   @media (prefers-reduced-motion: reduce) {
     .marquee-track {
       animation-play-state: paused;
+    }
+
+    /* A paused strip with no way to scroll it means a reduced-motion visitor can only ever reach
+       the first few reviews. Give them the scrollbar the animation was standing in for. */
+    .reviews-marquee-wrapper {
+      overflow-x: auto;
+    }
+
+    /* Tailwind's infinite utility animations had no reduced-motion handling anywhere: the footer
+       status dot, the "NEU" badges in the navbar and on the mobile-service card. */
+    .animate-ping,
+    .animate-pulse,
+    .animate-bounce,
+    .animate-blob {
+      animation: none !important;
     }
   }
 

@@ -42,8 +42,8 @@ describe('summarizePhotoUploads — a failed photo must never cost the booking',
   });
 
   it('uses singular German for a single lost photo', () => {
-    expect(summarizePhotoUploads([fail()]).warning).toMatch(/^Ihr Foto konnte/);
-    expect(summarizePhotoUploads([fail(), fail()]).warning).toMatch(/^Ihre Fotos konnten/);
+    expect(summarizePhotoUploads([fail()]).warning).toMatch(/^Dein Foto konnte/);
+    expect(summarizePhotoUploads([fail(), fail()]).warning).toMatch(/^Deine Fotos konnten/);
   });
 
   it('never blames the customer or asks for a blind retry', () => {

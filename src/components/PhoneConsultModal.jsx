@@ -13,7 +13,7 @@ export default function PhoneConsultModal({
   packageName,
   eyebrow = 'Persönliche Beratung',
   title = 'Termin telefonisch vereinbaren',
-  body = 'Dieses Paket erfordert eine individuelle Kalkulation. Aufwand und Endpreis hängen stark vom Zustand, der Größe und den Anforderungen Ihres Fahrzeugs ab — deshalb klären wir alles persönlich mit Ihnen.',
+  body = 'Dieses Paket rechnen wir individuell. Aufwand und Endpreis hängen stark vom Zustand, der Größe und deinen Anforderungen ab — deshalb klären wir das persönlich mit dir.',
   onClose,
 }) {
   const dialogRef = useRef(null);
@@ -109,7 +109,7 @@ export default function PhoneConsultModal({
             +43 664 2546078
           </span>
           <span className="font-sans text-xs text-ivory/40">
-            Mo – Fr, 08:00 – 18:00 · Sa, 08:00 – 13:00 Uhr
+            Mo – Fr, 08:00 – 18:00 Uhr
           </span>
         </a>
 

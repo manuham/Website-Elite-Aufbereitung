@@ -21,7 +21,7 @@ export const HOURS = {
   3: [480, 1080],
   4: [480, 1080],
   5: [480, 1080],
-  6: [480, 780],    // Sa 08:00–13:00
+  6: null,          // Sa — geschlossen (Google Business Profile, bestätigt 2026-08-25)
 };
 export const BUFFER = 30;          // min between two jobs
 export const AXIS_START = 480;     // grid top 08:00
@@ -99,8 +99,8 @@ export function multiDayTerms(serviceMode) {
   const mobil = serviceMode === 'mobil';
   // "…{days}…" split so the day count can be rendered bold in JSX (stayPrefix/staySuffix) or
   // as a plain string (stay()).
-  const stayPrefix = mobil ? 'Wir sind ' : 'Ihr Fahrzeug bleibt ';
-  const staySuffix = mobil ? ' bei Ihnen vor Ort' : ' im Studio';
+  const stayPrefix = mobil ? 'Wir sind ' : 'Dein Fahrzeug bleibt ';
+  const staySuffix = mobil ? ' bei dir vor Ort' : ' im Studio';
   return {
     start: mobil ? 'Beginn' : 'Abgabe',
     end: mobil ? 'Fertigstellung' : 'Abholung',

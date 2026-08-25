@@ -379,7 +379,7 @@ function MultiDayNote({ duration, spanDays, selected, terms }) {
           {terms.start} {germanFull(spanDays[0])} {terms.startTime} · {terms.end} {germanFull(spanDays[spanDays.length - 1])} {terms.endTime}
         </span>
       ) : (
-        <span className="font-sans" style={{ fontSize: 13, color: iv(0.4) }}>Wählen Sie einen {terms.chooseDay}.</span>
+        <span className="font-sans" style={{ fontSize: 13, color: iv(0.4) }}>Wähl einen {terms.chooseDay}.</span>
       )}
     </div>
   );

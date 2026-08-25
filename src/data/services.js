@@ -83,7 +83,7 @@ export const tierPackages = [
         tier: 'Élite Exklusiv',
         dots: 0, // uses lightning icon instead
         name: 'Endstufe',
-        subtitle: 'Das Ultimative. Kein Kompromiss.',
+        subtitle: 'Politur, Keramik, Felgen, Innenraum — fünf Werktage',
         price: 2600,
         sizeSurcharge: true,
         durationDays: 5,
@@ -306,7 +306,7 @@ export const serviceCategories = [
     {
         id: "keramik",
         title: "Keramik Versiegelung",
-        subtitle: "40.000 – 60.000 km Garantie. Extrem wasserabweisend & UV-beständig.",
+        subtitle: "Hält je nach Paket 40.000 – 60.000 km. Extrem wasserabweisend & UV-beständig.",
         packages: [
             {
                 name: "Neuwagen Beschichtung",

@@ -82,7 +82,7 @@ export function enforceRateLimit(req, res, { name, max, windowMs }) {
   const key = `${name}:${getClientIp(req)}`;
   if (!rateLimit(key, max, windowMs)) {
     res.setHeader('Retry-After', String(Math.ceil(windowMs / 1000)));
-    res.status(429).json({ error: 'rate_limited', message: 'Zu viele Anfragen. Bitte versuchen Sie es später erneut.' });
+    res.status(429).json({ error: 'rate_limited', message: 'Zu viele Anfragen. Bitte versuch es später erneut.' });
     return true;
   }
   return false;

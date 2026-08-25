@@ -1,210 +1,151 @@
-import { useState, useRef, useEffect, useCallback } from 'react';
+import { useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
 import gsap from 'gsap';
-import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 import Img from '../components/Img';
+import { prefersReducedMotion } from '../lib/motion';
 
+/**
+ * Real work, captioned only with what the photograph actually shows.
+ *
+ * This page used to claim six vehicles that are not in the pictures — a Ferrari 488 was labelled
+ * "Tesla Model 3 — Perlweiß", a Mercedes-AMG G-Klasse interior was "BMW 3er — Mineralgrau", a
+ * Mercedes wheel was "VW Golf R". It also presented a Vorher/Nachher slider whose "before" was the
+ * same file as the "after" with a CSS grayscale filter on it. Both are gone: a portfolio that can
+ * be falsified by the customer standing next to the car is worse than no portfolio.
+ *
+ * The rule for every entry below: `vehicle` only when the badge, the wheel centre or an
+ * unmistakable model feature is visible in the frame; `work` only when the action or the product
+ * is visible. Anything else — how many hours it took, which polish, which coating, whose car it
+ * was — has to come from Matthias. Fields left out simply do not render.
+ *
+ * Vehicle identifications confirmed by the client 2026-08-25.
+ * TODO(Matthias): treatment details (Arbeitsschritte, Dauer, verwendete Produkte) for any of these
+ * you want shown as a full case study — the fields already exist and simply do not render.
+ */
 const projects = [
     {
         img: '/assets/Ergebnisse/P1345324.jpg',
-        label: 'Keramikversiegelung',
-        car: 'BMW 3er — Mineralgrau',
-        tag: '40.000 – 60.000 km Garantie',
-    },
-    {
-        img: '/assets/Außenreinigung/P1334869.jpg',
-        label: 'Vollpolitur',
-        car: 'Mercedes C-Klasse — Obsidianschwarz',
-        tag: 'Lackkorrektur',
+        // Three differential locks on the console and the AMG clock — G-Klasse, unambiguously.
+        vehicle: 'Mercedes-AMG G-Klasse',
+        work: 'Innenraum',
+        alt: 'Gereinigte Mittelkonsole einer Mercedes-AMG G-Klasse mit den drei Differentialsperren',
     },
     {
         img: '/assets/Innenreinigung/P1335024-2.jpg',
-        label: 'Premium Innenreinigung',
-        car: 'Audi A4 — Cognacbraun Leder',
-        tag: 'Innenaufbereitung',
-    },
-    {
-        img: '/assets/Außenreinigung/P1334477-2.jpg',
-        label: 'Felgenreinigung & Versiegelung',
-        car: 'VW Golf R — 19" Felgen',
-        tag: 'Detailing',
+        vehicle: 'Mercedes-AMG G-Klasse',
+        work: 'Ledersitze von Hand',
+        alt: 'Aufbereiter reinigt mit Stirnlampe und Handschuhen den roten Ledersitz einer Mercedes-AMG G-Klasse',
     },
     {
         img: '/assets/Ergebnisse/P1345330.jpg',
-        label: 'Lackkorrektur',
-        car: 'Porsche Cayenne — Weißsilber',
-        tag: 'Mehrstufige Politur',
+        vehicle: 'Mercedes-AMG G-Klasse',
+        work: 'Rücksitzbank',
+        alt: 'Gereinigte rot-schwarze Ledersitzbank im Fond einer Mercedes-AMG G-Klasse',
+    },
+    {
+        img: '/assets/Außenreinigung/P1334477-2.jpg',
+        work: 'Felgenreinigung',
+        // The purple bloom is the iron remover reacting with brake dust — visible in the frame,
+        // so it can be named.
+        note: 'Flugrost-Entferner reagiert sichtbar',
+        alt: 'Detailbürste an einer Mercedes-Felge, der Flugrost-Entferner färbt sich violett',
+    },
+    {
+        img: '/assets/Autos/IMG_2195.jpg',
+        vehicle: 'Ferrari Mondial t Cabriolet',
+        alt: 'Roter Ferrari Mondial t Cabriolet nach der Aufbereitung',
+    },
+    {
+        img: '/assets/Autos/IMG_3372.jpg',
+        vehicle: 'BMW M5',
+        alt: 'Schwarzer BMW M5 nach der Aufbereitung',
     },
     {
         img: '/assets/Autos/IMG_2374.jpg',
-        label: 'Komplettaufbereitung',
-        car: 'Tesla Model 3 — Perlweiß',
-        tag: 'Elite Paket',
+        vehicle: 'Ferrari 488 GTB',
+        alt: 'Roter Ferrari 488 GTB nach der Aufbereitung',
+    },
+    {
+        img: '/assets/Außenreinigung/P1334869.jpg',
+        work: 'Handarbeit im Studio',
+        alt: 'Aufbereiter trocknet das Dach eines schwarzen Fahrzeugs mit einem Mikrofasertuch ab',
     },
 ];
 
-function BeforeAfterSlider({ img, label, car, tag }) {
-    const [pos, setPos] = useState(50);
-    const containerRef = useRef(null);
-    const dragging = useRef(false);
-    const hinted = useRef(false);
-
-    const updatePos = useCallback((clientX) => {
-        const rect = containerRef.current?.getBoundingClientRect();
-        if (!rect) return;
-        const x = Math.max(2, Math.min(98, ((clientX - rect.left) / rect.width) * 100));
-        setPos(x);
-    }, []);
-
-    const onMouseDown = (e) => { e.preventDefault(); dragging.current = true; };
-    const onMouseMove = useCallback((e) => { if (dragging.current) updatePos(e.clientX); }, [updatePos]);
-    const onMouseUp = useCallback(() => { dragging.current = false; }, []);
-    const onTouchMove = useCallback((e) => { updatePos(e.touches[0].clientX); }, [updatePos]);
-
-    useEffect(() => {
-        window.addEventListener('mouseup', onMouseUp);
-        window.addEventListener('mousemove', onMouseMove);
-        return () => {
-            window.removeEventListener('mouseup', onMouseUp);
-            window.removeEventListener('mousemove', onMouseMove);
-        };
-    }, [onMouseUp, onMouseMove]);
-
-    // Auto-hint: slide handle from 50% -> 30% -> 50% on first scroll into view
-    useEffect(() => {
-        const el = containerRef.current;
-        if (!el || hinted.current) return;
-
-        const st = ScrollTrigger.create({
-            trigger: el,
-            start: 'top 75%',
-            once: true,
-            onEnter: () => {
-                if (hinted.current) return;
-                hinted.current = true;
-                const proxy = { val: 50 };
-                gsap.timeline({ delay: 0.3 })
-                    .to(proxy, {
-                        val: 28,
-                        duration: 0.8,
-                        ease: 'power2.inOut',
-                        onUpdate: () => setPos(proxy.val),
-                    })
-                    .to(proxy, {
-                        val: 50,
-                        duration: 0.6,
-                        ease: 'power2.inOut',
-                        onUpdate: () => setPos(proxy.val),
-                    });
-            },
-        });
-
-        return () => st.kill();
-    }, []);
-
+function ProjectCard({ img, vehicle, work, note, alt }) {
     return (
-        <div className="flex flex-col gap-4">
-            {/* Slider */}
-            <div
-                ref={containerRef}
-                className="relative overflow-hidden rounded-[1.75rem] cursor-ew-resize select-none aspect-[4/3] bg-slate"
-                onTouchMove={onTouchMove}
-                onTouchStart={(e) => updatePos(e.touches[0].clientX)}
-            >
-                {/* Before — desaturated/faded */}
+        <figure className="flex flex-col gap-4">
+            <div className="relative overflow-hidden rounded-[1.75rem] aspect-[4/3] bg-slate">
                 <Img
                     src={img}
-                    sizes="(min-width: 1024px) 50vw, 100vw"
-                    alt={`${label} vorher`}
-                    draggable={false}
-                    className="absolute inset-0 w-full h-full object-cover"
-                    style={{ filter: 'grayscale(0.75) contrast(0.85) brightness(0.78) saturate(0.4)' }}
+                    sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
+                    alt={alt}
+                    className="project-img absolute inset-0 w-full h-full object-cover"
                     loading="lazy"
                 />
-
-                {/* After — clipped to right of handle */}
-                <div
-                    className="absolute inset-0"
-                    style={{ clipPath: `inset(0 0 0 ${pos}%)` }}
-                >
-                    <Img
-                        src={img}
-                        sizes="(min-width: 1024px) 50vw, 100vw"
-                        alt={`${label} nachher`}
-                        draggable={false}
-                        className="absolute inset-0 w-full h-full object-cover"
-                        loading="lazy"
-                    />
-                </div>
-
-                {/* Divider line */}
-                <div
-                    className="absolute top-0 bottom-0 w-px bg-champagne/90 z-10 pointer-events-none"
-                    style={{ left: `${pos}%` }}
-                />
-
-                {/* Drag handle */}
-                <div
-                    className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-11 h-11 bg-champagne rounded-full z-20 flex items-center justify-center shadow-xl cursor-ew-resize"
-                    style={{ left: `${pos}%` }}
-                    onMouseDown={onMouseDown}
-                    onTouchStart={(e) => { e.stopPropagation(); updatePos(e.touches[0].clientX); }}
-                >
-                    <ChevronLeft className="w-3.5 h-3.5 text-obsidian -mr-0.5" />
-                    <ChevronRight className="w-3.5 h-3.5 text-obsidian -ml-0.5" />
-                </div>
-
-                {/* Vorher label */}
-                <div className="absolute top-4 left-4 z-10 bg-obsidian/70 backdrop-blur-sm px-3 py-1 rounded-full pointer-events-none">
-                    <span className="font-mono text-[10px] text-ivory/70 uppercase tracking-widest">Vorher</span>
-                </div>
-
-                {/* Nachher label */}
-                <div className="absolute top-4 right-4 z-10 bg-champagne/90 backdrop-blur-sm px-3 py-1 rounded-full pointer-events-none">
-                    <span className="font-mono text-[10px] text-obsidian font-semibold uppercase tracking-widest">Nachher</span>
-                </div>
             </div>
 
-            {/* Card info below slider */}
-            <div className="flex items-start justify-between px-1">
-                <div className="flex flex-col gap-0.5">
-                    <span className="font-mono text-xs text-champagne uppercase tracking-widest">{label}</span>
-                    <p className="font-sans text-sm text-ivory/80">{car}</p>
-                </div>
-                <span className="text-[11px] font-sans text-ivory/40 bg-slate px-2.5 py-1 rounded-full border border-ivory/10 shrink-0 mt-0.5">
-                    {tag}
-                </span>
-            </div>
-        </div>
+            {/* Caption sits below the image and is always visible — the old labels only appeared
+                on :hover, so touch visitors and the prerendered HTML never had them at all. */}
+            <figcaption className="flex flex-col gap-0.5 px-1">
+                {vehicle && <p className="font-sans text-sm text-ivory/90">{vehicle}</p>}
+                {work && (
+                    <span className="font-mono text-xs text-champagne uppercase tracking-widest">
+                        {work}
+                    </span>
+                )}
+                {note && <p className="font-sans text-xs text-ivory/40">{note}</p>}
+            </figcaption>
+        </figure>
     );
 }
 
 export default function Projekte() {
+    const gridRef = useRef(null);
+
+    useEffect(() => {
+        if (prefersReducedMotion()) return;
+
+        const ctx = gsap.context(() => {
+            gsap.from('.project-card', {
+                scrollTrigger: { trigger: gridRef.current, start: 'top 85%' },
+                y: 28,
+                opacity: 0,
+                duration: 0.9,
+                stagger: 0.08,
+                ease: 'power3.out',
+            });
+        }, gridRef);
+
+        return () => ctx.revert();
+    }, []);
+
     return (
         <div className="min-h-screen bg-obsidian text-ivory font-sans overflow-hidden">
             <Navbar />
 
             {/* Hero */}
             <div className="px-6 sm:px-12 lg:px-24 pt-32 sm:pt-36 pb-20 max-w-7xl mx-auto flex flex-col gap-5">
-                <span className="font-mono text-xs text-champagne uppercase tracking-widest">Portfolio</span>
+                <span className="font-mono text-xs text-champagne uppercase tracking-widest">Arbeiten</span>
                 <h1 className="font-drama text-5xl sm:text-6xl lg:text-7xl text-ivory leading-tight">
-                    Vorher &{' '}
-                    <span className="text-champagne italic">Nachher.</span>
+                    Fahrzeuge, die bei uns{' '}
+                    <span className="text-champagne italic">standen.</span>
                 </h1>
                 <p className="font-sans text-ivory/60 text-lg max-w-xl leading-relaxed">
-                    Ziehen Sie den Regler und erleben Sie die Transformation — jedes Fahrzeug, das wir anfassen,
-                    verlässt uns in neuem Glanz.
+                    Eigene Aufnahmen aus dem Studio und vom mobilen Einsatz. Beschriftet ist nur, was
+                    auf dem Bild zu sehen ist.
                 </p>
             </div>
 
             {/* Grid */}
-            <div className="px-6 sm:px-12 lg:px-24 pb-24 max-w-7xl mx-auto">
+            <div ref={gridRef} className="px-6 sm:px-12 lg:px-24 pb-24 max-w-7xl mx-auto">
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 lg:gap-10">
-                    {projects.map((p, i) => (
-                        <BeforeAfterSlider key={i} {...p} />
+                    {projects.map((p) => (
+                        <div key={p.img} className="project-card">
+                            <ProjectCard {...p} />
+                        </div>
                     ))}
                 </div>
             </div>
@@ -212,15 +153,17 @@ export default function Projekte() {
             {/* CTA */}
             <div className="bg-slate mx-6 sm:mx-12 lg:mx-24 mb-16 rounded-[2.5rem] px-8 sm:px-16 py-16 flex flex-col sm:flex-row items-center justify-between gap-8 max-w-7xl lg:mx-auto">
                 <div className="flex flex-col gap-2 text-center sm:text-left">
-                    <span className="font-mono text-xs text-champagne uppercase tracking-widest">Ihr Fahrzeug</span>
-                    <h2 className="font-drama text-3xl sm:text-4xl text-ivory">Bereit für die Transformation?</h2>
-                    <p className="font-sans text-sm text-ivory/50 max-w-sm">Buchen Sie Ihren Termin — wir kümmern uns um den Rest.</p>
+                    <span className="font-mono text-xs text-champagne uppercase tracking-widest">Dein Fahrzeug</span>
+                    <h2 className="font-drama text-3xl sm:text-4xl text-ivory">Sollen wir uns das ansehen?</h2>
+                    <p className="font-sans text-sm text-ivory/50 max-w-sm">
+                        Wähl Leistung und Wunschtermin — im Studio oder mobil bei dir.
+                    </p>
                 </div>
                 <Link
                     to="/buchen"
                     className="shrink-0 bg-champagne text-obsidian px-8 py-4 rounded-full font-sans font-semibold text-sm whitespace-nowrap hover:brightness-110 transition-all"
                 >
-                    Jetzt Buchen
+                    Termin anfragen
                 </Link>
             </div>
 

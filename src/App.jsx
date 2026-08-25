@@ -6,7 +6,7 @@ import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import Navbar from './components/Navbar';
 import Hero from './components/Hero';
 import Features from './components/Features';
-import Philosophy from './components/Philosophy';
+import Founder from './components/Founder';
 import MobileService from './components/MobileService';
 import Protocol from './components/Protocol';
 import Gallery from './components/Gallery';
@@ -25,6 +25,7 @@ import EliteEndstufe from './pages/EliteEndstufe';
 import Preloader from './components/Preloader';
 
 import ScrollProgress from './components/ScrollProgress';
+import { prefersReducedMotion } from './lib/motion';
 import PageTransition from './components/PageTransition';
 
 gsap.registerPlugin(ScrollTrigger);
@@ -93,25 +94,40 @@ function HomePage({ preloaderDone }) {
         return () => triggers.forEach(st => st.kill());
     }, []);
 
+    // Two ways to arrive at a section: router state (an in-app button that navigated here) and a
+    // real URL fragment. The footer's service links became crawlable <a href="/#pricing"> in place
+    // of onClick buttons, and react-router does not scroll to fragments on its own — so the hash
+    // needs handling here or those links land at the top of the page.
+    //
+    // Keyed on location.key as well as the hash so clicking /#pricing while already on / re-fires.
     useEffect(() => {
-        if (location.state?.scrollTo) {
-            setTimeout(() => {
-                document.getElementById(location.state.scrollTo)?.scrollIntoView({ behavior: 'smooth' });
-            }, 100);
-        }
-    }, [location.state]);
+        const target = location.state?.scrollTo || location.hash.slice(1);
+        if (!target) return;
+
+        const id = setTimeout(() => {
+            document.getElementById(target)?.scrollIntoView({
+                behavior: prefersReducedMotion() ? 'auto' : 'smooth',
+            });
+        }, 100);
+
+        return () => clearTimeout(id);
+    }, [location.state, location.hash, location.key]);
 
     return (
         <div className="min-h-screen font-sans bg-obsidian text-ivory selection:bg-champagne selection:text-obsidian overflow-hidden">
             <Navbar />
             <Hero entranceReady={preloaderDone} />
+            {/* Work first: show what the business actually produces before explaining it.
+                Then the person, then the process, then the money. Philosophy is gone — its
+                counters were unsourced, its manifesto is now Founder's body copy, and its video
+                sits beside the person who made it. */}
+            <Gallery />
             <Features />
+            <Founder />
+            <Protocol />
+            <Pricing />
             <MobileService />
             <GoogleReviews />
-            <Philosophy />
-            <Protocol />
-            <Gallery />
-            <Pricing />
             <FAQ />
             <Footer />
         </div>

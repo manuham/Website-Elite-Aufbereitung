@@ -79,7 +79,7 @@ collapsible folders; the booking Step-1 still lists them flat.
 - **Mobil vs studio wording** is one source of truth: `multiDayTerms(serviceMode)` in
   `scheduling.js` supplies every multi-day label (studio = Abgabe/Abholung "im Studio"; mobil =
   Beginn/Fertigstellung "vor Ort"; `chooseDay`/`chooseDayPlural` for "Abgabetag"/"Starttag"). Used
-  by `AvailabilityRail`, Step 3, Step 4 confirmation, the email, and the calendar event — change
+  by `WeekCalendar`, Step 3, Step 4 confirmation, the email, and the calendar event — change
   wording there, not per surface.
 - **Mobile surcharge** = flat `MOBILE_SURCHARGE` (€65 Anfahrtspauschale, `src/lib/pricing.js`)
   **plus** a per-package Mobil-Aufpreis (`mobilePackageSurchargeOf` = MAX of the cart's
@@ -89,7 +89,7 @@ collapsible folders; the booking Step-1 still lists them flat.
   duration-shape change resets the date pick (parent-level guard in `BookingPage`), so a stale
   same-day pick can't leak into a multi-day booking.
 - `src/components/booking/WeekCalendar.jsx` is an Apple-Calendar-style **week time-axis grid** (day
-  columns, hour rows 08–18). It was briefly replaced by an availability-first list (`AvailabilityRail`)
+  columns, hour rows 08–18). It was briefly replaced by an availability-first list (`WeekCalendar`)
   but the client preferred the calendar layout, so the grid is back — with **inverted visual
   emphasis** so the original "everything is gray" complaint stays solved: free slots are the only lit
   objects (bright accent gradient + border + soft glow, ≥44px), while all unavailable time (past /
