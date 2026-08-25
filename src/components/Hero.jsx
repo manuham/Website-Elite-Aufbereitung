@@ -4,7 +4,6 @@ import gsap from 'gsap';
 import { Truck, Sparkles } from 'lucide-react';
 import FloatingParticles from './FloatingParticles';
 import Img from './Img';
-import { prefersReducedMotion } from '../lib/motion';
 import useIsomorphicLayoutEffect from '../hooks/useIsomorphicLayoutEffect';
 
 export default function Hero({ entranceReady = true }) {
@@ -41,12 +40,6 @@ export default function Hero({ entranceReady = true }) {
     // Layout effect, not an ordinary one: the homepage is prerendered, so the hero text is already
     // in the HTML and painted before React runs. Hiding it after paint would flash it.
     useIsomorphicLayoutEffect(() => {
-        // The two gsap.set calls below hide the entire hero until the entrance runs. If motion is
-        // off and we skipped only the animation, a reduced-motion visitor would be left staring at
-        // an empty hero — so this has to bail before anything is hidden. The prerendered markup is
-        // already the finished state.
-        if (prefersReducedMotion()) return;
-
         const ctx = gsap.context(() => {
             // Hide entrance elements until the preloader has lifted (see entrance effect below)
             gsap.set('.hero-badge', { scale: 0, opacity: 0 });
@@ -112,8 +105,6 @@ export default function Hero({ entranceReady = true }) {
     // played invisibly behind the preloader overlay on first visit
     useEffect(() => {
         if (!entranceReady) return;
-        // Nothing was hidden in that case, so there is nothing to reveal.
-        if (prefersReducedMotion()) return;
 
         const ctx = gsap.context(() => {
             // Badge bounces in
@@ -197,14 +188,14 @@ export default function Hero({ entranceReady = true }) {
                     <Link to="/mobiler-service" className="bg-emerald-500/90 text-obsidian px-5 py-2.5 sm:px-7 sm:py-3 rounded-full font-sans text-[13px] sm:text-[15px] font-bold tracking-wide inline-flex items-center gap-2 sm:gap-3 shadow-[0_0_20px_rgba(16,185,129,0.6)] hover:shadow-[0_0_30px_rgba(16,185,129,0.8)] hover:-translate-y-0.5 transition-all duration-300">
                         <span className="bg-obsidian text-emerald-400 px-2.5 py-0.5 rounded-full text-[10px] sm:text-[11px] uppercase tracking-widest font-black animate-pulse shadow-[0_0_10px_rgba(16,185,129,0.3)]">NEU</span>
                         <Truck className="w-4 h-4 sm:w-5 sm:h-5" />
-                        Jetzt auch mobil — wir kommen zu dir!
+                        Jetzt auch mobil — wir kommen zu Ihnen!
                     </Link>
                 </div>
 
                 <div className="hero-fade flex items-center gap-3 w-full">
                     <div className="h-px flex-1 bg-accent/40 max-w-[2rem]" />
                     <span className="font-sans font-semibold text-[10px] sm:text-[11px] uppercase tracking-[0.35em] text-ivory/45">
-                        Handwäsche · Politur · Keramik
+                        Autoaufbereitung in Vorarlberg
                     </span>
                     <div className="h-px bg-accent/40 w-8" />
                 </div>
@@ -215,15 +206,15 @@ export default function Hero({ entranceReady = true }) {
                     layout and the GSAP stagger are exactly what they were. */}
                 <h1 className="flex flex-col relative w-full -mt-1">
                     <span className="hero-fade font-drama italic text-2xl sm:text-4xl lg:text-5xl text-ivory/75 leading-tight mb-0">
-                        Autoaufbereitung in
+                        Perfektion trifft
                     </span>
                     <span className="hero-fade font-drama italic text-[5.5rem] sm:text-[8rem] lg:text-[10rem] xl:text-[12rem] leading-[0.88] text-transparent bg-clip-text bg-gradient-to-br from-ivory via-ivory/95 to-ivory/70 drop-shadow-2xl -ml-1">
-                        Vorarlberg.
+                        Präzision.
                     </span>
                 </h1>
 
                 <p className="hero-fade font-sans font-normal text-lg sm:text-xl text-ivory/90 max-w-xl leading-relaxed text-balance drop-shadow-md">
-                    Kratzfreie Handwäsche mit 2-Eimer-Methode, mehrstufige Lackpolitur und FIREBALL-Keramikversiegelung — im Studio in Feldkirch oder mobil bei dir.
+                    Professionelle Fahrzeugaufbereitung in Vorarlberg — Kratzerfreie Handwäsche, Politur & Keramikversiegelung.
                 </p>
 
                 <div className="hero-fade flex flex-wrap items-center gap-2 sm:gap-3">

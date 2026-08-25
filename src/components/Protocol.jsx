@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
+import SplitText from './SplitText';
 import FloatingParticles from './FloatingParticles';
 import Img from './Img';
 
@@ -19,7 +20,7 @@ export default function Protocol() {
         {
             num: "02",
             title: "Politur & Lackkorrektur",
-            desc: "Mehrstufiges Maschinenpolieren entfernt Kratzer, Hologramme und Oxidation. Dein Lack bekommt seinen Tiefenglanz zurück.",
+            desc: "Mehrstufiges Maschinenpolieren entfernt Kratzer, Hologramme und Oxidation. Ihr Lack erhält seinen ursprünglichen Tiefenglanz zurück.",
             image: "/assets/Außenreinigung/P1334780.jpg",
         },
         {
@@ -92,9 +93,13 @@ export default function Protocol() {
             <div className="protocol-header w-full mx-auto px-4 sm:px-8 lg:px-12 xl:px-16 pt-32 pb-12">
                 <h3 className="font-sans font-bold text-lg text-ivory/60 uppercase tracking-widest mb-4">Unser Prozess</h3>
                 <h2 className="font-drama italic text-[2.5rem] sm:text-5xl lg:text-6xl leading-[1.1] text-ivory max-w-2xl pb-4">
-                    Drei Schritte zum{' '}
+                    <SplitText type="words" triggerStart="top 85%">
+                        Drei Schritte zum
+                    </SplitText>{' '}
                     <span className="text-champagne">
-                        perfekten Ergebnis.
+                        <SplitText type="chars" triggerStart="top 85%" delay={0.2}>
+                            perfekten Ergebnis.
+                        </SplitText>
                     </span>
                 </h2>
             </div>

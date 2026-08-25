@@ -31,7 +31,7 @@ const PRIMARY_CALENDAR_ID = CALENDAR_IDS[0];
 const TZ = 'Europe/Vienna';
 
 // ─── Business hours (minutes from midnight). null = closed. ───────────────────
-// Mo–Fr 08:00–18:00, Sa + So closed. Mirrors src/lib/scheduling.js.
+// Mo–Fr 08:00–18:00, Sa 08:00–13:00, So closed. Mirrors src/lib/scheduling.js.
 export const WORKING_HOURS = {
   0: null,
   1: [480, 1080],
@@ -39,7 +39,7 @@ export const WORKING_HOURS = {
   3: [480, 1080],
   4: [480, 1080],
   5: [480, 1080],
-  6: null,
+  6: [480, 780],
 };
 export const BUFFER = 30;
 // Booked minutes a multi-day span day may already hold and still accept a drop-off. Mirrors

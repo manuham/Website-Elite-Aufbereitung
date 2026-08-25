@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react';
 import gsap from 'gsap';
 import { Instagram, Facebook } from 'lucide-react';
+import SplitText from './SplitText';
 import { useTilt } from '../hooks/useTilt';
 import Img from './Img';
 
@@ -13,61 +14,54 @@ function TiltItem({ children, className }) {
     );
 }
 
-/**
- * Real vehicles, named only where the badge is in the frame.
- *
- * The labels here used to be outcome-adjectives with no referent — "Premium Finish", "Glanz
- * Finish", "Keramik Finish" (twice), "Detailing". They read as placeholder content because that is
- * effectively what they were: nothing in them pointed at a specific car or a specific job.
- *
- * `vehicle` is set only when the model is identifiable from the photograph itself. `work` comes
- * from the asset folder the file lives in, which is an honest signal for the service category.
- * Neither invents anything, and no claim is made about which coating or polish was used — that
- * has to come from Matthias.
- *
- * Vehicle identifications confirmed by the client 2026-08-25.
- * TODO(Matthias): what was actually done to each, if you want the work named as well as the car.
- */
 const galleryItems = [
     {
         src: '/assets/Autos/IMG_2195.jpg',
-        alt: 'Roter Ferrari Mondial t Cabriolet nach der Aufbereitung',
-        vehicle: 'Ferrari Mondial t',
+        alt: 'Lackaufbereitung Detail',
+        label: 'Aufbereitung',
+        span: 'col-span-1 row-span-2',
     },
     {
         src: '/assets/Außenreinigung/P1334645.jpg',
-        alt: 'Handwäsche mit Mikrofaser am nassen Lack',
-        work: 'Handwäsche',
+        alt: 'Lackpolitur Handwäsche',
+        label: 'Lackpolitur',
+        span: 'col-span-1 row-span-1',
     },
     {
-        src: '/assets/Autos/IMG_3372.jpg',
-        alt: 'Schwarzer BMW M5 nach der Aufbereitung',
-        vehicle: 'BMW M5',
+        src: '/assets/Autos/IMG_2197.jpg',
+        alt: 'Fahrzeugaufbereitung',
+        label: 'Premium Finish',
+        span: 'col-span-1 row-span-1',
     },
     {
         src: '/assets/Innenreinigung/P1334911.jpg',
-        alt: 'Gereinigter Fahrzeuginnenraum',
-        work: 'Innenreinigung',
+        alt: 'Innenraum Detail',
+        label: 'Innenreinigung',
+        span: 'col-span-1 row-span-1',
     },
     {
         src: '/assets/Autos/IMG_2198.jpg',
-        alt: 'Heck eines roten Ferrari Mondial t Cabriolet',
-        vehicle: 'Ferrari Mondial t',
+        alt: 'Sportwagen Finish',
+        label: 'Keramik Finish',
+        span: 'col-span-1 row-span-1',
     },
     {
         src: '/assets/Autos/IMG_2374.jpg',
-        alt: 'Roter Ferrari 488 GTB nach der Aufbereitung',
-        vehicle: 'Ferrari 488 GTB',
+        alt: 'Glanz Detailansicht',
+        label: 'Glanz Finish',
+        span: 'col-span-1 row-span-1',
     },
     {
         src: '/assets/Ergebnisse/P1345330.jpg',
-        alt: 'Gereinigte rot-schwarze Ledersitzbank im Fond',
-        work: 'Lederreinigung',
+        alt: 'Keramikversiegelung Ergebnis',
+        label: 'Keramik Finish',
+        span: 'col-span-1 row-span-1',
     },
     {
-        src: '/assets/Außenreinigung/P1334780.jpg',
-        alt: 'Lackfläche nach der Politur',
-        work: 'Politur',
+        src: '/assets/Autos/IMG_3372.jpg',
+        alt: 'Detailing',
+        label: 'Detailing',
+        span: 'col-span-1 row-span-1',
     },
 ];
 
@@ -134,9 +128,13 @@ export default function Gallery() {
                             Portfolio
                         </span>
                         <h2 className="font-drama italic text-4xl sm:text-5xl text-ivory">
-                            Unsere{' '}
+                            <SplitText type="words" triggerStart="top 85%">
+                                Unsere
+                            </SplitText>{' '}
                             <span className="text-champagne relative inline-block">
-                                Arbeit.
+                                <SplitText type="chars" triggerStart="top 85%" delay={0.15}>
+                                    Arbeit.
+                                </SplitText>
                                 <span className="underline-draw bg-champagne" />
                             </span>
                         </h2>
@@ -163,38 +161,39 @@ export default function Gallery() {
                     </div>
                 </div>
 
-                {/* True masonry via CSS columns, not a row grid.
-                    A row grid forces every tile to one aspect ratio, which is what made this read
-                    as a component rather than a contact sheet — and the previous tall-first-tile
-                    trick left a dead gap under its neighbours once the fixed auto-rows went away.
-                    Columns let each photograph keep its own shape: the portrait shots of cars run
-                    tall, the landscape process shots run wide, and the rag falls where it falls.
+                {/* Masonry-style Grid */}
+                <div className="gallery-grid grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 auto-rows-[220px] sm:auto-rows-[220px]" style={{ perspective: '900px' }}>
 
-                    Captions sit under each tile instead of inside a group-hover overlay. The old
-                    ones were opacity-0 until hover, so a touch visitor never saw a single label. */}
-                <div className="gallery-grid columns-1 sm:columns-2 lg:columns-3 gap-4 [column-fill:balance]" style={{ perspective: '900px' }}>
-                    {galleryItems.map((item) => (
-                        <figure key={item.src} className="break-inside-avoid mb-8 flex flex-col gap-3">
-                            <TiltItem className="gallery-item relative group rounded-[1.5rem] overflow-hidden">
-                                <Img
-                                    src={item.src}
-                                    sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
-                                    alt={item.alt}
-                                    className="w-full h-auto object-cover transition-transform duration-700 group-hover:scale-105"
-                                    loading="lazy"
-                                />
-                            </TiltItem>
-                            <figcaption className="px-1">
-                                {item.vehicle ? (
-                                    <span className="font-sans text-sm text-ivory/90">{item.vehicle}</span>
-                                ) : (
-                                    <span className="font-mono text-xs text-champagne uppercase tracking-widest">
-                                        {item.work}
-                                    </span>
-                                )}
-                            </figcaption>
-                        </figure>
+                    {/* Tall featured image — left */}
+                    <TiltItem className="gallery-item col-span-1 row-span-1 sm:row-span-2 relative group rounded-[1.5rem] overflow-hidden">
+                        <Img
+                            src={galleryItems[0].src}
+                            sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
+                            alt={galleryItems[0].alt}
+                            className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                            loading="lazy"
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-obsidian/70 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end p-5">
+                            <span className="font-sans text-sm font-semibold text-ivory tracking-wide">{galleryItems[0].label}</span>
+                        </div>
+                    </TiltItem>
+
+                    {/* Regular images */}
+                    {galleryItems.slice(1).map((item, i) => (
+                        <TiltItem key={i} className="gallery-item col-span-1 row-span-1 relative group rounded-[1.5rem] overflow-hidden">
+                            <Img
+                                src={item.src}
+                                sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
+                                alt={item.alt}
+                                className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                                loading="lazy"
+                            />
+                            <div className="absolute inset-0 bg-gradient-to-t from-obsidian/70 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end p-4">
+                                <span className="font-sans text-sm font-semibold text-ivory tracking-wide">{item.label}</span>
+                            </div>
+                        </TiltItem>
                     ))}
+
                 </div>
 
                 {/* CTA below grid */}

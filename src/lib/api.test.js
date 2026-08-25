@@ -18,7 +18,7 @@ const res = (status, body = {}) => ({
 // What api/book.js actually returns on a double-booking (its SLOT_TAKEN const).
 const SLOT_TAKEN = {
   error: 'slot_taken',
-  message: 'Dieser Termin ist leider nicht mehr verfügbar. Bitte wähl einen anderen Zeitpunkt.',
+  message: 'Dieser Termin ist leider nicht mehr verfügbar. Bitte wählen Sie einen anderen Zeitpunkt.',
 };
 
 const booking = { date: '2026-07-20', time: '09:00', services: [] };

@@ -56,12 +56,6 @@ export const imageManifest = {
         "srcset": "/assets/Außenreinigung/P1334438-640.webp 640w, /assets/Außenreinigung/P1334438-1280.webp 1280w, /assets/Außenreinigung/P1334438-1536.webp 1536w",
         "fallback": "/assets/Außenreinigung/P1334438-1280.jpg"
     },
-    "/assets/Außenreinigung/P1334477-2.jpg": {
-        "width": 1536,
-        "height": 2048,
-        "srcset": "/assets/Außenreinigung/P1334477-2-640.webp 640w, /assets/Außenreinigung/P1334477-2-1280.webp 1280w, /assets/Außenreinigung/P1334477-2-1536.webp 1536w",
-        "fallback": "/assets/Außenreinigung/P1334477-2-1280.jpg"
-    },
     "/assets/Außenreinigung/P1334645.jpg": {
         "width": 1536,
         "height": 2048,
@@ -116,12 +110,6 @@ export const imageManifest = {
         "srcset": "/assets/Innenreinigung/P1334911-640.webp 640w, /assets/Innenreinigung/P1334911-1280.webp 1280w, /assets/Innenreinigung/P1334911-1536.webp 1536w",
         "fallback": "/assets/Innenreinigung/P1334911-1280.jpg"
     },
-    "/assets/Innenreinigung/P1335024-2.jpg": {
-        "width": 1536,
-        "height": 2048,
-        "srcset": "/assets/Innenreinigung/P1335024-2-640.webp 640w, /assets/Innenreinigung/P1335024-2-1280.webp 1280w, /assets/Innenreinigung/P1335024-2-1536.webp 1536w",
-        "fallback": "/assets/Innenreinigung/P1335024-2-1280.jpg"
-    },
     "/assets/Innenreinigung/P1345203.jpg": {
         "width": 1536,
         "height": 2048,
@@ -133,12 +121,6 @@ export const imageManifest = {
         "height": 2048,
         "srcset": "/assets/Produkte/P1345270-640.webp 640w, /assets/Produkte/P1345270-1280.webp 1280w, /assets/Produkte/P1345270-1536.webp 1536w",
         "fallback": "/assets/Produkte/P1345270-1280.jpg"
-    },
-    "/assets/Produkte/P1345294-2.jpg": {
-        "width": 2304,
-        "height": 1536,
-        "srcset": "/assets/Produkte/P1345294-2-640.webp 640w, /assets/Produkte/P1345294-2-1280.webp 1280w, /assets/Produkte/P1345294-2-1536.webp 1536w",
-        "fallback": "/assets/Produkte/P1345294-2-1280.jpg"
     },
     "/assets/Produkte/P1345425.jpg": {
         "width": 1536,

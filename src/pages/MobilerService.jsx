@@ -5,23 +5,23 @@ import Footer from '../components/Footer';
 import Img from '../components/Img';
 
 const steps = [
-    { num: '01', title: 'Termin buchen', desc: 'Wähl online deinen Wunschtermin und die Leistungen aus, die du brauchst.', icon: Clock },
-    { num: '02', title: 'Wir kommen zu dir', desc: 'Der voll ausgestattete Aufbereitungs-Van fährt direkt zu deinem Standort.', icon: Truck },
-    { num: '03', title: 'Fertig', desc: 'Wir arbeiten vor Ort — du machst in der Zeit, was du ohnehin vorhattest.', icon: Sparkles },
+    { num: '01', title: 'Termin buchen', desc: 'Wählen Sie online Ihren Wunschtermin und die gewünschten Services aus.', icon: Clock },
+    { num: '02', title: 'Wir kommen zu Ihnen', desc: 'Unser voll ausgestatteter Aufbereitungs-Van fährt direkt zu Ihrem Standort.', icon: Truck },
+    { num: '03', title: 'Ergebnis genießen', desc: 'Lehnen Sie sich zurück — Ihr Fahrzeug erstrahlt in neuem Glanz.', icon: Sparkles },
 ];
 
 const services = [
     { title: 'Premium Handwäsche', desc: 'Schonende Reinigung mit pH-neutralen Produkten und Mikrofasertüchern.', icon: Sparkles },
     { title: 'Innenreinigung', desc: 'Tiefenreinigung aller Oberflächen, Polster und Teppiche — wie neu.', icon: ShieldCheck },
     { title: 'Maschinenpolitur', desc: 'Entfernung von Kratzern und Swirls für spiegelnden Hochglanz.', icon: Wrench },
-    { title: 'Keramikversiegelung', desc: 'Langzeitschutz mit FIREBALL Keramik — hält je nach Paket 40.000 – 60.000 km.', icon: ShieldCheck },
+    { title: 'Keramikversiegelung', desc: 'Langzeitschutz mit FIREBALL Keramik — bis zu 60.000 km Garantie.', icon: ShieldCheck },
 ];
 
 const benefits = [
-    { title: 'Kein Weg, kein Stress', desc: 'Spar dir die Anfahrt — wir arbeiten bei dir vor Ort.' },
-    { title: 'Termin online wählen', desc: 'Buchbar Mo–Fr 08:00–18:00. Brauchst du etwas außerhalb, ruf kurz an.' },
+    { title: 'Kein Weg, kein Stress', desc: 'Sparen Sie sich die Anfahrt — wir arbeiten bei Ihnen vor Ort.' },
+    { title: 'Flexible Termine', desc: 'Mo–Sa, auch nach Feierabend. Wir richten uns nach Ihrem Zeitplan.' },
     { title: 'Professionelles Equipment', desc: 'Unser Van ist voll ausgestattet — identische Qualität wie im Studio.' },
-    { title: 'Ganz Vorarlberg', desc: 'Wir sind in Vorarlberg und Umgebung für dich unterwegs.' },
+    { title: 'Ganz Vorarlberg', desc: 'Wir sind in Vorarlberg und Umgebung für Sie unterwegs.' },
 ];
 
 
@@ -36,7 +36,7 @@ export default function MobilerService() {
                 <Img
                     src="/assets/VAN/VAN.png"
                     sizes="100vw"
-                    alt="Der Elité-Aufbereitungsvan vor Ort beim Kunden"
+                    alt="Mobiler Aufbereitungsservice — Elité kommt zu Ihnen"
                     className="absolute inset-0 w-full h-full object-cover object-center"
                     loading="eager"
                     fetchpriority="high"
@@ -56,11 +56,11 @@ export default function MobilerService() {
                         </div>
                         <h1 className="font-drama italic text-5xl sm:text-6xl lg:text-7xl text-ivory leading-tight">
                             Wir kommen{' '}
-                            <span className="text-champagne">zu dir.</span>
+                            <span className="text-champagne">zu Ihnen.</span>
                         </h1>
                         <p className="font-sans text-lg text-ivory/70 leading-relaxed max-w-lg">
                             Ab sofort bietet Elité Auto Aufbereitung den kompletten Service auch mobil an.
-                            Unser voll ausgestatteter Van kommt direkt zu dir nach Hause,
+                            Unser professionell ausgestatteter Van kommt direkt zu Ihnen nach Hause,
                             ins Büro oder an jeden gewünschten Standort in Vorarlberg.
                         </p>
                         <div className="flex flex-wrap gap-4 mt-2">
@@ -116,7 +116,7 @@ export default function MobilerService() {
                             Kompletter Service, <span className="text-champagne">mobil.</span>
                         </h2>
                         <p className="font-sans text-ivory/60 text-lg max-w-xl leading-relaxed">
-                            Alle Leistungen, die du aus dem Studio kennst — jetzt auch direkt bei dir vor Ort.
+                            Alle Leistungen, die Sie aus unserem Studio kennen — jetzt auch direkt bei Ihnen vor Ort.
                         </p>
                     </div>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
@@ -181,7 +181,7 @@ export default function MobilerService() {
                             <div className="absolute inset-0 bg-gradient-to-t from-obsidian/70 via-transparent to-transparent" />
                             <div className="absolute bottom-5 left-5">
                                 <span className="font-mono text-[10px] text-champagne uppercase tracking-widest">Service</span>
-                                <p className="font-sans text-sm text-ivory/80 mt-0.5">Direkt zu dir</p>
+                                <p className="font-sans text-sm text-ivory/80 mt-0.5">Direkt zu Ihnen</p>
                             </div>
                         </div>
 
@@ -190,14 +190,14 @@ export default function MobilerService() {
                             <Img
                                 src="/assets/VAN/VAN_Matthias.jpg"
                                 sizes="(min-width: 1024px) 33vw, 100vw"
-                                alt="Matthias Kaufmann reinigt eine Felge vor dem Elité-Aufbereitungsvan"
+                                alt="Matthias — Ihr Aufbereitungsexperte"
                                 className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105"
                                 loading="lazy"
                             />
                             <div className="absolute inset-0 bg-gradient-to-t from-obsidian/70 via-transparent to-transparent" />
                             <div className="absolute bottom-5 left-5">
                                 <span className="font-mono text-[10px] text-champagne uppercase tracking-widest">Team</span>
-                                <p className="font-sans text-sm text-ivory/80 mt-0.5">Matthias Kaufmann, Inhaber</p>
+                                <p className="font-sans text-sm text-ivory/80 mt-0.5">Matthias, Ihr Experte</p>
                             </div>
                         </div>
 
@@ -209,7 +209,7 @@ export default function MobilerService() {
             <div className="px-6 sm:px-12 lg:px-24 py-24 sm:py-32">
                 <div className="max-w-7xl mx-auto flex flex-col gap-16">
                     <div className="flex flex-col gap-4 text-center">
-                        <span className="font-mono text-xs text-champagne uppercase tracking-widest">Deine Vorteile</span>
+                        <span className="font-mono text-xs text-champagne uppercase tracking-widest">Ihre Vorteile</span>
                         <h2 className="font-drama italic text-4xl sm:text-5xl text-ivory">
                             Warum <span className="text-champagne">mobil?</span>
                         </h2>
@@ -231,7 +231,7 @@ export default function MobilerService() {
                 <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-center gap-4 text-center sm:text-left">
                     <MapPin className="w-6 h-6 text-champagne shrink-0" strokeWidth={1.5} />
                     <p className="font-sans text-lg text-ivory/70">
-                        Wir sind in ganz <span className="text-ivory font-semibold">Vorarlberg & Umgebung</span> für dich unterwegs.
+                        Wir sind in ganz <span className="text-ivory font-semibold">Vorarlberg & Umgebung</span> für Sie unterwegs.
                     </p>
                 </div>
             </div>
@@ -244,7 +244,7 @@ export default function MobilerService() {
                         Jetzt mobilen Termin buchen.
                     </h2>
                     <p className="font-sans text-sm text-ivory/50 max-w-md">
-                        Wähl deinen Wunschtermin online — wir kommen mit allem, was wir brauchen, direkt zu dir.
+                        Wählen Sie Ihren Wunschtermin online — wir kommen mit allem, was wir brauchen, direkt zu Ihnen.
                     </p>
                 </div>
                 <Link

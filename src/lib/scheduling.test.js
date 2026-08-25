@@ -159,11 +159,9 @@ describe('sameDayPlan packing', () => {
     expect(sameDayPlan(MON, 300, [[600, 660]], at(MON, 6)).free).toEqual([{ start: 690, end: 990 }]);
   });
 
-  it('reports Saturday closed at any duration', () => {
-    // Saturday used to be a short day (08:00–13:00). The Google Business Profile says the studio
-    // is closed Sa + So, and the booking engine must not sell a slot nobody will be there for.
-    expect(sameDayPlan(SAT, 30, [], at(MON, 7)).closed).toBe(true);
-    expect(sameDayPlan(SAT, 300, [], at(MON, 7)).free).toEqual([]);
+  it('a 360-min service can never fit Saturday (08:00+360 = 840 > close 780)', () => {
+    expect(sameDayPlan(SAT, 360, [], at(MON, 7)).free).toEqual([]);
+    expect(sameDayPlan(SAT, 300, [], at(MON, 7)).free.map((f) => f.start)).toEqual([480]);
   });
 
   it('reports Sunday closed at any duration', () => {
@@ -303,11 +301,10 @@ describe('availableDays', () => {
     expect([isoKey(gaps[1].from), isoKey(gaps[1].to)]).toEqual(['2026-07-23', '2026-07-26']); // Thu–Sun
   });
 
-  it('does NOT emit a gap for a weekend-only skip (a closed weekend is not news)', () => {
-    // Fri free → Sat + Sun closed → Mon free. The skip is exactly the weekend, which every
-    // visitor already expects, so it must not render as a "kein freier Termin" marker.
-    const map = { [isoKey(FRI)]: [], [isoKey(MON27)]: [] };
-    const r = availableDays(FRI, SAME, makeAvailability(map), at(MON, 6));
+  it('does NOT emit a gap for a weekend-only skip (a closed Sunday is not news)', () => {
+    const SAT = new Date(2026, 6, 25);
+    const map = { [isoKey(SAT)]: [], [isoKey(MON27)]: [] };   // Sat free, Sun closed (no data), Mon free
+    const r = availableDays(SAT, SAME, makeAvailability(map), at(MON, 6));
     expect(r.count).toBe(2);
     expect(r.items.some((i) => i.kind === 'gap')).toBe(false);
   });

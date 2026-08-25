@@ -56,20 +56,8 @@ function walk(dir, test, out = []) {
     return out;
 }
 
-/**
- * A generated derivative, e.g. IMG_2195-640.webp or logo-new2-1280.png. Never an input.
- *
- * Three digits minimum, not `\d+`. The narrower pattern used to swallow master files whose own
- * name ends in a small number — P1334477-2.jpg and P1335024-2.jpg are a photographer's second
- * take, not a 2px-wide thumbnail. Both were classified as outputs, skipped for ever, and never
- * reached the manifest, so <Img> fell back to a bare <img>: the full-resolution master shipped
- * to phones with no width/height and therefore layout shift.
- *
- * The generated widths are WIDTHS plus, for a source narrower than the widest, its own width
- * (that is where VAN-1024.jpg comes from) — so they cannot be whitelisted, but they are all
- * three digits or more. Nothing this site ships is under 100px wide.
- */
-const DERIVATIVE = /-\d{3,}\.(?:webp|jpe?g|png)$/i;
+/** A generated derivative, e.g. IMG_2195-640.webp or logo-new2-1280.png. Never an input. */
+const DERIVATIVE = /-\d+\.(?:webp|jpe?g|png)$/i;
 
 /**
  * Only touch images the site actually loads.
@@ -202,7 +190,7 @@ async function main() {
 
     // Unreferenced masters are left alone on purpose — see the note at the top.
     const allImages = walk(join(publicDir, 'assets'), /\.(jpe?g|png)$/i).filter(
-        (f) => !DERIVATIVE.test(f)
+        (f) => !/-\d+\.(jpe?g|png)$/i.test(f)
     );
     const orphans = allImages.filter((f) => {
         const url = '/' + relative(publicDir, f).split(sep).join('/');

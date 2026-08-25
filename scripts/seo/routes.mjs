@@ -6,9 +6,7 @@
  * adding it here fails the build.
  *
  * Rules baked in here:
- *  - German. Informal "du" on the five customer-facing routes, matching the site body and the
- *    FAQ knowledge base. The four legal routes (/impressum, /datenschutz, /agb, /widerruf) stay
- *    in formal Sie-Form, matching their page bodies — do not "fix" those to du.
+ *  - German, Sie-Form.
  *  - www host, because that is the host that actually serves (the apex 307s to it).
  *  - No prices. The packages change and stale meta is worse than generic meta.
  *  - All nine stay indexable. The legal pages do NOT get noindex.
@@ -42,7 +40,7 @@ export const routes = [
         path: '/',
         title: 'Autoaufbereitung Vorarlberg | Elité Auto Aufbereitung',
         description:
-            'Fahrzeugaufbereitung in Vorarlberg: kratzfreie Handwäsche nach 2-Eimer-Methode, mehrstufige Politur und FIREBALL-Keramikversiegelung. Auf Wunsch mobil — wir kommen zu dir.',
+            'Professionelle Fahrzeugaufbereitung in Vorarlberg — kratzerfreie Handwäsche, Politur und Keramikversiegelung. Auf Wunsch mobil: wir kommen zu Ihnen.',
         changefreq: 'monthly',
         priority: '1.0',
         preloadHero: true,
@@ -50,9 +48,9 @@ export const routes = [
     },
     {
         path: '/mobiler-service',
-        title: 'Mobile Autoaufbereitung — wir kommen zu dir | Elité',
+        title: 'Mobile Autoaufbereitung — wir kommen zu Ihnen | Elité',
         description:
-            'Mobile Fahrzeugaufbereitung in ganz Vorarlberg. Der voll ausgestattete Elité-Van kommt zu dir nach Hause oder ins Büro — Wunschtermin online wählbar.',
+            'Mobile Fahrzeugaufbereitung in ganz Vorarlberg. Der voll ausgestattete Elité-Van kommt zu Ihnen nach Hause oder ins Büro — Termin online wählbar.',
         changefreq: 'monthly',
         priority: '0.8',
         preloadHero: true,
@@ -62,7 +60,7 @@ export const routes = [
         path: '/elite-endstufe',
         title: 'Elité Endstufe — Politur & Keramikversiegelung | Vorarlberg',
         description:
-            'Acht Arbeitsschritte über fünf Werktage: 3-Gang Politur, Felgen zerlegt und keramikbeschichtet, Motorraum und Einstiege versiegelt, FIREBALL-Keramik auf dem Lack.',
+            'Das komplette Aufbereitungspaket: mehrstufige Lackpolitur, Lackinspektion und FIREBALL-Keramikbeschichtung. Für Fahrzeuge, bei denen kein Detail übrig bleiben soll.',
         changefreq: 'monthly',
         priority: '0.8',
         preloadHero: false,
@@ -70,9 +68,9 @@ export const routes = [
     },
     {
         path: '/projekte',
-        title: 'Unsere Arbeiten — Fahrzeugaufbereitung | Elité Vorarlberg',
+        title: 'Vorher & Nachher — unsere Aufbereitungen | Elité Vorarlberg',
         description:
-            'Eigene Aufnahmen aus dem Studio in Feldkirch und vom mobilen Einsatz in Vorarlberg: Lackaufbereitung, Lederreinigung und Felgenpflege. Beschriftet ist nur, was im Bild zu sehen ist.',
+            'Echte Ergebnisse aus Vorarlberg im direkten Vergleich: ziehen Sie den Regler und sehen Sie, was aus jedem Fahrzeug wird.',
         changefreq: 'monthly',
         priority: '0.8',
         preloadHero: false,
@@ -82,7 +80,7 @@ export const routes = [
         path: '/buchen',
         title: 'Termin buchen — Autoaufbereitung Vorarlberg | Elité',
         description:
-            'Wunschtermin online wählen: Standort, Leistung, Fahrzeugklasse und Zeitfenster in fünf Schritten — im Studio in Feldkirch oder mobil bei dir vor Ort.',
+            'Wunschtermin online wählen: Leistung, Fahrzeug und Zeitfenster in wenigen Schritten — im Studio oder mobil bei Ihnen vor Ort.',
         changefreq: 'monthly',
         priority: '0.8',
         preloadHero: false,

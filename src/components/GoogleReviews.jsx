@@ -1,9 +1,7 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import gsap from 'gsap';
-import { ExternalLink } from 'lucide-react';
 import { deriveReviewsState, buildMarqueeTrack } from '../lib/reviewsState';
-import { GOOGLE_PROFILE_URL } from '../data/business';
-import { prefersReducedMotion } from '../lib/motion';
+import SplitText from './SplitText';
 
 function GoogleLogo({ className = 'w-5 h-5' }) {
     return (
@@ -47,10 +45,7 @@ function ReviewCard({ review }) {
                 <GoogleLogo className="w-6 h-6 shrink-0" />
             </div>
 
-            {/* No line-clamp. Every review was truncated to exactly four lines, which made a
-                90-word review and a 20-word one render as the same rectangle — the uniformity is
-                the thing that reads as fake, not the scrolling. */}
-            <p className="font-sans text-sm text-ivory/70 leading-relaxed">
+            <p className="font-sans text-sm text-ivory/70 leading-relaxed line-clamp-4">
                 {review.text}
             </p>
 
@@ -63,28 +58,56 @@ function ReviewCard({ review }) {
     );
 }
 
+function SkeletonCard() {
+    return (
+        <div className="flex-shrink-0 w-[320px] sm:w-[360px] md:w-[400px] bg-[#1a1a24] border border-slate/60 rounded-2xl p-6 flex flex-col gap-4 animate-pulse">
+            <div className="flex items-center justify-between">
+                <div className="flex flex-col gap-2">
+                    <div className="h-3 w-24 bg-slate/40 rounded" />
+                    <div className="h-3 w-20 bg-slate/40 rounded" />
+                </div>
+                <div className="w-6 h-6 bg-slate/40 rounded-full" />
+            </div>
+            <div className="flex flex-col gap-2">
+                <div className="h-3 w-full bg-slate/40 rounded" />
+                <div className="h-3 w-full bg-slate/40 rounded" />
+                <div className="h-3 w-3/4 bg-slate/40 rounded" />
+            </div>
+            <div className="h-3 w-16 bg-slate/40 rounded mt-auto" />
+        </div>
+    );
+}
 
 export default function GoogleReviews() {
     const containerRef = useRef(null);
-    /**
-     * Derived once, synchronously, from the curated testimonials.
-     *
-     * This used to fetch /api/reviews on mount. That endpoint was deliberately deleted (commit
-     * 883f052, "testimonials-only is the decision") and the routing tests assert it 404s — so the
-     * call failed on every single page load, logged a console error, and, because `loading`
-     * started true, meant the SERVER rendered three skeleton cards. Fifteen real German reviews
-     * full of the exact vocabulary this site wants to rank for were absent from every prerendered
-     * page, invisible to crawlers, to AI answer engines and to anyone with JS off.
-     *
-     * deriveReviewsState(null) is a pure function over a static import, so server and client
-     * compute the identical tree and hydration is clean. rating/total stay null by construction:
-     * an unsourced rating under a Google logo is a claim about Google's data, not a placeholder.
-     */
-    const state = deriveReviewsState(null);
-
+    // rating/total stay null until real Google data arrives — never seeded with a plausible
+    // guess, because a seeded value renders as a factual claim about Google's data.
+    const [state, setState] = useState({ isLive: false, reviews: [], rating: null, total: null });
+    const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        if (prefersReducedMotion()) return;
+        async function fetchReviews() {
+            try {
+                const res = await fetch('/api/reviews');
+                if (!res.ok) throw new Error(`/api/reviews responded ${res.status}`);
+                setState(deriveReviewsState(await res.json()));
+            } catch (err) {
+                // Browser console, not Vercel logs — this is a client component.
+                // The /api/reviews endpoint was intentionally removed (curated
+                // testimonials only), so this fetch now always 404s and the fallback
+                // below is the normal path, not an error condition.
+                console.error('Google reviews unavailable, showing curated testimonials:', err);
+                setState(deriveReviewsState(null));
+            } finally {
+                setLoading(false);
+            }
+        }
+
+        fetchReviews();
+    }, []);
+
+    useEffect(() => {
+        if (loading) return;
 
         const ctx = gsap.context(() => {
             // Scale + fade for header (different from other sections)
@@ -119,9 +142,11 @@ export default function GoogleReviews() {
         }, containerRef);
 
         return () => ctx.revert();
-    }, []);
+    }, [loading]);
 
-    const displayReviews = buildMarqueeTrack(state.reviews);
+    const displayReviews = loading
+        ? Array(3).fill(null)
+        : buildMarqueeTrack(state.reviews);
 
     return (
         <section
@@ -137,32 +162,19 @@ export default function GoogleReviews() {
                     </h3>
                 </div>
                 <h2 className="font-drama italic text-4xl sm:text-5xl text-ivory">
-                    Was unsere Kunden{' '}
+                    <SplitText type="words" triggerStart="top 85%">
+                        Was unsere Kunden
+                    </SplitText>{' '}
                     <span className="text-champagne relative inline-block">
-                        sagen.
+                        <SplitText type="chars" triggerStart="top 85%" delay={0.2}>
+                            sagen.
+                        </SplitText>
                         <span className="underline-draw bg-champagne" />
                     </span>
                 </h2>
                 {/* Only rendered when the numbers actually came from Google. Never seeded, never
                     defaulted: an unsourced rating under a Google logo is a claim about Google's
                     data, not a placeholder. No data -> no row. */}
-                {/* One link, not one per card: reviews.js has no per-review permalink, so 30
-                    identical hrefs would imply a deep link that does not exist — and 30 tab stops
-                    inside an auto-scrolling strip is a keyboard trap. Renders nothing at all while
-                    GOOGLE_PROFILE_URL is empty, which is its honest state until Matthias sends it. */}
-                {GOOGLE_PROFILE_URL && (
-                    <a
-                        href={GOOGLE_PROFILE_URL}
-                        target="_blank"
-                        rel="noreferrer"
-                        aria-label="Alle Bewertungen auf Google ansehen (öffnet in einem neuen Tab)"
-                        className="mt-2 inline-flex items-center gap-2 font-sans text-sm text-ivory/60 hover:text-champagne transition-colors rounded-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-champagne"
-                    >
-                        Alle Bewertungen auf Google ansehen
-                        <ExternalLink className="w-3.5 h-3.5" />
-                    </a>
-                )}
-
                 {state.rating !== null && (
                     <div className="flex items-center gap-2 mt-2">
                         <StarRating rating={Math.round(state.rating)} />
@@ -185,12 +197,12 @@ export default function GoogleReviews() {
                 <div className="absolute left-0 top-0 bottom-0 w-16 sm:w-24 bg-gradient-to-r from-obsidian to-transparent z-10 pointer-events-none" />
                 <div className="absolute right-0 top-0 bottom-0 w-16 sm:w-24 bg-gradient-to-l from-obsidian to-transparent z-10 pointer-events-none" />
 
-                {/* items-start, so a short review is a short card. Default stretch forced every
-                    card to the tallest one's height. */}
-                <div className="marquee-track flex items-start gap-6 w-fit">
-                    {displayReviews.map((review, index) => (
-                        <ReviewCard key={index} review={review} />
-                    ))}
+                <div className="marquee-track flex gap-6 w-fit">
+                    {loading
+                        ? displayReviews.map((_, i) => <SkeletonCard key={i} />)
+                        : displayReviews.map((review, index) => (
+                              <ReviewCard key={index} review={review} />
+                          ))}
                 </div>
             </div>
         </section>

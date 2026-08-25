@@ -82,7 +82,7 @@ export const FAQ_KNOWLEDGE = [
     {
         id: 'faq-standorte',
         q: 'Wo befindet sich Elité Aufbereitung?',
-        a: 'Wir haben zwei Standorte in Vorarlberg: Ketschelenstraße 1 in 6800 Feldkirch und Bundesstraße 2a in 6714 Nüziders. Alternativ kommen wir mit dem mobilen Service direkt zu dir.',
+        a: 'Wir haben zwei Standorte in Vorarlberg: Ketschenstraße 1 in 6800 Feldkirch und Bundesstraße 2a in 6714 Nüziders. Alternativ kommen wir mit dem mobilen Service direkt zu dir.',
         keywords: ['wo', 'standort', 'standorte', 'adresse', 'finden', 'feldkirch', 'nüziders', 'werkstatt', 'studio', 'befindet'],
         category: 'standort',
         featured: true,
@@ -307,7 +307,7 @@ export const FAQ_KNOWLEDGE = [
     {
         id: 'buchung-zeiten',
         q: 'Wann kann ich Termine buchen?',
-        a: 'Online buchbare Termine gibt es Montag bis Freitag von 08:00 bis 18:00 Uhr. Samstag und Sonntag ist geschlossen. Bei mehrtägigen Leistungen gibst du das Auto bis 09:00 Uhr ab und holst es am letzten Tag ab 16:00 Uhr wieder ab. Du brauchst einen Termin außerhalb dieser Zeiten? Ruf uns einfach kurz an – wir finden eine Lösung.',
+        a: 'Online buchbare Termine gibt es Montag bis Freitag von 08:00 bis 18:00 Uhr und Samstag von 08:00 bis 13:00 Uhr. Bei mehrtägigen Leistungen gibst du das Auto bis 09:00 Uhr ab und holst es am letzten Tag ab 16:00 Uhr wieder ab. Du brauchst einen Termin außerhalb dieser Zeiten? Ruf uns einfach kurz an – wir finden eine Lösung.',
         keywords: ['öffnungszeiten', 'offen', 'zeiten', 'wann', 'uhrzeit', 'samstag', 'sonntag', 'feierabend', 'wochenende', 'abends', 'geöffnet'],
         category: 'buchung',
         links: [LINK_BUCHEN, LINK_TEL],

@@ -1,6 +1,5 @@
 import { useEffect, useRef } from 'react';
 import gsap from 'gsap';
-import { prefersReducedMotion } from '../lib/motion';
 
 /**
  * SplitText — splits text into words/characters and animates them in with a mask reveal.
@@ -66,10 +65,6 @@ export default function SplitText({
 
     useEffect(() => {
         if (!containerRef.current || !text) return;
-        // This animation PRE-HIDES each unit (yPercent 130, opacity 0). Unlike the plain `from`
-        // reveals elsewhere, skipping it late would leave the heading permanently invisible — so
-        // bail before gsap sets anything and let the units render as ordinary text.
-        if (prefersReducedMotion()) return;
 
         const elements = containerRef.current.querySelectorAll('.split-unit');
         if (!elements.length) return;

@@ -96,7 +96,7 @@ function Step0({ serviceMode, setServiceMode, studioLocation, setStudioLocation,
         <div className="flex flex-col gap-10 w-full">
             <div>
                 <h2 className="font-drama italic text-4xl sm:text-5xl text-ivory mb-2">Wo soll es stattfinden?</h2>
-                <p className="font-sans text-sm text-ivory/50">Wähl, ob du zu uns kommst oder wir zu dir.</p>
+                <p className="font-sans text-sm text-ivory/50">Wählen Sie, ob Sie zu uns kommen oder wir zu Ihnen kommen sollen.</p>
             </div>
 
             {/* Studio Location Selection Modal */}
@@ -128,7 +128,7 @@ function Step0({ serviceMode, setServiceMode, studioLocation, setStudioLocation,
                                         {studioLocation === 'feldkirch' && <Check className="w-3.5 h-3.5 text-obsidian" strokeWidth={3} />}
                                     </div>
                                 </div>
-                                <span className="font-sans text-sm text-ivory/60">Ketschelenstraße 1, 6800 Feldkirch</span>
+                                <span className="font-sans text-sm text-ivory/60">Ketschenstraße 1, 6800 Feldkirch</span>
                             </button>
 
                             {/* Nüziders — gesperrt */}
@@ -163,12 +163,12 @@ function Step0({ serviceMode, setServiceMode, studioLocation, setStudioLocation,
                     </div>
                     <div className="flex flex-col gap-2">
                         <h3 className="font-sans font-bold text-2xl text-ivory">Im Studio</h3>
-                        <p className="font-sans text-sm text-ivory/50">Du bringst dein Fahrzeug zu uns</p>
+                        <p className="font-sans text-sm text-ivory/50">Sie bringen Ihr Fahrzeug zu uns</p>
                     </div>
                     <div className="flex items-center gap-2 mt-auto pt-2">
                         <MapPin className="w-4 h-4 text-ivory/40" />
                         <span className="font-sans text-xs text-ivory/40">
-                            {studioLocation === 'feldkirch' ? 'Ketschelenstraße 1, 6800 Feldkirch' : '2 Standorte verfügbar'}
+                            {studioLocation === 'feldkirch' ? 'Ketschenstraße 1, 6800 Feldkirch' : '2 Standorte verfügbar'}
                         </span>
                     </div>
                     {serviceMode === 'studio' && (
@@ -190,7 +190,7 @@ function Step0({ serviceMode, setServiceMode, studioLocation, setStudioLocation,
                     </div>
                     <div className="flex flex-col gap-2">
                         <h3 className="font-sans font-bold text-2xl text-ivory">Mobiler Service</h3>
-                        <p className="font-sans text-sm text-ivory/50">Wir kommen direkt zu dir</p>
+                        <p className="font-sans text-sm text-ivory/50">Wir kommen direkt zu Ihnen</p>
                         <span className="font-mono text-xs text-champagne mt-1">+{formatEuro(MOBILE_SURCHARGE)} Anfahrtspauschale</span>
                     </div>
                     <div className="flex items-center gap-2 mt-auto pt-2">
@@ -283,7 +283,7 @@ function Step1({ selectedItems, toggleItem, onNext, onBack, recommendations, pac
         <div className="flex flex-col gap-10 w-full">
             <div>
                 <h2 className="font-drama italic text-4xl sm:text-5xl text-ivory mb-2">Welche Services?</h2>
-                <p className="font-sans text-sm text-ivory/50">Wähl beliebig viele Leistungen — Kombinationen sind möglich.</p>
+                <p className="font-sans text-sm text-ivory/50">Wählen Sie beliebig viele Leistungen — Kombinationen sind möglich.</p>
             </div>
 
             {/* Tab bar */}
@@ -471,7 +471,7 @@ function Step1({ selectedItems, toggleItem, onNext, onBack, recommendations, pac
                 <div className="bg-slate/40 border border-accent/30 rounded-[1.5rem] p-5 flex flex-col gap-4">
                     <div className="flex items-center gap-2">
                         <Sparkles className="w-4 h-4 text-accent" />
-                        <span className="font-sans font-bold text-sm text-ivory uppercase tracking-widest">Deine Auswahl</span>
+                        <span className="font-sans font-bold text-sm text-ivory uppercase tracking-widest">Ihre Auswahl</span>
                     </div>
                     <div className="flex flex-wrap gap-2">
                         {selectedItems.map(item => (
@@ -509,7 +509,7 @@ function Step1({ selectedItems, toggleItem, onNext, onBack, recommendations, pac
                             </div>
                             {anySized && (
                                 <p className="font-sans text-[11px] text-ivory/40">
-                                    Im nächsten Schritt kommt der Größenfaktor deiner Fahrzeugklasse dazu.
+                                    Im nächsten Schritt kommt der Größenfaktor Ihrer Fahrzeugklasse dazu.
                                 </p>
                             )}
                         </div>
@@ -572,10 +572,10 @@ function StepVehicle({ vehicleCategory, setVehicleCategory, selectedItems, onNex
     return (
         <div className="flex flex-col gap-10 w-full">
             <div>
-                <h2 className="font-drama italic text-4xl sm:text-5xl text-ivory mb-2">Dein Fahrzeug</h2>
+                <h2 className="font-drama italic text-4xl sm:text-5xl text-ivory mb-2">Ihr Fahrzeug</h2>
                 <p className="font-sans text-sm text-ivory/50">
                     {appliesSurcharge
-                        ? 'Der Preis wird mit dem Größenfaktor deiner Fahrzeugklasse multipliziert — ein großes Auto braucht anteilig mehr Zeit.'
+                        ? 'Der Preis wird mit dem Größenfaktor Ihrer Fahrzeugklasse multipliziert — ein großes Auto braucht anteilig mehr Zeit.'
                         : 'Hilft uns bei der Planung. Ein Größenfaktor fällt nur bei bestimmten Leistungen an.'}
                 </p>
             </div>
@@ -786,12 +786,12 @@ function Step2({ datetime, setDatetime, onNext, onBack, serviceMode, selectedIte
     const ghostText = useMemo(() => {
         if (!ghostWarning) return null;
         if (ghostWarning.reason === 'time-taken') {
-            return 'Diese Uhrzeit wurde soeben vergeben. Bitte wähl eine andere.';
+            return 'Diese Uhrzeit wurde soeben vergeben. Bitte wählen Sie eine andere.';
         }
         if (ghostWarning.reason === 'day-full') {
-            return `Dieser Termin wurde soeben vergeben — der ${ghostWarning.day} ist jetzt ausgebucht. Bitte wähl einen anderen Tag.`;
+            return `Dieser Termin wurde soeben vergeben — der ${ghostWarning.day} ist jetzt ausgebucht. Bitte wählen Sie einen anderen Tag.`;
         }
-        return `Dieser ${terms.chooseDay} ist nicht mehr verfügbar — in deinem Zeitraum wurde inzwischen ein Termin vergeben. Bitte wähl einen anderen ${terms.chooseDay}.`;
+        return `Dieser ${terms.chooseDay} ist nicht mehr verfügbar — in Ihrem Zeitraum wurde inzwischen ein Termin vergeben. Bitte wählen Sie einen anderen ${terms.chooseDay}.`;
     }, [ghostWarning, terms]);
 
     let summary = null;
@@ -804,8 +804,8 @@ function Step2({ datetime, setDatetime, onNext, onBack, serviceMode, selectedIte
     }
 
     const subline = duration.multiDay
-        ? `${terms.stay(daysLabel(duration.spanDays))} — wähl einen ${terms.chooseDay}.`
-        : `Dauer ca. ${durLabel(duration.durationMin)} — wähl einen freien Termin.`;
+        ? `${terms.stay(daysLabel(duration.spanDays))} — wählen Sie einen ${terms.chooseDay}.`
+        : `Dauer ca. ${durLabel(duration.durationMin)} — wählen Sie einen freien Termin.`;
 
     const noData = !loading && (isFallback || (isStale && !hasLoaded));
     const showStale = isStale && hasLoaded && !isFallback;
@@ -813,7 +813,7 @@ function Step2({ datetime, setDatetime, onNext, onBack, serviceMode, selectedIte
     return (
         <div className="flex flex-col gap-8 w-full">
             <div>
-                <h2 className="font-drama italic text-4xl sm:text-5xl text-ivory mb-2">Wann passt es dir?</h2>
+                <h2 className="font-drama italic text-4xl sm:text-5xl text-ivory mb-2">Wann passt es Ihnen?</h2>
                 <p className="font-sans text-sm text-ivory/50">{subline}</p>
             </div>
 
@@ -825,7 +825,7 @@ function Step2({ datetime, setDatetime, onNext, onBack, serviceMode, selectedIte
                 <div className="px-4 py-3 rounded-xl bg-amber-500/10 border border-amber-500/30" role="status">
                     <p className="font-sans text-xs text-amber-300/90 text-center leading-relaxed">
                         <strong className="text-amber-200">Live-Verfügbarkeit gerade nicht abrufbar.</strong>{' '}
-                        Wir zeigen dir lieber keine Termine als falsche — ruf uns an, wir haben
+                        Wir zeigen Ihnen lieber keine Termine als falsche — rufen Sie uns an, wir haben
                         den Kalender vor uns:{' '}
                         <a href="tel:+436642546078" className="text-amber-100 underline underline-offset-2 whitespace-nowrap">
                             +43 664 2546078
@@ -836,7 +836,7 @@ function Step2({ datetime, setDatetime, onNext, onBack, serviceMode, selectedIte
             {showStale && (
                 <div className="px-4 py-2.5 rounded-xl bg-amber-500/10 border border-amber-500/30" role="status">
                     <p className="font-sans text-xs text-amber-300/90 text-center leading-relaxed">
-                        Live-Verfügbarkeit gerade nicht abrufbar — wir bestätigen deinen Wunschtermin telefonisch.
+                        Live-Verfügbarkeit gerade nicht abrufbar — wir bestätigen Ihren Wunschtermin telefonisch.
                     </p>
                 </div>
             )}
@@ -870,7 +870,7 @@ function Step2({ datetime, setDatetime, onNext, onBack, serviceMode, selectedIte
             {summary && (
                 <div className="bg-slate/40 border border-accent/30 rounded-2xl px-5 py-4 flex items-center justify-between gap-4 flex-wrap">
                     <div className="flex flex-col">
-                        <span className="font-mono text-[10px] uppercase tracking-wider text-ivory/40">{duration.multiDay ? 'Dein Zeitraum' : 'Dein Termin'}</span>
+                        <span className="font-mono text-[10px] uppercase tracking-wider text-ivory/40">{duration.multiDay ? 'Ihr Zeitraum' : 'Ihr Termin'}</span>
                         <span className="font-sans text-sm text-accent">{summary}</span>
                     </div>
                     <button onClick={clearPick} className="font-sans text-xs text-ivory/50 hover:text-ivory underline">ändern</button>
@@ -938,7 +938,7 @@ function Step3({ contact, setContact, honeypot, setHoneypot, photos, setPhotos, 
                 style={{ position: 'absolute', left: '-9999px', width: '1px', height: '1px', opacity: 0 }}
             />
             <div>
-                <h2 className="font-drama italic text-4xl sm:text-5xl text-ivory mb-2">Deine Kontaktdaten</h2>
+                <h2 className="font-drama italic text-4xl sm:text-5xl text-ivory mb-2">Ihre Kontaktdaten</h2>
                 <p className="font-sans text-sm text-ivory/50">Wir melden uns innerhalb von 24 Stunden zur Bestätigung.</p>
             </div>
 
@@ -946,23 +946,23 @@ function Step3({ contact, setContact, honeypot, setHoneypot, photos, setPhotos, 
                 <div className="flex flex-col gap-2">
                     <label htmlFor="booking-name" className="font-sans text-xs text-ivory/50 uppercase tracking-widest">Vor- & Nachname *</label>
                     <input id="booking-name" type="text" value={contact.name} onChange={set('name')} placeholder="Max Mustermann" className={inputClass} />
-                    {contact.name && !nameValid && <span className={errorClass}>Bitte gib deinen vollständigen Namen ein.</span>}
+                    {contact.name && !nameValid && <span className={errorClass}>Bitte geben Sie Ihren vollständigen Namen ein.</span>}
                 </div>
                 <div className="flex flex-col gap-2">
                     <label htmlFor="booking-phone" className="font-sans text-xs text-ivory/50 uppercase tracking-widest">Telefonnummer *</label>
                     <input id="booking-phone" type="tel" value={contact.phone} onChange={set('phone')} placeholder="+43 664 000 0000" className={inputClass} />
-                    {contact.phone && !phoneValid && <span className={errorClass}>Diese Telefonnummer sieht nicht vollständig aus.</span>}
+                    {contact.phone && !phoneValid && <span className={errorClass}>Bitte geben Sie eine gültige Telefonnummer ein.</span>}
                 </div>
                 <div className="flex flex-col gap-2 sm:col-span-2">
                     <label htmlFor="booking-email" className="font-sans text-xs text-ivory/50 uppercase tracking-widest">E-Mail-Adresse *</label>
                     <input id="booking-email" type="email" value={contact.email} onChange={set('email')} placeholder="max@mustermann.at" className={inputClass} />
-                    {contact.email && !emailValid && <span className={errorClass}>Diese E-Mail-Adresse sieht nicht gültig aus.</span>}
+                    {contact.email && !emailValid && <span className={errorClass}>Bitte geben Sie eine gültige E-Mail-Adresse ein.</span>}
                 </div>
                 {serviceMode === 'mobil' && (
                     <div className="flex flex-col gap-2 sm:col-span-2">
                         <label htmlFor="booking-address" className="font-sans text-xs text-ivory/50 uppercase tracking-widest">Adresse (Einsatzort) *</label>
                         <input id="booking-address" type="text" value={contact.address || ''} onChange={set('address')} placeholder="Straße, Hausnummer, PLZ, Ort" className={inputClass} />
-                        {contact.address && contact.address.trim().length < 5 && <span className={errorClass}>Bitte gib eine vollständige Adresse ein.</span>}
+                        {contact.address && contact.address.trim().length < 5 && <span className={errorClass}>Bitte geben Sie eine vollständige Adresse ein.</span>}
                     </div>
                 )}
                 <div className="flex flex-col gap-2 sm:col-span-2">
@@ -980,7 +980,7 @@ function Step3({ contact, setContact, honeypot, setHoneypot, photos, setPhotos, 
                         Fahrzeugfotos * <span className="normal-case text-ivory/30">(1–4 Fotos)</span>
                     </p>
                     <p className="font-sans text-xs text-ivory/30 mt-1">
-                        Lade Fotos hoch, damit wir den Zustand deines Fahrzeugs einschätzen können.
+                        Laden Sie Fotos hoch, damit wir den Zustand Ihres Fahrzeugs einschätzen können.
                     </p>
                 </div>
 
@@ -1018,7 +1018,7 @@ function Step3({ contact, setContact, honeypot, setHoneypot, photos, setPhotos, 
                 )}
 
                 {photos.length === 0 && (
-                    <p className="font-sans text-[11px] text-ivory/35">Bitte lade mindestens 1 Foto hoch.</p>
+                    <p className="font-sans text-[11px] text-ivory/35">Bitte laden Sie mindestens 1 Foto hoch.</p>
                 )}
             </div>
 
@@ -1055,7 +1055,7 @@ function Step3({ contact, setContact, honeypot, setHoneypot, photos, setPhotos, 
 // ─── Step 4: Confirmation ─────────────────────────────────────────────────────
 
 const STUDIO_ADDRESSES = {
-    feldkirch: 'Ketschelenstraße 1, 6800 Feldkirch',
+    feldkirch: 'Ketschenstraße 1, 6800 Feldkirch',
     nueziders: 'Bundesstraße 2a, 6714 Nüziders',
 };
 
@@ -1073,7 +1073,7 @@ function Step4({ selectedItems, datetime, serviceMode, contact, vehicleCategory,
             <div className="flex flex-col gap-4">
                 <h2 className="font-drama italic text-4xl sm:text-5xl text-ivory">Anfrage erhalten!</h2>
                 <p className="font-sans text-base text-ivory/60 leading-relaxed">
-                    Angekommen. Matthias meldet sich innerhalb von <span className="text-ivory font-semibold">24 Stunden</span> mit Termin und finaler Einschätzung bei dir.
+                    Vielen Dank. Wir melden uns innerhalb von <span className="text-ivory font-semibold">24 Stunden</span> zur Bestätigung Ihres Termins.
                 </p>
             </div>
 
@@ -1083,7 +1083,7 @@ function Step4({ selectedItems, datetime, serviceMode, contact, vehicleCategory,
                 <div className="w-full bg-amber-500/10 border border-amber-500/30 rounded-2xl px-5 py-4 text-left">
                     <p className="font-sans text-sm text-amber-200/90 leading-relaxed">
                         {photoWarning}{' '}
-                        Du kannst uns die Fotos gerne per E-Mail an{' '}
+                        Sie können uns die Fotos gerne per E-Mail an{' '}
                         <a href="mailto:info.eliteaufbereitung@gmail.com" className="text-amber-100 underline underline-offset-2">
                             info.eliteaufbereitung@gmail.com
                         </a>{' '}
@@ -1093,7 +1093,7 @@ function Step4({ selectedItems, datetime, serviceMode, contact, vehicleCategory,
             )}
 
             <div className="w-full bg-slate/40 border border-slate/60 rounded-[1.5rem] p-6 flex flex-col gap-4 text-left">
-                <h3 className="font-sans font-bold text-xs uppercase tracking-widest text-ivory/40">Deine Buchungsübersicht</h3>
+                <h3 className="font-sans font-bold text-xs uppercase tracking-widest text-ivory/40">Ihre Buchungsübersicht</h3>
 
                 {/* Services list */}
                 <div className="flex flex-col gap-2">
@@ -1404,11 +1404,11 @@ export default function BookingPage() {
             animateStep(5);
         } catch (err) {
             if (err.status === 409 && err.data?.error === 'slot_taken') {
-                setSubmitError('Dieser Termin wurde soeben von jemand anderem gebucht. Bitte wähl einen anderen Zeitpunkt.');
+                setSubmitError('Dieser Termin wurde soeben von jemand anderem gebucht. Bitte wählen Sie einen anderen Zeitpunkt.');
                 setDatetime(dt => ({ ...dt, date: null, time: null }));
                 animateStep(3);
             } else {
-                setSubmitError('Anfrage konnte nicht gesendet werden. Bitte versuch es erneut oder ruf uns direkt an.');
+                setSubmitError('Anfrage konnte nicht gesendet werden. Bitte versuchen Sie es erneut oder kontaktieren Sie uns direkt.');
             }
         } finally {
             setLoading(false);

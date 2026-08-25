@@ -18,7 +18,7 @@ import {
 
 const SLOT_TAKEN = {
   error: 'slot_taken',
-  message: 'Dieser Termin ist leider nicht mehr verfügbar. Bitte wähl einen anderen Zeitpunkt.',
+  message: 'Dieser Termin ist leider nicht mehr verfügbar. Bitte wählen Sie einen anderen Zeitpunkt.',
 };
 const INVALID = { error: 'Missing required fields.' };
 
@@ -176,7 +176,7 @@ export default async function handler(req, res) {
     console.error('Booking error:', error);
     return res.status(500).json({
       error: 'booking_failed',
-      message: 'Buchung konnte nicht erstellt werden. Bitte versuch es erneut.',
+      message: 'Buchung konnte nicht erstellt werden. Bitte versuchen Sie es erneut.',
     });
   }
 }

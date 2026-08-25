@@ -27,8 +27,8 @@ function buildWarning(failed, total) {
   // point of the change. A warning that only says "photos failed" reads as "booking failed".
   if (failed === total) {
     return total === 1
-      ? 'Dein Foto konnte nicht übertragen werden — die Buchung ist aber angekommen.'
-      : 'Deine Fotos konnten nicht übertragen werden — die Buchung ist aber angekommen.';
+      ? 'Ihr Foto konnte nicht übertragen werden — die Buchung ist aber angekommen.'
+      : 'Ihre Fotos konnten nicht übertragen werden — die Buchung ist aber angekommen.';
   }
   return `${failed} von ${total} Fotos konnten nicht übertragen werden — die Buchung ist aber angekommen.`;
 }
