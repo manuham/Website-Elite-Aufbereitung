@@ -212,20 +212,35 @@ export default function Hero({ entranceReady = true }) {
                 </div>
 
                 {/* One heading, two lines. The wrapper is the <h1> and each line is a <span>, so
-                    „Perfektion trifft Präzision." reads as one sentence to a crawler and a screen
-                    reader. Every class string is unchanged and both lines keep .hero-fade, so the
-                    layout and the GSAP stagger are exactly what they were. */}
+                    „Mehr als eine schnelle Wäsche." reads as one sentence to a crawler and a
+                    screen reader. Every class string is unchanged and both lines keep .hero-fade,
+                    so the layout and the GSAP stagger are exactly what they were.
+
+                    The belief this states in full — „Wir glauben, dass ein besonderes Auto mehr
+                    verdient als eine schnelle Wäsche" — is 79 characters and cannot render at
+                    12rem Playfair, so it lives in the paragraph below. What the headline keeps is
+                    the half that only works big: the refusal.
+
+                    The previous line („Perfektion trifft / Präzision.") carried no service term
+                    and no location either — it was the builder.md hero pattern filled in — so
+                    this costs nothing in search. The keyword load sits in the eyebrow above, the
+                    paragraph below and the location chips, and all three stay. */}
                 <h1 className="flex flex-col relative w-full -mt-1">
                     <span className="hero-fade font-drama italic text-2xl sm:text-4xl lg:text-5xl text-ivory/75 leading-tight mb-0">
-                        Perfektion trifft
+                        Mehr als eine
                     </span>
-                    <span className="hero-fade font-drama italic text-[5.5rem] sm:text-[8rem] lg:text-[10rem] xl:text-[12rem] leading-[0.88] text-transparent bg-clip-text bg-gradient-to-br from-ivory via-ivory/95 to-ivory/70 drop-shadow-2xl -ml-1">
-                        Präzision.
+                {/* „schnelle Wäsche." is 16 characters where „Präzision." was 10, so the old
+                        3.5rem/12rem ramp wrapped it onto two lines at 390px. The hero is
+                        h-[100dvh] with justify-end, so a taller block grows upward — straight
+                        into the fixed navbar. Sized to fit on one line at 390px. */}
+                    <span className="hero-fade font-drama italic text-[2.5rem] sm:text-[5rem] lg:text-[7rem] xl:text-[8.5rem] leading-[0.9] text-transparent bg-clip-text bg-gradient-to-br from-ivory via-ivory/95 to-ivory/70 drop-shadow-2xl -ml-1">
+                        schnelle Wäsche.
                     </span>
                 </h1>
 
-                <p className="hero-fade font-sans font-normal text-lg sm:text-xl text-ivory/90 max-w-xl leading-relaxed text-balance drop-shadow-md">
-                    Professionelle Fahrzeugaufbereitung in Vorarlberg — Kratzerfreie Handwäsche, Politur & Keramikversiegelung.
+                <p className="hero-fade font-sans font-normal text-base sm:text-xl text-ivory/90 max-w-xl leading-relaxed text-balance drop-shadow-md">
+                    Wir glauben, dass ein besonderes Auto mehr verdient als fünf Minuten und
+                    rotierende Bürsten. Handwäsche, Politur und Keramikversiegelung in Vorarlberg.
                 </p>
 
                 <div className="hero-fade flex flex-wrap items-center gap-2 sm:gap-3">
@@ -249,11 +264,15 @@ export default function Hero({ entranceReady = true }) {
                         <div className="absolute top-0 -left-[100%] w-1/2 h-full bg-gradient-to-r from-transparent via-white/50 to-transparent skew-x-[-20deg] group-hover:animate-[shimmer_1.5s_infinite]" />
                     </Link>
 
+                    {/* Points at the work, not the price list. The argument on this page is
+                        "look at what we do" before "here is what it costs" — and the price
+                        list is still one click away in the navbar, which is fixed and always
+                        on screen. */}
                     <Link
-                        to="/#pricing"
+                        to="/#gallery"
                         className="group flex items-center justify-center gap-2 font-sans font-medium text-ivory/90 hover:text-ivory transition-colors link-lift w-full sm:w-auto py-3 sm:py-0"
                     >
-                        Unsere Leistungen
+                        Unsere Arbeit ansehen
                         <span className="group-hover:translate-x-1 transition-transform duration-300 inline-block translate-y-[1px]">→</span>
                     </Link>
                 </div>

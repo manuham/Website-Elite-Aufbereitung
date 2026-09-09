@@ -11,22 +11,24 @@ gsap.registerPlugin(ScrollTrigger);
 export default function Protocol() {
     const containerRef = useRef(null);
 
+    // Same three steps as before, retitled from process nouns to promises. The section is the
+    // HOW: it has to answer the refusals in the Manifest above it, not just name a workflow.
     const steps = [
         {
             num: "01",
-            title: "Reinigung & Dekontamination",
-            desc: "Kontaktlose Vorwäsche, sichere 2-Eimer-Handwäsche, Teer- und Flugrost-Entfernung. Die Grundlage für jede weitere Behandlung.",
+            title: "Von Hand.",
+            desc: "Kontaktlose Vorwäsche, sichere 2-Eimer-Handwäsche, Teer- und Flugrost-Entfernung. Keine Bürste berührt den Lack — das ist die Grundlage für alles Weitere.",
             image: "/assets/Außenreinigung/P1334438.jpg",
         },
         {
             num: "02",
-            title: "Politur & Lackkorrektur",
+            title: "Bis ins Detail.",
             desc: "Mehrstufiges Maschinenpolieren entfernt Kratzer, Hologramme und Oxidation. Ihr Lack erhält seinen ursprünglichen Tiefenglanz zurück.",
             image: "/assets/Außenreinigung/P1334780.jpg",
         },
         {
             num: "03",
-            title: "Versiegelung & Schutz",
+            title: "Für langfristigen Schutz.",
             desc: "FIREBALL Keramikversiegelung bildet eine unsichtbare Schutzschicht: wasserabweisend, UV-beständig und bis zu 40.000 – 60.000 km haltbar.",
             image: "/assets/Produkte/P1345294-2.jpg",
         }
@@ -95,14 +97,15 @@ export default function Protocol() {
             {/* Intro Header */}
             <div className="protocol-header w-full mx-auto px-4 sm:px-8 lg:px-12 xl:px-16 pt-32 pb-12">
                 <p className="font-sans font-bold text-lg text-ivory/60 uppercase tracking-widest mb-4">Unser Prozess</p>
-                <h2 className="font-drama italic text-[2.5rem] sm:text-5xl lg:text-6xl leading-[1.1] text-ivory max-w-2xl pb-4">
+                <h2 className="font-drama italic text-[2.5rem] sm:text-5xl lg:text-6xl leading-[1.1] text-ivory max-w-3xl pb-4">
                     <SplitText type="words" triggerStart="top 85%">
-                        Drei Schritte zum
+                        Präzision ist kein Versprechen.
                     </SplitText>{' '}
-                    <span className="text-champagne">
-                        <SplitText type="chars" triggerStart="top 85%" delay={0.2}>
-                            perfekten Ergebnis.
+                    <span className="text-champagne relative inline-block">
+                        <SplitText type="chars" triggerStart="top 85%" delay={0.25}>
+                            Es ist unser Prozess.
                         </SplitText>
+                        <span className="underline-draw bg-champagne" />
                     </span>
                 </h2>
             </div>

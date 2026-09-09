@@ -132,13 +132,18 @@ export default function Pricing() {
                 {/* Header */}
                 <div className="flex flex-col gap-4 items-center text-center">
                     <p className="font-sans font-bold text-lg text-ivory/60 uppercase tracking-widest">Unsere Pakete</p>
+                    {/* A question, not a label. By the time a visitor reaches this section the
+                        page has argued that a car can be treated with more or less care; the
+                        packages are the answer to how far. („Wie weit sollen wir gehen?" rather
+                        than a translation of "Choose your level of care" — the German has to
+                        read as German.) */}
                     <h2 className="font-drama italic text-4xl sm:text-5xl lg:text-6xl text-ivory">
                         <SplitText type="words" triggerStart="top 85%">
-                            Services &
+                            Wie weit sollen
                         </SplitText>{' '}
                         <span className="text-accent relative inline-block">
                             <SplitText type="chars" triggerStart="top 85%" delay={0.2}>
-                                Preise
+                                wir gehen?
                             </SplitText>
                             <span className="underline-draw bg-accent" />
                         </span>

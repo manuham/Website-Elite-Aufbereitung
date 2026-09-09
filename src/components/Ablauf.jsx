@@ -1,7 +1,7 @@
 import { useEffect, useRef } from 'react';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
-import { Droplets, ShieldCheck, CalendarCheck } from 'lucide-react';
+import { CalendarCheck, Truck, Sparkles } from 'lucide-react';
 import SplitText from './SplitText';
 import { useTilt } from '../hooks/useTilt';
 import Img from './Img';
@@ -16,7 +16,7 @@ function TiltCard({ children, className }) {
     );
 }
 
-export default function Features() {
+export default function Ablauf() {
     const containerRef = useRef(null);
 
     useEffect(() => {
@@ -70,6 +70,7 @@ export default function Features() {
             // mount, again when the preloader unlocks the body, and on every resize.
             //
             // The cards are a plain lg:grid-cols-3 now. Nothing was lost but the pin.
+
             // Vertical parallax on the card images. This was inside a
             // matchMedia('(max-width: 1023px)') branch only because the pin owned desktop;
             // with the pin gone the layout is the same vertical scroll at every width, so
@@ -91,44 +92,64 @@ export default function Features() {
         return () => ctx.revert();
     }, []);
 
+    /**
+     * The customer's three steps, not ours.
+     *
+     * These cards used to be "Warum Elité?" — three reasons to choose the business. That
+     * argument now runs across the whole page above (the Manifest states it, the Protocol
+     * proves it, the Gallery shows it), so repeating it here was the page making its case
+     * twice. What was missing was the practical question a convinced visitor actually has:
+     * what do I have to do?
+     *
+     * Two claims from the old cards are deliberately not carried over. "40.000 – 60.000 km
+     * Garantie" — Garantie is a binding undertaking under § 9b KSchG and nobody has confirmed
+     * one exists in writing (docs/context/open-questions.md). And "Mo–Sa geöffnet" — the
+     * booking flow sells Saturday slots, but whether Saturday is actually open is still an
+     * open question, so this section stops asserting it.
+     */
     const features = [
         {
-            icon: Droplets,
-            title: 'Kratzerfreie Präzisionswäsche',
-            description: 'Jedes Fahrzeug wird mit professioneller 2-Eimer-Methode und kontaktloser Vorwäsche behandelt — für eine absolut kratzfreie Reinigung, die Waschstraßen niemals erreichen.',
-            highlights: ['2-Eimer Methode', 'Kontaktlose Vorwäsche', 'pH-neutrale Produkte'],
+            icon: CalendarCheck,
+            title: 'Termin auswählen',
+            description: 'Paket wählen, Wunschtermin klicken, fertig. Keine Rückrufschleife, keine Warteliste — Sie sehen freie Zeiten sofort.',
+            highlights: ['Online buchen', 'Studio oder mobil', 'Wunschtermin wählen'],
+            image: '/assets/Autos/IMG_2195.jpg',
+        },
+        {
+            icon: Truck,
+            title: 'Wir übernehmen',
+            description: 'Sie bringen das Fahrzeug — oder wir kommen zu Ihnen. Ab da liegt alles bei uns: Handwäsche, Innenraum, Politur, Schutz.',
+            highlights: ['Studio oder vor Ort', 'Handarbeit', 'Ohne Aufwand für Sie'],
             image: '/assets/Außenreinigung/P1334323.jpg',
         },
         {
-            icon: ShieldCheck,
-            title: 'Keramik-Schutzschild',
-            description: 'FIREBALL Keramikversiegelung mit 40.000 – 60.000 km Garantie. Extremer Glanz, wasser- und schmutzabweisend, UV-Schutz — Ihr Lack bleibt makellos.',
-            highlights: ['40.000 – 60.000 km Schutz', 'Hydrophobe Oberfläche', 'UV-Beständig'],
-            image: '/assets/Produkte/P1345270.jpg',
-        },
-        {
-            icon: CalendarCheck,
-            title: 'Termin in 60 Sekunden',
-            description: 'Online-Terminbuchung in Sekunden. Wählen Sie Ihr Paket und Ihren Wunschtermin — wir kümmern uns um den Rest.',
-            highlights: ['Online buchen', 'Flexible Zeiten', 'Mo–Sa geöffnet'],
-            image: '/assets/Autos/IMG_2195.jpg',
+            icon: Sparkles,
+            title: 'Fahrzeug neu erleben',
+            description: 'Wir geben das Fahrzeug erst zurück, wenn es uns selbst gefällt. Persönliche Übergabe, kein anonymer Schlüsselkasten.',
+            highlights: ['Persönliche Übergabe', 'Sichtbares Ergebnis', 'Langfristiger Schutz'],
+            image: '/assets/Ergebnisse/P1345324.jpg',
         },
     ];
 
     return (
-        <section id="features" ref={containerRef} className="bg-background relative z-10 overflow-hidden">
+        <section id="ablauf" ref={containerRef} className="bg-background relative z-10 overflow-hidden">
+            {/* Legacy anchor. Nothing in this repo links to #features, but the id shipped for
+                months and could be in an Instagram bio or an old Ads destination URL. Keeping
+                it costs one empty span; a dead inbound link costs a visitor. */}
+            <span id="features" aria-hidden="true" />
+
             {/* Header — always visible, not part of scroll track */}
             <div className="feature-header flex flex-col gap-2 items-center text-center pt-24 sm:pt-32 pb-12 px-4 sm:px-8 lg:px-12 xl:px-16">
                 <p className="font-sans font-bold text-lg text-ivory/60 uppercase tracking-widest">
-                    Warum Elité?
+                    So läuft es ab
                 </p>
                 <h2 className="font-drama italic text-[2.5rem] leading-[1.1] sm:text-5xl text-ivory">
                     <SplitText type="words" triggerStart="top 85%">
-                        Der Unterschied liegt im
+                        Drei Schritte.
                     </SplitText>{' '}
                     <span className="text-accent relative inline-block">
                         <SplitText type="chars" triggerStart="top 85%" delay={0.3}>
-                            Detail.
+                            Mehr müssen Sie nicht tun.
                         </SplitText>
                         <span className="underline-draw bg-accent" />
                     </span>

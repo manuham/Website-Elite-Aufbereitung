@@ -11,7 +11,7 @@ import Img from './Img';
 // chaining — so renaming a section id without changing it here produces no error, no console
 // warning, and a nav item that silently does nothing.
 const navLinks = [
-    { label: 'Über Uns', id: 'philosophy' },
+    { label: 'Warum wir', id: 'philosophy' },
     { label: 'Unsere Arbeit', href: '/projekte' },
     { label: 'Leistungen', id: 'pricing' },
     { label: 'FAQ', id: 'faq' },

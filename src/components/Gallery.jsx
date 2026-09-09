@@ -52,19 +52,24 @@ const galleryItems = [
         label: 'Glanz Finish',
         span: 'col-span-1 row-span-1',
     },
-    {
-        src: '/assets/Ergebnisse/P1345330.jpg',
-        alt: 'Keramikversiegelung Ergebnis',
-        label: 'Keramik Finish',
-        span: 'col-span-1 row-span-1',
-    },
-    {
-        src: '/assets/Autos/IMG_3372.jpg',
-        alt: 'Detailing',
-        label: 'Detailing',
-        span: 'col-span-1 row-span-1',
-    },
 ];
+
+/**
+ * The lead visual for the PROOF section.
+ *
+ * Promoted out of the grid above, where it was one 220px tile among eight. It is one of the
+ * only landscape frames the business owns, so it is the one image here that can carry a
+ * full-width band without being cropped to a letterbox.
+ *
+ * Deliberately carries no caption claiming what was done to this specific car, and no
+ * before/after framing. Nobody in this repo knows which services this vehicle received, and
+ * inventing "3-Gang Politur, 5 Werktage" to make the section feel more concrete is the exact
+ * failure mode that put a fabricated before/after on /projekte.
+ */
+const leadImage = {
+    src: '/assets/Ergebnisse/P1345330.jpg',
+    alt: 'Fertig aufbereitetes Fahrzeug nach der Politur',
+};
 
 export default function Gallery() {
     const containerRef = useRef(null);
@@ -128,15 +133,20 @@ export default function Gallery() {
                 <div className="gallery-header flex flex-col sm:flex-row sm:items-end justify-between gap-6">
                     <div className="flex flex-col gap-2">
                         <span className="font-sans font-bold text-lg text-ivory/60 uppercase tracking-widest">
-                            Portfolio
+                            Ergebnisse
                         </span>
+                        {/* This is the PROOF beat. It is real photographs of real cars and
+                            nothing else — no before/after slider, because there are no genuine
+                            before/after pairs to put in one. (The slider on /projekte fakes its
+                            "before" with a grayscale filter on the same file; that must not be
+                            repeated here, least of all on the highest-authority page.) */}
                         <h2 className="font-drama italic text-4xl sm:text-5xl text-ivory">
                             <SplitText type="words" triggerStart="top 85%">
-                                Unsere
+                                Der Unterschied ist
                             </SplitText>{' '}
                             <span className="text-champagne relative inline-block">
                                 <SplitText type="chars" triggerStart="top 85%" delay={0.15}>
-                                    Arbeit.
+                                    sichtbar.
                                 </SplitText>
                                 <span className="underline-draw bg-champagne" />
                             </span>
@@ -163,6 +173,20 @@ export default function Gallery() {
                         </a>
                     </div>
                 </div>
+
+                {/* Lead visual — one big frame before the grid of small ones. `.gallery-item`
+                    so it inherits the existing clip reveal and image parallax rather than
+                    needing its own tween. */}
+                <TiltItem className="gallery-item relative group rounded-[1.5rem] sm:rounded-[2rem] overflow-hidden aspect-[16/10] sm:aspect-[2/1]">
+                    <Img
+                        src={leadImage.src}
+                        sizes="(min-width: 1280px) 1280px, 100vw"
+                        alt={leadImage.alt}
+                        className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                        loading="lazy"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-obsidian/50 via-transparent to-transparent pointer-events-none" />
+                </TiltItem>
 
                 {/* Masonry-style Grid */}
                 <div className="gallery-grid grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 auto-rows-[220px] sm:auto-rows-[220px]" style={{ perspective: '900px' }}>

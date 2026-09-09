@@ -5,14 +5,15 @@ import { ScrollTrigger } from 'gsap/ScrollTrigger';
 
 import Navbar from './components/Navbar';
 import Hero from './components/Hero';
-import Features from './components/Features';
-import Philosophy from './components/Philosophy';
+import Ablauf from './components/Ablauf';
+import Manifest from './components/Manifest';
 import MobileService from './components/MobileService';
 import Protocol from './components/Protocol';
 import Gallery from './components/Gallery';
 import GoogleReviews from './components/GoogleReviews';
 import Pricing from './components/Pricing';
 import FAQ from './components/FAQ';
+import Statement from './components/Statement';
 import Footer from './components/Footer';
 import BookingPage from './pages/BookingPage';
 import Impressum from './pages/Impressum';
@@ -176,13 +177,14 @@ function HomePage({ preloaderDone }) {
                 dereference with ?.scrollIntoView, so a stale id fails silently. */}
             <Navbar />
             <Hero entranceReady={preloaderDone} />
-            <Philosophy />      {/* WHY / the enemy: Masse und Geschwindigkeit   #philosophy */}
+            <Manifest />        {/* WHY / the enemy: Masse und Geschwindigkeit   #philosophy */}
             <Protocol />        {/* HOW: the three craft steps                   #protocol   */}
             <Gallery />         {/* PROOF: the work itself                       #gallery    */}
             <GoogleReviews />   {/* SOCIAL PROOF                                 #reviews    */}
             <Pricing />         {/* WHAT: the packages                           #pricing    */}
             <MobileService />   {/* CONVENIENCE — demoted from 3rd               #mobile-service */}
-            <Features />        {/* WHY US, as a closing recap                   #features   */}
+            <Ablauf />          {/* PROCESS: the customer's three steps          #ablauf     */}
+            <Statement />       {/* Closing brand moment, back to the WHY        #statement  */}
             <FAQ />
             <Footer />
         </div>
