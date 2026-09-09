@@ -166,8 +166,12 @@ export const FAQ_KNOWLEDGE = [
     {
         id: 'preis-komplettpakete',
         q: 'Welche Komplettpakete gibt es?',
-        a: `Vier Stufen: Bronze „Wash & Clean" (${tier('tier-bronze', 350)}, Handwäsche + Innenreinigung), Silber „Deep Clean" (${tier('tier-silber', 620)}, zusätzlich 1-Schritt Politur & Sprühversiegelung), Gold „Deep Polish" (${tier('tier-gold', 980)}, 2-stufige Politur, Fenster- & Kunststoffbeschichtung) und Élite „Endstufe" (${tier('tier-elite', 2600)}, 3-Gang Politur + FIREBALL Keramik, das Maximum). Gold & Endstufe stimmen wir telefonisch ab.`,
-        keywords: ['komplettpaket', 'komplettpakete', 'paket', 'pakete', 'bronze', 'silber', 'gold', 'endstufe', 'deep clean', 'deep polish', 'wash', 'alles', 'teuer', 'kostet', 'kosten', 'preis', 'preise'],
+        a: `Vier Stufen: Essential „Wash & Clean" (${tier('tier-bronze', 350)}, Handwäsche + Innenreinigung), Restore „Deep Clean" (${tier('tier-silber', 620)}, zusätzlich 1-Schritt Politur & Sprühversiegelung), Perfect „Deep Polish" (${tier('tier-gold', 980)}, 2-stufige Politur, Fenster- & Kunststoffbeschichtung) und Élite „Endstufe" (${tier('tier-elite', 2600)}, 3-Gang Politur + FIREBALL Keramik, das Maximum). Perfect & Endstufe stimmen wir telefonisch ab.`,
+        // bronze/silber/gold stay alongside the new names on purpose. The tiers were renamed
+        // to Essential/Restore/Perfect, but a returning customer still says "was kostet das
+        // Gold-Paket" — dropping the old words would make the bot answer nothing to the people
+        // who know the business best.
+        keywords: ['komplettpaket', 'komplettpakete', 'paket', 'pakete', 'essential', 'restore', 'perfect', 'bronze', 'silber', 'gold', 'endstufe', 'deep clean', 'deep polish', 'wash', 'alles', 'teuer', 'kostet', 'kosten', 'preis', 'preise'],
         intent: 'price', // "Welche … gibt es?" leitet keinen Intent ab
         category: 'preise',
         links: [LINK_BUCHEN],
@@ -279,7 +283,7 @@ export const FAQ_KNOWLEDGE = [
     {
         id: 'buchung-telefonisch',
         q: 'Warum werden manche Pakete telefonisch abgestimmt?',
-        a: 'Hochpreisige Leistungen wie Gold „Deep Polish", die Élite „Endstufe", die Schwere Politur und die Keramik-Pakete hängen stark vom Zustand deines Lacks ab. Damit das Ergebnis und der Preis passen, besprechen wir diese Pakete vorab kurz persönlich – danach bekommst du deinen Termin.',
+        a: 'Hochpreisige Leistungen wie Perfect „Deep Polish", die Élite „Endstufe", die Schwere Politur und die Keramik-Pakete hängen stark vom Zustand deines Lacks ab. Damit das Ergebnis und der Preis passen, besprechen wir diese Pakete vorab kurz persönlich – danach bekommst du deinen Termin.',
         keywords: ['telefonisch', 'telefon', 'anrufen', 'abstimmen', 'absprache', 'beratung', 'rückruf'],
         category: 'buchung',
         links: [LINK_TEL],

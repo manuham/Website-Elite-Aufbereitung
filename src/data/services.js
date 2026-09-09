@@ -18,7 +18,7 @@
 export const tierPackages = [
     {
         id: 'tier-bronze',
-        tier: 'Bronze',
+        tier: 'Essential',
         dots: 1,
         name: 'Wash & Clean',
         subtitle: 'Premium Handwäsche & Innenreinigung',
@@ -37,10 +37,10 @@ export const tierPackages = [
     },
     {
         id: 'tier-silber',
-        tier: 'Silber',
+        tier: 'Restore',
         dots: 2,
         name: 'Deep Clean',
-        subtitle: 'Bronze + Politur & Versiegelung',
+        subtitle: 'Essential + Politur & Versiegelung',
         price: 620,
         sizeSurcharge: true,
         durationDays: 1,
@@ -58,11 +58,11 @@ export const tierPackages = [
     },
     {
         id: 'tier-gold',
-        tier: 'Gold',
+        tier: 'Perfect',
         dots: 3,
         name: 'Deep Polish',
         phoneOnly: true,
-        subtitle: 'Silber + 2-stufige Politur & Beschichtungen',
+        subtitle: 'Restore + 2-stufige Politur & Beschichtungen',
         price: 980,
         sizeSurcharge: true,
         durationDays: 2,

@@ -147,7 +147,7 @@ export default function EliteEndstufe() {
                 </div>
             </section>
 
-            {/* ── Gold-Paket Callout ───────────────────────────────────── */}
+            {/* ── Perfect-Paket Callout ───────────────────────────────────── */}
             <section className="px-6 sm:px-12 lg:px-24 py-16">
                 <div className="max-w-5xl mx-auto">
                     <div className="reveal bg-gradient-to-r from-[#996515]/20 via-[#B8860B]/10 to-[#DAA520]/20 border border-[#B8860B]/30 rounded-[2rem] px-8 py-6 flex items-center gap-6 flex-wrap">
@@ -155,8 +155,8 @@ export default function EliteEndstufe() {
                             <Check className="w-6 h-6 text-[#DAA520]" strokeWidth={2.5} />
                         </div>
                         <div className="flex flex-col gap-1 flex-1 min-w-[200px]">
-                            <span className="font-sans font-bold text-lg text-ivory">Beinhaltet das komplette Gold-Paket</span>
-                            <span className="font-sans text-sm text-ivory/50">Alle Leistungen aus Bronze, Silber & Gold sind bereits inkludiert — plus exklusive Extras.</span>
+                            <span className="font-sans font-bold text-lg text-ivory">Beinhaltet das komplette Perfect-Paket</span>
+                            <span className="font-sans text-sm text-ivory/50">Alle Leistungen aus Essential, Restore & Perfect sind bereits inkludiert — plus exklusive Extras.</span>
                         </div>
                     </div>
                 </div>

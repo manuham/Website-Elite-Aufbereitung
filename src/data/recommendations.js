@@ -88,7 +88,7 @@ export const serviceRecommendations = {
         { recommend: 'zusatz-0', reason: 'Fensterbeschichtung gegen Regen', type: 'addon', priority: 2 },
         { recommend: 'zusatz-16', reason: 'Ozonbehandlung für frischen Duft', type: 'addon', priority: 3 },
     ],
-    // Gold & Élite are phone-only (never enter the cart), so entries keyed on them could never be
+    // Perfect & Élite are phone-only (never enter the cart), so entries keyed on them could never be
     // looked up — omitted intentionally. Same reasoning applies to the exclusion/detection rules below.
 };
 
@@ -103,13 +103,13 @@ export const exclusionRules = [
     { if: 'innenreinigung-1', exclude: ['innenreinigung-0'] },
     { if: 'politur-0', exclude: ['politur-2'] },
 
-    // AIO packages cover their constituent services. Bronze = Premium Handwäsche + Premium
+    // AIO packages cover their constituent services. Essential (tier-bronze) = Premium Handwäsche + Premium
     // Innenreinigung (its feature list is the premium interior), so it also covers the premium
-    // wash/interior services — not just the basic ones. Silber additionally includes a 1-step
+    // wash/interior services — not just the basic ones. Restore (tier-silber) additionally includes a 1-step
     // polish, so it covers Leichte Politur too.
     { if: 'tier-bronze', exclude: ['handwaesche-0', 'handwaesche-1', 'handwaesche-2', 'innenreinigung-0', 'innenreinigung-1'] },
     { if: 'tier-silber', exclude: ['handwaesche-0', 'handwaesche-1', 'handwaesche-2', 'innenreinigung-0', 'innenreinigung-1', 'politur-0'] },
-    // (Gold/Élite are phone-only and can never be in the cart, so exclusion rules keyed on them
+    // (Perfect/Élite are phone-only and can never be in the cart, so exclusion rules keyed on them
     // would never fire — omitted. politur-1/Schwere Politur is phone-only too, for the same reason.)
 
     // Verkaufsaufbereitung / Leasingrückläufer is comprehensive
@@ -122,21 +122,21 @@ export const exclusionRules = [
  *
  * The engine only suggests a package when its "ab" price is BELOW the summed "ab" price of the
  * matched constituents (real saving), so each rule's requiredServiceIds must reflect what the
- * package actually bundles — Bronze = Premium wash + Premium interior; Silber = that + a light
+ * package actually bundles — Essential = Premium wash + Premium interior; Restore = that + a light
  * polish. (Basic constituents summed cheaper than the package, so the old basic-id rules could
- * never fire.) Gold/Élite are phone-only and can't be cart-suggested, so they have no rule.
+ * never fire.) Perfect/Élite are phone-only and can't be cart-suggested, so they have no rule.
  *
  * Both comparisons use BASE prices — the vehicle-size factor is not known yet in Step 1, and it
  * scales package and constituents alike, so it cannot flip which side is cheaper.
  */
 export const packageDetectionRules = [
     {
-        // Premium Handwäsche (155) + Premium Innenreinigung (230) = 385 > Bronze 350 → save ~35.
+        // Premium Handwäsche (155) + Premium Innenreinigung (230) = 385 > Essential 350 → save ~35.
         packageId: 'tier-bronze',
         requiredServiceIds: ['handwaesche-1', 'innenreinigung-1'],
     },
     {
-        // + Leichte Politur (420): 805 > Silber 620 → save ~185. Needs all three (full match).
+        // + Leichte Politur (420): 805 > Restore 620 → save ~185. Needs all three (full match).
         packageId: 'tier-silber',
         requiredServiceIds: ['handwaesche-1', 'innenreinigung-1', 'politur-0'],
     },

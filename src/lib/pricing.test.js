@@ -22,7 +22,7 @@ describe('applyFactor — client price table', () => {
         ['Basic Handwäsche', 95, 95, 110, 125, 145],
         ['Premium Innenreinigung', 230, 230, 265, 300, 345],
         ['Verkaufsaufbereitung', 390, 390, 450, 505, 585],
-        ['Bronze', 350, 350, 405, 455, 525],
+        ['Essential', 350, 350, 405, 455, 525],
         ['Beschichtungspaket', 1250, 1250, 1440, 1625, 1875],
         ['Endstufe', 2600, 2600, 2990, 3380, 3900],
     ];
@@ -37,7 +37,7 @@ describe('applyFactor — client price table', () => {
     }
 
     it('rounds half-up to 5 € — the exact cases the table depends on', () => {
-        expect(roundTo5(402.5)).toBe(405);   // Bronze × 1,15
+        expect(roundTo5(402.5)).toBe(405);   // Essential × 1,15
         expect(roundTo5(142.5)).toBe(145);   // Basic Handwäsche × 1,5
         expect(roundTo5(1437.5)).toBe(1440); // Beschichtungspaket × 1,15
         expect(roundTo5(264.5)).toBe(265);

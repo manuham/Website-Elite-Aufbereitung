@@ -191,16 +191,16 @@ describe('computeBookingDuration', () => {
   });
 
   it('flips to multi-day when same-day work exceeds one workday', () => {
-    // Bronze 300 + Leichte Politur 360 = 660 > 600 → ceil(660/600) = 2
+    // Essential 300 + Leichte Politur 360 = 660 > 600 → ceil(660/600) = 2
     expect(computeBookingDuration([svc({ durationMin: 300 }), svc({ durationMin: 360 })], 'studio'))
       .toEqual({ multiDay: true, spanDays: 2, durationMin: null });
   });
 
   it('treats any durationDays item as multi-day', () => {
-    // Silber – Deep Clean alone
+    // Restore – Deep Clean alone
     expect(computeBookingDuration([svc({ durationDays: 1 })], 'studio'))
       .toEqual({ multiDay: true, spanDays: 1, durationMin: null });
-    // Silber + Kunststoffteile beschichten
+    // Restore + Kunststoffteile beschichten
     expect(computeBookingDuration([svc({ durationDays: 1 }), svc({ durationDays: 1 })], 'studio'))
       .toEqual({ multiDay: true, spanDays: 2, durationMin: null });
   });

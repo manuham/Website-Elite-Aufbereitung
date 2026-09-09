@@ -63,7 +63,7 @@ export const roundTo5 = (n) => Math.round(n / 5) * 5;
  *
  * The product is snapped to cents FIRST. Binary floating point cannot hold 1,15 exactly, so
  * `350 * 1.15` is 402.49999999999994 — half a cent below the .5 boundary, which would round
- * Bronze/Kompakt DOWN to 400 € where the client's table says 405 €. Snapping to cents restores
+ * Essential/Kompakt DOWN to 400 € where the client's table says 405 €. Snapping to cents restores
  * the 402,50 the arithmetic is meant to produce. (Pinned by the golden table in pricing.test.js.)
  */
 export const applyFactor = (base, factor) => {
