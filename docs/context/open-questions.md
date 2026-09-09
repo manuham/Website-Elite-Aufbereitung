@@ -2,6 +2,20 @@
 
 Live list of things to confirm. Resolve each line and note the answer + date.
 
+- [x] **Feldkirch street name** — RESOLVED (2026-09-09): **Ketschenstraße 1, 6800 Feldkirch**
+  is correct. The booking flow and the FAQ already had it right; only the JSON-LD in
+  `index.html` said "Ketschelenstraße 1". That block is copied byte-identical into all nine
+  prerendered documents, so the wrong spelling was the one every crawler read and a NAP
+  mismatch against the Google Business Profile. Fixed.
+
+- [x] **"500+ Fahrzeuge aufbereitet" / "100% Kundenzufriedenheit"** — RESOLVED (2026-09-09):
+  no real number exists. Both claims are **removed** and stay removed; they were unsourced,
+  and the counters also prerendered as a literal `0` because the count-up ran in a
+  ScrollTrigger that never fires under `renderToString`. The homepage Manifest section now
+  carries three refusals instead (Keine Bürsten. / Keine Massenabfertigung. / Keine
+  Kompromisse.), which are true and need no source. If a real figure ever surfaces it can
+  come back — as rendered text, with the animation as an enhancement.
+
 - [ ] **Make.com role** — Does the Make.com scenario
   (`hook.eu1.make.com/ugto7s564hkhy94gvh6ldgyjqgx7dn8x`) create a Google Calendar event, or
   only send notifications? Determines whether we delete it or keep it as notification-only.
@@ -70,9 +84,17 @@ and remove the flag.
 - [ ] **Öffnungszeiten je Standort** — booking slots in code are Mo–Fr 08:00–18:00,
   Sa 08:00–13:00 (`src/lib/scheduling.js` HOURS), but /mobiler-service advertises
   "auch nach Feierabend". What are the official hours? (entry `buchung-zeiten`)
+  → **Saturday confirmed 2026-09-09**: Sa 08:00–13:00 is correct and genuinely open. The
+  code, `api/_lib/calendar.js` and the opening-hours JSON-LD all already matched — no change
+  was needed. Mo–Fr hours and the "nach Feierabend" claim are still unconfirmed.
 - [ ] **Zahlungsmethoden** — bar / Karte / Überweisung / Anzahlung? (entry `info-zahlung`)
-- [ ] **Keramik-Garantie** — is the 40.000–60.000 km durability a written guarantee?
-  (entry `info-garantie`)
+- [x] **Keramik-Garantie** — answered 2026-09-09. The 40.000–60.000 km guarantee is
+  **FIREBALL's, on the coating** — Elité does not issue it. This matters legally: under
+  § 9b KSchG a *Garantie* binds whoever gives it, and an unattributed claim on a detailer's
+  own site reads as the detailer's undertaking. All customer-facing copy now says
+  "FIREBALL Herstellergarantie" (`src/data/services.js`, `src/pages/MobilerService.jsx`,
+  `src/pages/Projekte.jsx`) and the FAQ answer states outright that it comes from the
+  manufacturer and not from Elité. (entry `info-garantie`)
 - [ ] **Storno-/Umbuchungsregeln** — deadline, fees? (entry `info-storno`)
 - [ ] **Geschenkgutscheine** — offered? fixed amounts or per service? (entry `info-gutschein`)
 - [ ] **Firmen-/Flottenkonditionen** — discounts, invoicing? (entry `info-firmen`)
