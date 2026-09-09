@@ -67,8 +67,12 @@ const galleryItems = [
  * failure mode that put a fabricated before/after on /projekte.
  */
 const leadImage = {
+    // The alt has to match the photograph. This one is a rear bench in red and black quilted
+    // leather — an interior detail, not a polished exterior. It first read "Fertig
+    // aufbereitetes Fahrzeug nach der Politur", which described neither the subject nor the
+    // service. Same mistake /projekte made when it captioned this exact file "Lackkorrektur".
     src: '/assets/Ergebnisse/P1345330.jpg',
-    alt: 'Fertig aufbereitetes Fahrzeug nach der Politur',
+    alt: 'Rücksitzbank in schwarzem Leder mit roter Ziernaht nach der Innenaufbereitung',
 };
 
 export default function Gallery() {

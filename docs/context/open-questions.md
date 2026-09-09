@@ -8,6 +8,19 @@ Live list of things to confirm. Resolve each line and note the answer + date.
   prerendered documents, so the wrong spelling was the one every crawler read and a NAP
   mismatch against the Google Business Profile. Fixed.
 
+- [ ] **Echte Vorher/Nachher-Fotos** — BLOCKED ON MATTHIAS. `/projekte` used to show a
+  before/after slider for six vehicles. It was not one: both halves were the same file and
+  the "before" was manufactured with a grayscale/contrast filter at render time. Removed
+  2026-09-09 along with six invented captions (a red Ferrari 488 was labelled "Tesla Model 3
+  — Perlweiß", a Mercedes G-Klasse console "BMW 3er", a Mercedes wheel "VW Golf R", and an
+  interior photo of leather seats was labelled "Lackkorrektur").
+  To bring the section back honestly, Matthias needs to shoot **one job**: the same vehicle
+  from the same position in the same light, once at intake and once at handover. Then add
+  both files, run `npm run images:optimize`, and push one entry into `beforeAfterPairs` in
+  `src/pages/Projekte.jsx` — the section renders only when that array is non-empty.
+  Whoever builds the slider: it needs `role="slider"`, `tabIndex`, `aria-valuenow/min/max`
+  and arrow-key handling. The removed version had none, so it was keyboard-inoperable.
+
 - [x] **"500+ Fahrzeuge aufbereitet" / "100% Kundenzufriedenheit"** — RESOLVED (2026-09-09):
   no real number exists. Both claims are **removed** and stay removed; they were unsourced,
   and the counters also prerendered as a literal `0` because the count-up ran in a

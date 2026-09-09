@@ -1,191 +1,123 @@
-import { useState, useRef, useEffect, useCallback } from 'react';
+import { useRef, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
 import gsap from 'gsap';
-import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 import Img from '../components/Img';
+import { useTilt } from '../hooks/useTilt';
 import { prefersReducedMotion } from '../lib/motion';
 
+/**
+ * What this page shows, and what it stopped claiming.
+ *
+ * It used to render a before/after slider for each of six entries. It was not a before/after:
+ * both halves were the *same file*, and the "before" was manufactured at render time with
+ * `filter: grayscale(0.75) contrast(0.85) brightness(0.78) saturate(0.4)`, with the two halves
+ * given alt text calling them two different photographs. There are no before/after pairs in
+ * public/assets and there never were.
+ *
+ * The six captions were invented too. Verified against the actual image files:
+ *   IMG_2374.jpg    was "Tesla Model 3 — Perlweiß"          → it is a red Ferrari 488
+ *   P1345324.jpg    was "BMW 3er — Mineralgrau"             → Mercedes G-Klasse centre console
+ *   P1334477-2.jpg  was "VW Golf R — 19\" Felgen"            → a Mercedes wheel
+ *   P1345330.jpg    was "Porsche Cayenne — Weißsilber"      → red/black leather rear seats,
+ *                        and it was labelled "Lackkorrektur" — on an interior photograph
+ *   P1335024-2.jpg  was "Audi A4 — Cognacbraun Leder"       → red and black quilted seats
+ *
+ * So: no model names, no colours, no service history. Each caption now describes what is
+ * visible in the frame and nothing more. That is a weaker claim and a true one.
+ */
 const projects = [
     {
-        img: '/assets/Ergebnisse/P1345324.jpg',
-        label: 'Keramikversiegelung',
-        car: 'BMW 3er — Mineralgrau',
-        tag: '40.000 – 60.000 km Herstellergarantie',
-    },
-    {
         img: '/assets/Außenreinigung/P1334869.jpg',
-        label: 'Vollpolitur',
-        car: 'Mercedes C-Klasse — Obsidianschwarz',
-        tag: 'Lackkorrektur',
-    },
-    {
-        img: '/assets/Innenreinigung/P1335024-2.jpg',
-        label: 'Premium Innenreinigung',
-        car: 'Audi A4 — Cognacbraun Leder',
-        tag: 'Innenaufbereitung',
+        label: 'Politur von Hand',
+        detail: 'Dach, mit Mikrofasertuch nachgearbeitet',
     },
     {
         img: '/assets/Außenreinigung/P1334477-2.jpg',
-        label: 'Felgenreinigung & Versiegelung',
-        car: 'VW Golf R — 19" Felgen',
-        tag: 'Detailing',
+        label: 'Felgenreinigung',
+        detail: 'Felge einzeln mit der Bürste gereinigt',
+    },
+    {
+        img: '/assets/Innenreinigung/P1335024-2.jpg',
+        label: 'Innenreinigung im Detail',
+        detail: 'Sitze und Nähte, mit Stirnlampe gearbeitet',
     },
     {
         img: '/assets/Ergebnisse/P1345330.jpg',
-        label: 'Lackkorrektur',
-        car: 'Porsche Cayenne — Weißsilber',
-        tag: 'Mehrstufige Politur',
+        label: 'Leder & Ziernaht',
+        detail: 'Rücksitzbank nach der Innenaufbereitung',
+    },
+    {
+        img: '/assets/Ergebnisse/P1345324.jpg',
+        label: 'Mittelkonsole',
+        detail: 'Armaturen, Lüftungen und Zierteile',
     },
     {
         img: '/assets/Autos/IMG_2374.jpg',
-        label: 'Komplettaufbereitung',
-        car: 'Tesla Model 3 — Perlweiß',
-        tag: 'Elite Paket',
+        label: 'Ferrari 488',
+        detail: 'Front nach der Aufbereitung',
     },
 ];
 
-function BeforeAfterSlider({ img, label, car, tag }) {
-    const [pos, setPos] = useState(50);
-    const containerRef = useRef(null);
-    const dragging = useRef(false);
-    const hinted = useRef(false);
+/**
+ * Real before/after pairs, when they exist. Empty on purpose.
+ *
+ * The section below renders only when this array has entries, so the page cannot show a
+ * comparison it does not have. To turn it on: shoot one job at intake and at handover from
+ * the same position in the same light, add both files, run `npm run images:optimize`, and
+ * push one entry here:
+ *
+ *   { before: '/assets/.../xyz-vorher.jpg', after: '/assets/.../xyz-nachher.jpg',
+ *     label: 'Lackkorrektur', detail: '3-Gang Politur' }
+ *
+ * Tracked in docs/context/open-questions.md.
+ */
+const beforeAfterPairs = [];
 
-    const updatePos = useCallback((clientX) => {
-        const rect = containerRef.current?.getBoundingClientRect();
-        if (!rect) return;
-        const x = Math.max(2, Math.min(98, ((clientX - rect.left) / rect.width) * 100));
-        setPos(x);
-    }, []);
-
-    const onMouseDown = (e) => { e.preventDefault(); dragging.current = true; };
-    const onMouseMove = useCallback((e) => { if (dragging.current) updatePos(e.clientX); }, [updatePos]);
-    const onMouseUp = useCallback(() => { dragging.current = false; }, []);
-    const onTouchMove = useCallback((e) => { updatePos(e.touches[0].clientX); }, [updatePos]);
-
-    useEffect(() => {
-        window.addEventListener('mouseup', onMouseUp);
-        window.addEventListener('mousemove', onMouseMove);
-        return () => {
-            window.removeEventListener('mouseup', onMouseUp);
-            window.removeEventListener('mousemove', onMouseMove);
-        };
-    }, [onMouseUp, onMouseMove]);
-
-    // Auto-hint: slide handle from 50% -> 30% -> 50% on first scroll into view
-    useEffect(() => {
-        const el = containerRef.current;
-        if (!el || hinted.current) return;
-
-        if (prefersReducedMotion()) return;
-
-        const st = ScrollTrigger.create({
-            trigger: el,
-            start: 'top 75%',
-            once: true,
-            onEnter: () => {
-                if (hinted.current) return;
-                hinted.current = true;
-                const proxy = { val: 50 };
-                gsap.timeline({ delay: 0.3 })
-                    .to(proxy, {
-                        val: 28,
-                        duration: 0.8,
-                        ease: 'power2.inOut',
-                        onUpdate: () => setPos(proxy.val),
-                    })
-                    .to(proxy, {
-                        val: 50,
-                        duration: 0.6,
-                        ease: 'power2.inOut',
-                        onUpdate: () => setPos(proxy.val),
-                    });
-            },
-        });
-
-        return () => st.kill();
-    }, []);
+function ProjectCard({ img, label, detail }) {
+    const tiltRef = useTilt(6, 900, true);
 
     return (
-        <div className="flex flex-col gap-4">
-            {/* Slider */}
-            <div
-                ref={containerRef}
-                className="relative overflow-hidden rounded-[1.75rem] cursor-ew-resize select-none aspect-[4/3] bg-slate"
-                onTouchMove={onTouchMove}
-                onTouchStart={(e) => updatePos(e.touches[0].clientX)}
-            >
-                {/* Before — desaturated/faded */}
+        <div ref={tiltRef} className="project-card flex flex-col gap-4">
+            <div className="relative rounded-[1.75rem] overflow-hidden aspect-[4/3] group">
                 <Img
                     src={img}
-                    sizes="(min-width: 1024px) 50vw, 100vw"
-                    alt={`${label} vorher`}
-                    draggable={false}
-                    className="absolute inset-0 w-full h-full object-cover"
-                    style={{ filter: 'grayscale(0.75) contrast(0.85) brightness(0.78) saturate(0.4)' }}
+                    sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
+                    alt={`${label} — ${detail}`}
+                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
                     loading="lazy"
                 />
-
-                {/* After — clipped to right of handle */}
-                <div
-                    className="absolute inset-0"
-                    style={{ clipPath: `inset(0 0 0 ${pos}%)` }}
-                >
-                    <Img
-                        src={img}
-                        sizes="(min-width: 1024px) 50vw, 100vw"
-                        alt={`${label} nachher`}
-                        draggable={false}
-                        className="absolute inset-0 w-full h-full object-cover"
-                        loading="lazy"
-                    />
-                </div>
-
-                {/* Divider line */}
-                <div
-                    className="absolute top-0 bottom-0 w-px bg-champagne/90 z-10 pointer-events-none"
-                    style={{ left: `${pos}%` }}
-                />
-
-                {/* Drag handle */}
-                <div
-                    className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-11 h-11 bg-champagne rounded-full z-20 flex items-center justify-center shadow-xl cursor-ew-resize"
-                    style={{ left: `${pos}%` }}
-                    onMouseDown={onMouseDown}
-                    onTouchStart={(e) => { e.stopPropagation(); updatePos(e.touches[0].clientX); }}
-                >
-                    <ChevronLeft className="w-3.5 h-3.5 text-obsidian -mr-0.5" />
-                    <ChevronRight className="w-3.5 h-3.5 text-obsidian -ml-0.5" />
-                </div>
-
-                {/* Vorher label */}
-                <div className="absolute top-4 left-4 z-10 bg-obsidian/70 backdrop-blur-sm px-3 py-1 rounded-full pointer-events-none">
-                    <span className="font-mono text-[10px] text-ivory/70 uppercase tracking-widest">Vorher</span>
-                </div>
-
-                {/* Nachher label */}
-                <div className="absolute top-4 right-4 z-10 bg-champagne/90 backdrop-blur-sm px-3 py-1 rounded-full pointer-events-none">
-                    <span className="font-mono text-[10px] text-obsidian font-semibold uppercase tracking-widest">Nachher</span>
-                </div>
+                <div className="absolute inset-0 bg-gradient-to-t from-obsidian/60 via-transparent to-transparent pointer-events-none" />
             </div>
-
-            {/* Card info below slider */}
-            <div className="flex items-start justify-between px-1">
-                <div className="flex flex-col gap-0.5">
-                    <span className="font-mono text-xs text-champagne uppercase tracking-widest">{label}</span>
-                    <p className="font-sans text-sm text-ivory/80">{car}</p>
-                </div>
-                <span className="text-[11px] font-sans text-ivory/40 bg-slate px-2.5 py-1 rounded-full border border-ivory/10 shrink-0 mt-0.5">
-                    {tag}
-                </span>
+            <div className="flex flex-col gap-1 px-1">
+                <span className="font-sans font-semibold text-base text-ivory">{label}</span>
+                <span className="font-sans text-sm text-ivory/50">{detail}</span>
             </div>
         </div>
     );
 }
 
 export default function Projekte() {
+    const gridRef = useRef(null);
+
+    useEffect(() => {
+        if (prefersReducedMotion()) return;
+
+        const ctx = gsap.context(() => {
+            gsap.from('.project-card', {
+                scrollTrigger: { trigger: gridRef.current, start: 'top 85%' },
+                y: 30,
+                opacity: 0,
+                duration: 0.9,
+                stagger: 0.1,
+                ease: 'power3.out',
+            });
+        }, gridRef);
+
+        return () => ctx.revert();
+    }, []);
+
     return (
         <div className="min-h-screen bg-obsidian text-ivory font-sans overflow-hidden">
             <Navbar />
@@ -194,30 +126,44 @@ export default function Projekte() {
             <div className="px-6 sm:px-12 lg:px-24 pt-32 sm:pt-36 pb-20 max-w-7xl mx-auto flex flex-col gap-5">
                 <span className="font-mono text-xs text-champagne uppercase tracking-widest">Portfolio</span>
                 <h1 className="font-drama text-5xl sm:text-6xl lg:text-7xl text-ivory leading-tight">
-                    Vorher &{' '}
-                    <span className="text-champagne italic">Nachher.</span>
+                    Unsere{' '}
+                    <span className="text-champagne italic">Arbeit.</span>
                 </h1>
                 <p className="font-sans text-ivory/60 text-lg max-w-xl leading-relaxed">
-                    Ziehen Sie den Regler und erleben Sie die Transformation — jedes Fahrzeug, das wir anfassen,
-                    verlässt uns in neuem Glanz.
+                    Aufnahmen aus dem Studio und von fertigen Fahrzeugen — Handwäsche, Politur,
+                    Innenaufbereitung und Versiegelung. Keine Renderings, keine Stockfotos.
                 </p>
             </div>
 
             {/* Grid */}
-            <div className="px-6 sm:px-12 lg:px-24 pb-24 max-w-7xl mx-auto">
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 lg:gap-10">
+            <div ref={gridRef} className="px-6 sm:px-12 lg:px-24 pb-24 max-w-7xl mx-auto">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 lg:gap-10" style={{ perspective: '900px' }}>
                     {projects.map((p, i) => (
-                        <BeforeAfterSlider key={i} {...p} />
+                        <ProjectCard key={i} {...p} />
                     ))}
                 </div>
             </div>
+
+            {/* Before/after — renders only once real pairs exist (see beforeAfterPairs above). */}
+            {beforeAfterPairs.length > 0 && (
+                <div className="px-6 sm:px-12 lg:px-24 pb-24 max-w-7xl mx-auto">
+                    <h2 className="font-drama italic text-4xl sm:text-5xl text-ivory mb-10">
+                        Vorher & Nachher.
+                    </h2>
+                    {/* BeforeAfterSlider intentionally not implemented until there is data to
+                        put in it. Whoever builds it: it needs role="slider", tabIndex,
+                        aria-valuenow/min/max and ArrowLeft/ArrowRight handling — the version
+                        that used to live here had none of that, so it could not be operated by
+                        keyboard at all. */}
+                </div>
+            )}
 
             {/* CTA */}
             <div className="bg-slate mx-6 sm:mx-12 lg:mx-24 mb-16 rounded-[2.5rem] px-8 sm:px-16 py-16 flex flex-col sm:flex-row items-center justify-between gap-8 max-w-7xl lg:mx-auto">
                 <div className="flex flex-col gap-2 text-center sm:text-left">
                     <span className="font-mono text-xs text-champagne uppercase tracking-widest">Ihr Fahrzeug</span>
-                    <h2 className="font-drama text-3xl sm:text-4xl text-ivory">Bereit für die Transformation?</h2>
-                    <p className="font-sans text-sm text-ivory/50 max-w-sm">Buchen Sie Ihren Termin — wir kümmern uns um den Rest.</p>
+                    <h2 className="font-drama text-3xl sm:text-4xl text-ivory">Bereit für Ihren Termin?</h2>
+                    <p className="font-sans text-sm text-ivory/50 max-w-sm">Buchen Sie online — wir kümmern uns um den Rest.</p>
                 </div>
                 <Link
                     to="/buchen"

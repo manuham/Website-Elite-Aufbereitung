@@ -68,9 +68,13 @@ export const routes = [
     },
     {
         path: '/projekte',
-        title: 'Vorher & Nachher — unsere Aufbereitungen | Elité Vorarlberg',
+        // Was "Vorher & Nachher" + "ziehen Sie den Regler". The page had no before/after and
+        // no regler: the slider faked its "before" with a grayscale filter on the same photo.
+        // Meta that promises something the page cannot deliver is the worst kind of drift —
+        // it is the sentence Google shows in the result.
+        title: 'Unsere Arbeit — Aufbereitungen aus dem Studio | Elité Vorarlberg',
         description:
-            'Echte Ergebnisse aus Vorarlberg im direkten Vergleich: ziehen Sie den Regler und sehen Sie, was aus jedem Fahrzeug wird.',
+            'Aufnahmen aus unserem Studio in Vorarlberg: Handwäsche, Politur, Innenaufbereitung und Keramikversiegelung — echte Fahrzeuge, keine Stockfotos.',
         changefreq: 'monthly',
         priority: '0.8',
         preloadHero: false,
