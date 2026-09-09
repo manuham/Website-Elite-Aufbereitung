@@ -13,7 +13,7 @@ const projects = [
         img: '/assets/Ergebnisse/P1345324.jpg',
         label: 'Keramikversiegelung',
         car: 'BMW 3er — Mineralgrau',
-        tag: '40.000 – 60.000 km Garantie',
+        tag: '40.000 – 60.000 km Herstellergarantie',
     },
     {
         img: '/assets/Außenreinigung/P1334869.jpg',

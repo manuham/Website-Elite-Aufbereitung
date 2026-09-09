@@ -306,7 +306,7 @@ export const serviceCategories = [
     {
         id: "keramik",
         title: "Keramik Versiegelung",
-        subtitle: "40.000 – 60.000 km Garantie. Extrem wasserabweisend & UV-beständig.",
+        subtitle: "40.000 – 60.000 km FIREBALL Herstellergarantie. Extrem wasserabweisend & UV-beständig.",
         packages: [
             {
                 name: "Neuwagen Beschichtung",

@@ -468,7 +468,7 @@ export const FAQ_KNOWLEDGE = [
     {
         id: 'info-garantie',
         q: 'Gibt es eine Garantie auf die Keramikversiegelung?',
-        a: 'Unsere FIREBALL Keramikbeschichtung hält je nach Paket 40.000–60.000 km. Alle Details zu Garantie und Gewährleistung besprechen wir gerne persönlich mit dir – ruf einfach kurz durch.',
+        a: 'Die Garantie von 40.000–60.000 km kommt vom Hersteller FIREBALL auf die Beschichtung selbst – nicht von uns. Wir verarbeiten das Produkt nach Herstellervorgabe. Alle Details zu Herstellergarantie und Gewährleistung besprechen wir gerne persönlich mit dir – ruf einfach kurz durch.',
         keywords: ['garantie', 'gewährleistung', 'garantiert', 'zusicherung'],
         category: 'kontakt',
         links: [LINK_TEL],

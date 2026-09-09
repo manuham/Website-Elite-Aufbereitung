@@ -14,7 +14,7 @@ const services = [
     { title: 'Premium Handwäsche', desc: 'Schonende Reinigung mit pH-neutralen Produkten und Mikrofasertüchern.', icon: Sparkles },
     { title: 'Innenreinigung', desc: 'Tiefenreinigung aller Oberflächen, Polster und Teppiche — wie neu.', icon: ShieldCheck },
     { title: 'Maschinenpolitur', desc: 'Entfernung von Kratzern und Swirls für spiegelnden Hochglanz.', icon: Wrench },
-    { title: 'Keramikversiegelung', desc: 'Langzeitschutz mit FIREBALL Keramik — bis zu 60.000 km Garantie.', icon: ShieldCheck },
+    { title: 'Keramikversiegelung', desc: 'Langzeitschutz mit FIREBALL Keramik — bis zu 60.000 km Herstellergarantie.', icon: ShieldCheck },
 ];
 
 const benefits = [
