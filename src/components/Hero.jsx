@@ -5,6 +5,7 @@ import { Truck, Sparkles } from 'lucide-react';
 import FloatingParticles from './FloatingParticles';
 import Img from './Img';
 import useIsomorphicLayoutEffect from '../hooks/useIsomorphicLayoutEffect';
+import { prefersReducedMotion } from '../lib/motion';
 
 export default function Hero({ entranceReady = true }) {
     const containerRef = useRef(null);
@@ -40,6 +41,12 @@ export default function Hero({ entranceReady = true }) {
     // Layout effect, not an ordinary one: the homepage is prerendered, so the hero text is already
     // in the HTML and painted before React runs. Hiding it after paint would flash it.
     useIsomorphicLayoutEffect(() => {
+        // The two gsap.set calls below are the only place on the site that hides content
+        // outright rather than revealing it. With reduced motion we must not run them at all —
+        // the matching entrance tween is skipped too, so anything hidden here would stay
+        // hidden and the hero would be an empty full-height band.
+        if (prefersReducedMotion()) return;
+
         const ctx = gsap.context(() => {
             // Hide entrance elements until the preloader has lifted (see entrance effect below)
             gsap.set('.hero-badge', { scale: 0, opacity: 0 });
@@ -105,6 +112,9 @@ export default function Hero({ entranceReady = true }) {
     // played invisibly behind the preloader overlay on first visit
     useEffect(() => {
         if (!entranceReady) return;
+        // Paired with the guard on the set-up effect above: nothing was hidden, so there is
+        // nothing to reveal.
+        if (prefersReducedMotion()) return;
 
         const ctx = gsap.context(() => {
             // Badge bounces in
@@ -130,9 +140,10 @@ export default function Hero({ entranceReady = true }) {
         return () => ctx.revert();
     }, [entranceReady]);
 
-    const scrollToServices = () => {
-        document.getElementById('pricing')?.scrollIntoView({ behavior: 'smooth' });
-    };
+    // The secondary CTA is <Link to="/#pricing"> now — a real, crawlable, copyable href.
+    // HomePage's hash effect (src/App.jsx) owns the scroll, and it picks 'auto' over 'smooth'
+    // under reduced motion. That also removes a wart: pricing sits several viewports down,
+    // and a smooth scroll over that distance takes seconds and reads as a broken page.
 
     // The section clips: overflow-hidden keeps the two overscanned parallax layers below from
     // reaching page layout, rather than relying on body's overflow-x-hidden to mop up.
@@ -238,13 +249,13 @@ export default function Hero({ entranceReady = true }) {
                         <div className="absolute top-0 -left-[100%] w-1/2 h-full bg-gradient-to-r from-transparent via-white/50 to-transparent skew-x-[-20deg] group-hover:animate-[shimmer_1.5s_infinite]" />
                     </Link>
 
-                    <button
-                        onClick={scrollToServices}
+                    <Link
+                        to="/#pricing"
                         className="group flex items-center justify-center gap-2 font-sans font-medium text-ivory/90 hover:text-ivory transition-colors link-lift w-full sm:w-auto py-3 sm:py-0"
                     >
                         Unsere Leistungen
                         <span className="group-hover:translate-x-1 transition-transform duration-300 inline-block translate-y-[1px]">→</span>
-                    </button>
+                    </Link>
                 </div>
             </div>
         </section>

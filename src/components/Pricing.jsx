@@ -7,6 +7,7 @@ import { MOBILE_SURCHARGE, formatEuro, formatFrom, formatServicePrice } from '..
 import SplitText from './SplitText';
 import PhoneConsultModal from './PhoneConsultModal';
 import Disclosure from './Disclosure';
+import { prefersReducedMotion } from '../lib/motion';
 
 const ALL_IN_ONE_TAB = 'allinone';
 
@@ -30,6 +31,8 @@ export default function Pricing() {
     // Animate content when tab changes — slide in from right
     useEffect(() => {
         if (!contentRef.current) return;
+
+        if (prefersReducedMotion()) return;
 
         const ctx = gsap.context(() => {
             gsap.fromTo(contentRef.current.children,
@@ -128,7 +131,7 @@ export default function Pricing() {
 
                 {/* Header */}
                 <div className="flex flex-col gap-4 items-center text-center">
-                    <h3 className="font-sans font-bold text-lg text-ivory/60 uppercase tracking-widest">Unsere Pakete</h3>
+                    <p className="font-sans font-bold text-lg text-ivory/60 uppercase tracking-widest">Unsere Pakete</p>
                     <h2 className="font-drama italic text-4xl sm:text-5xl lg:text-6xl text-ivory">
                         <SplitText type="words" triggerStart="top 85%">
                             Services &

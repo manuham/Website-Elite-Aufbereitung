@@ -4,6 +4,7 @@ import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import SplitText from './SplitText';
 import FloatingParticles from './FloatingParticles';
 import Img from './Img';
+import { prefersReducedMotion } from '../lib/motion';
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -32,6 +33,8 @@ export default function Protocol() {
     ];
 
     useEffect(() => {
+        if (prefersReducedMotion()) return;
+
         const ctx = gsap.context(() => {
             // Protocol header — horizontal slide in, reversible
             gsap.fromTo('.protocol-header',
@@ -91,7 +94,7 @@ export default function Protocol() {
 
             {/* Intro Header */}
             <div className="protocol-header w-full mx-auto px-4 sm:px-8 lg:px-12 xl:px-16 pt-32 pb-12">
-                <h3 className="font-sans font-bold text-lg text-ivory/60 uppercase tracking-widest mb-4">Unser Prozess</h3>
+                <p className="font-sans font-bold text-lg text-ivory/60 uppercase tracking-widest mb-4">Unser Prozess</p>
                 <h2 className="font-drama italic text-[2.5rem] sm:text-5xl lg:text-6xl leading-[1.1] text-ivory max-w-2xl pb-4">
                     <SplitText type="words" triggerStart="top 85%">
                         Drei Schritte zum
@@ -104,11 +107,16 @@ export default function Protocol() {
                 </h2>
             </div>
 
-            {/* Stacking Cards */}
+            {/* Stacking cards.
+                80svh, not 100: three pinned full-viewport cards cost three whole screens of
+                scrolling for three paragraphs — a third of the page — and this section now
+                sits above the pricing rather than below it. The stacking effect comes from
+                the pin and the scrub, not from the card being exactly one viewport tall, so
+                it survives the trim intact. */}
             <div className="relative w-full mx-auto px-4 sm:px-8 lg:px-12 xl:px-16">
                 {steps.map((step, i) => (
-                    <div key={i} className="protocol-card w-full h-[100svh] flex items-center justify-center top-0">
-                        <div className="card-content w-full h-[85vh] sm:h-[70vh] max-h-[650px] bg-obsidian rounded-[2rem] sm:rounded-[3rem] border border-slate/50 shadow-2xl flex flex-col md:flex-row overflow-hidden relative group">
+                    <div key={i} className="protocol-card w-full h-[80svh] flex items-center justify-center top-0">
+                        <div className="card-content w-full h-[85vh] sm:h-[70vh] max-h-[560px] bg-obsidian rounded-[2rem] sm:rounded-[3rem] border border-slate/50 shadow-2xl flex flex-col md:flex-row overflow-hidden relative group">
 
                             {/* Text Content */}
                             <div className="flex-1 flex flex-col gap-4 sm:gap-6 justify-center p-6 sm:p-14 lg:p-16 relative z-10">

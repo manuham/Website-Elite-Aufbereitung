@@ -1,7 +1,22 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef } from 'react';
 import gsap from 'gsap';
 import { deriveReviewsState, buildMarqueeTrack } from '../lib/reviewsState';
 import SplitText from './SplitText';
+import { prefersReducedMotion } from '../lib/motion';
+
+// Derived at module scope, not in an effect, and that placement is the whole point.
+//
+// /api/reviews was removed deliberately (883f052) — curated testimonials are the only
+// source. But the component kept fetching it, so `loading` started true, the server render
+// hit the skeleton branch, and every one of the nine prerendered documents shipped three
+// grey boxes where the reviews should be. Fifteen real German reviews reached zero indexed
+// pages. Effects do not run under renderToString; module scope does.
+//
+// deriveReviewsState(null) is kept rather than reading `testimonials` directly because it
+// owns the honesty rule: rating/total stay null unless the cards came from Google, so the
+// aggregate row below cannot render an unsourced number under a Google logo.
+const REVIEWS = deriveReviewsState(null);
+const MARQUEE = buildMarqueeTrack(REVIEWS.reviews);
 
 function GoogleLogo({ className = 'w-5 h-5' }) {
     return (
@@ -58,56 +73,11 @@ function ReviewCard({ review }) {
     );
 }
 
-function SkeletonCard() {
-    return (
-        <div className="flex-shrink-0 w-[320px] sm:w-[360px] md:w-[400px] bg-[#1a1a24] border border-slate/60 rounded-2xl p-6 flex flex-col gap-4 animate-pulse">
-            <div className="flex items-center justify-between">
-                <div className="flex flex-col gap-2">
-                    <div className="h-3 w-24 bg-slate/40 rounded" />
-                    <div className="h-3 w-20 bg-slate/40 rounded" />
-                </div>
-                <div className="w-6 h-6 bg-slate/40 rounded-full" />
-            </div>
-            <div className="flex flex-col gap-2">
-                <div className="h-3 w-full bg-slate/40 rounded" />
-                <div className="h-3 w-full bg-slate/40 rounded" />
-                <div className="h-3 w-3/4 bg-slate/40 rounded" />
-            </div>
-            <div className="h-3 w-16 bg-slate/40 rounded mt-auto" />
-        </div>
-    );
-}
-
 export default function GoogleReviews() {
     const containerRef = useRef(null);
-    // rating/total stay null until real Google data arrives — never seeded with a plausible
-    // guess, because a seeded value renders as a factual claim about Google's data.
-    const [state, setState] = useState({ isLive: false, reviews: [], rating: null, total: null });
-    const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        async function fetchReviews() {
-            try {
-                const res = await fetch('/api/reviews');
-                if (!res.ok) throw new Error(`/api/reviews responded ${res.status}`);
-                setState(deriveReviewsState(await res.json()));
-            } catch (err) {
-                // Browser console, not Vercel logs — this is a client component.
-                // The /api/reviews endpoint was intentionally removed (curated
-                // testimonials only), so this fetch now always 404s and the fallback
-                // below is the normal path, not an error condition.
-                console.error('Google reviews unavailable, showing curated testimonials:', err);
-                setState(deriveReviewsState(null));
-            } finally {
-                setLoading(false);
-            }
-        }
-
-        fetchReviews();
-    }, []);
-
-    useEffect(() => {
-        if (loading) return;
+        if (prefersReducedMotion()) return;
 
         const ctx = gsap.context(() => {
             // Scale + fade for header (different from other sections)
@@ -142,11 +112,7 @@ export default function GoogleReviews() {
         }, containerRef);
 
         return () => ctx.revert();
-    }, [loading]);
-
-    const displayReviews = loading
-        ? Array(3).fill(null)
-        : buildMarqueeTrack(state.reviews);
+    }, []);
 
     return (
         <section
@@ -157,9 +123,9 @@ export default function GoogleReviews() {
             <div className="reviews-header flex flex-col gap-4 items-center text-center px-6 sm:px-12 lg:px-24 mb-16">
                 <div className="flex items-center gap-3">
                     <GoogleLogo className="w-7 h-7" />
-                    <h3 className="font-sans font-bold text-lg text-ivory/60 uppercase tracking-widest">
+                    <p className="font-sans font-bold text-lg text-ivory/60 uppercase tracking-widest">
                         Google Bewertungen
-                    </h3>
+                    </p>
                 </div>
                 <h2 className="font-drama italic text-4xl sm:text-5xl text-ivory">
                     <SplitText type="words" triggerStart="top 85%">
@@ -175,17 +141,17 @@ export default function GoogleReviews() {
                 {/* Only rendered when the numbers actually came from Google. Never seeded, never
                     defaulted: an unsourced rating under a Google logo is a claim about Google's
                     data, not a placeholder. No data -> no row. */}
-                {state.rating !== null && (
+                {REVIEWS.rating !== null && (
                     <div className="flex items-center gap-2 mt-2">
-                        <StarRating rating={Math.round(state.rating)} />
+                        <StarRating rating={Math.round(REVIEWS.rating)} />
                         <span className="font-mono text-sm text-ivory/60">
-                            {state.rating.toFixed(1)} Sterne
+                            {REVIEWS.rating.toFixed(1)} Sterne
                         </span>
-                        {state.total !== null && (
+                        {REVIEWS.total !== null && (
                             <>
                                 <span className="text-ivory/30">|</span>
                                 <span className="font-sans text-sm text-ivory/60">
-                                    {state.total} Bewertungen
+                                    {REVIEWS.total} Bewertungen
                                 </span>
                             </>
                         )}
@@ -198,11 +164,9 @@ export default function GoogleReviews() {
                 <div className="absolute right-0 top-0 bottom-0 w-16 sm:w-24 bg-gradient-to-l from-obsidian to-transparent z-10 pointer-events-none" />
 
                 <div className="marquee-track flex gap-6 w-fit">
-                    {loading
-                        ? displayReviews.map((_, i) => <SkeletonCard key={i} />)
-                        : displayReviews.map((review, index) => (
-                              <ReviewCard key={index} review={review} />
-                          ))}
+                    {MARQUEE.map((review, index) => (
+                        <ReviewCard key={index} review={review} />
+                    ))}
                 </div>
             </div>
         </section>

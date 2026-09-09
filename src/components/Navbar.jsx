@@ -4,7 +4,12 @@ import { X, Menu } from 'lucide-react';
 import gsap from 'gsap';
 import Img from './Img';
 
-// Ordered to match the homepage section flow: Philosophy → Gallery → Pricing → FAQ → Footer
+// Ordered to match the homepage flow: Haltung → Arbeit → Pakete → FAQ → Kontakt.
+//
+// The `id` values are homepage section ids and are load-bearing. They resolve through
+// document.getElementById in HomePage's hash effect (src/App.jsx), which uses optional
+// chaining — so renaming a section id without changing it here produces no error, no console
+// warning, and a nav item that silently does nothing.
 const navLinks = [
     { label: 'Über Uns', id: 'philosophy' },
     { label: 'Unsere Arbeit', href: '/projekte' },
@@ -68,16 +73,10 @@ export default function Navbar() {
         }
     }, [menuOpen]);
 
-    const scrollTo = (id) => {
-        setMenuOpen(false);
-        if (location.pathname !== '/') {
-            navigate('/', { state: { scrollTo: id } });
-        } else {
-            setTimeout(() => {
-                document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' });
-            }, 50);
-        }
-    };
+    // Section links are plain <Link to="/#id"> now, so this no longer needs a JS handler:
+    // react-router renders a real <a href="/#pricing">, which a crawler can follow and a
+    // visitor can copy, and HomePage's hash effect (src/App.jsx) does the scrolling for
+    // both the same-page and the arriving-from-another-route case.
 
     const goHome = () => {
         setMenuOpen(false);
@@ -113,25 +112,16 @@ export default function Navbar() {
 
                 {/* Nav Links — Desktop */}
                 <div className="hidden lg:flex items-center gap-6 xl:gap-8 2xl:gap-10">
-                    {navLinks.map((link) =>
-                        link.href ? (
-                            <Link
-                                key={link.label}
-                                to={link.href}
-                                className="font-sans text-[15px] font-medium text-ivory/80 hover:text-champagne transition-colors link-lift whitespace-nowrap"
-                            >
-                                {link.label}
-                            </Link>
-                        ) : (
-                            <button
-                                key={link.label}
-                                onClick={() => scrollTo(link.id)}
-                                className="font-sans text-[15px] font-medium text-ivory/80 hover:text-champagne transition-colors link-lift whitespace-nowrap"
-                            >
-                                {link.label}
-                            </button>
-                        )
-                    )}
+                    {navLinks.map((link) => (
+                        <Link
+                            key={link.label}
+                            to={link.href ?? `/#${link.id}`}
+                            onClick={() => setMenuOpen(false)}
+                            className="font-sans text-[15px] font-medium text-ivory/80 hover:text-champagne transition-colors link-lift whitespace-nowrap"
+                        >
+                            {link.label}
+                        </Link>
+                    ))}
                     <Link
                         to="/mobiler-service"
                         className="group flex items-center gap-2 font-sans text-[15px] font-bold text-emerald-400 hover:text-emerald-300 transition-all link-lift whitespace-nowrap drop-shadow-[0_0_8px_rgba(16,185,129,0.3)]"
@@ -170,26 +160,16 @@ export default function Navbar() {
                     pointerEvents: menuOpen ? 'auto' : 'none',
                 }}
             >
-                {navLinks.map((link) =>
-                    link.href ? (
-                        <Link
-                            key={link.label}
-                            to={link.href}
-                            onClick={() => setMenuOpen(false)}
-                            className="menu-item font-drama italic text-4xl text-ivory hover:text-champagne transition-colors duration-300"
-                        >
-                            {link.label}
-                        </Link>
-                    ) : (
-                        <button
-                            key={link.label}
-                            onClick={() => scrollTo(link.id)}
-                            className="menu-item font-drama italic text-4xl text-ivory hover:text-champagne transition-colors duration-300"
-                        >
-                            {link.label}
-                        </button>
-                    )
-                )}
+                {navLinks.map((link) => (
+                    <Link
+                        key={link.label}
+                        to={link.href ?? `/#${link.id}`}
+                        onClick={() => setMenuOpen(false)}
+                        className="menu-item font-drama italic text-4xl text-ivory hover:text-champagne transition-colors duration-300"
+                    >
+                        {link.label}
+                    </Link>
+                ))}
 
                 <Link
                     to="/mobiler-service"

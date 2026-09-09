@@ -56,8 +56,19 @@ function walk(dir, test, out = []) {
     return out;
 }
 
-/** A generated derivative, e.g. IMG_2195-640.webp or logo-new2-1280.png. Never an input. */
-const DERIVATIVE = /-\d+\.(?:webp|jpe?g|png)$/i;
+/**
+ * A generated derivative, e.g. IMG_2195-640.webp or logo-new2-1280.png. Never an input.
+ *
+ * The width must be three digits or more. `-\d+` also matched camera masters whose filenames
+ * end in a short duplicate suffix — P1345294-2.jpg, P1334477-2.jpg, P1335024-2.jpg — so those
+ * were classified as this script's own output and skipped on every run, forever. They never got
+ * a manifest entry, so <Img> fell through to a bare <img> on the 542 kB master: no srcset, no
+ * WebP, and no width/height to reserve layout. One of them was on the homepage.
+ *
+ * Three digits is safe because every generated width comes from WIDTHS (640/1280/1536) or
+ * min(sourceWidth, 1536), so a derivative is never narrower than 640.
+ */
+const DERIVATIVE = /-\d{3,}\.(?:webp|jpe?g|png)$/i;
 
 /**
  * Only touch images the site actually loads.

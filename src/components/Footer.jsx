@@ -1,18 +1,11 @@
 import { Instagram, Facebook } from 'lucide-react';
-import { Link, useNavigate, useLocation } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import Img from './Img';
 
 export default function Footer() {
-    const navigate = useNavigate();
-    const location = useLocation();
-
-    const scrollToSection = (id) => {
-        if (location.pathname !== '/') {
-            navigate('/', { state: { scrollTo: id } });
-        } else {
-            document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' });
-        }
-    };
+    // The service list is <Link to="/#pricing"> rather than a button with a scroll handler.
+    // The footer renders on all nine routes, so these were five crawler-invisible dead ends
+    // per page — the site's entire internal linking to its own pricing section.
 
     return (
         <footer id="footer" className="bg-slate rounded-t-[3rem] sm:rounded-t-[4rem] px-6 sm:px-12 lg:px-24 pt-20 pb-10 flex flex-col gap-16 relative z-10 border-t border-slate/50 shadow-[0_-10px_40px_-20px_rgba(0,0,0,0.5)]">
@@ -45,7 +38,7 @@ export default function Footer() {
                             "Zusatzpakete (Felgen, Fenster)"
                         ].map((link, i) => (
                             <li key={i}>
-                                <button onClick={() => scrollToSection('pricing')} className="font-sans text-sm text-ivory/60 hover:text-champagne transition-colors link-lift inline-block">{link}</button>
+                                <Link to="/#pricing" className="font-sans text-sm text-ivory/60 hover:text-champagne transition-colors link-lift inline-block">{link}</Link>
                             </li>
                         ))}
                     </ul>

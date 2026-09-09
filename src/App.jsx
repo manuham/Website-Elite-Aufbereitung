@@ -26,6 +26,7 @@ import Preloader from './components/Preloader';
 
 import ScrollProgress from './components/ScrollProgress';
 import PageTransition from './components/PageTransition';
+import { prefersReducedMotion } from './lib/motion';
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -93,25 +94,95 @@ function HomePage({ preloaderDone }) {
         return () => triggers.forEach(st => st.kill());
     }, []);
 
+    // Two ways to arrive at a section, and both land here.
+    //
+    //   location.state.scrollTo — set by Navbar/Footer when navigating in from another route.
+    //   location.hash           — every in-page nav link is now a real <a href="/#id">, so this
+    //                             also covers a pasted or shared https://…/#pricing. React
+    //                             Router does not scroll to fragments on its own, and the
+    //                             browser's own fragment scroll during parse is undone by
+    //                             ScrollToTop, so without this a shared deep link silently
+    //                             dumped the visitor at the top of the page.
+    //
+    // Keyed on location.key as well, so clicking the same link twice scrolls again.
     useEffect(() => {
-        if (location.state?.scrollTo) {
-            setTimeout(() => {
-                document.getElementById(location.state.scrollTo)?.scrollIntoView({ behavior: 'smooth' });
-            }, 100);
-        }
-    }, [location.state]);
+        const target = location.state?.scrollTo
+            || (location.hash ? decodeURIComponent(location.hash.slice(1)) : null);
+        if (!target) return;
+
+        let cancelled = false;
+        let raf = 0;
+        // Any real gesture outranks the correction loop below.
+        const abort = () => { cancelled = true; };
+        window.addEventListener('wheel', abort, { passive: true, once: true });
+        window.addEventListener('touchstart', abort, { passive: true, once: true });
+        window.addEventListener('keydown', abort, { once: true });
+
+        // An instant jump lands using the layout as it is *now*, but everything between here
+        // and a far target is lazy-loaded: those images decode over the next few hundred ms,
+        // each one resizing its section and dragging the target out from under the viewport.
+        // Measured before this loop existed: a jump to #footer settled 10,385px short.
+        // So re-pin until the layout stops moving, then stop.
+        const settleUntil = performance.now() + 1200;
+        const settle = () => {
+            if (cancelled) return;
+            const el = document.getElementById(target);
+            if (!el) return;
+            if (Math.abs(el.getBoundingClientRect().top) > 2) {
+                el.scrollIntoView({ behavior: 'auto' });
+            }
+            if (performance.now() < settleUntil) raf = requestAnimationFrame(settle);
+        };
+
+        // The document is prerendered and hydrating; section offsets move as images settle.
+        const t = setTimeout(() => {
+            if (cancelled) return;
+            const el = document.getElementById(target);
+            if (!el) return;
+
+            // Jump rather than glide when the target is far away. Pricing sits several
+            // viewports down, and smooth-scrolling that distance drags the viewport through
+            // every pinned section and scrubbed parallax on the way, which is both slow and
+            // visibly janky. Near targets still glide — and a smooth scroll retargets itself
+            // as layout shifts, so only the instant path needs the settle loop.
+            const far = Math.abs(el.getBoundingClientRect().top) > window.innerHeight * 4;
+            if (far || prefersReducedMotion()) {
+                el.scrollIntoView({ behavior: 'auto' });
+                raf = requestAnimationFrame(settle);
+            } else {
+                el.scrollIntoView({ behavior: 'smooth' });
+            }
+        }, 100);
+
+        return () => {
+            cancelled = true;
+            clearTimeout(t);
+            cancelAnimationFrame(raf);
+            window.removeEventListener('wheel', abort);
+            window.removeEventListener('touchstart', abort);
+            window.removeEventListener('keydown', abort);
+        };
+    }, [location.state, location.hash, location.key]);
 
     return (
         <div className="min-h-screen font-sans bg-obsidian text-ivory selection:bg-champagne selection:text-obsidian overflow-hidden">
+            {/* WHY -> HOW -> WHAT.
+                The page used to open on features and sell packages; the strongest sentence
+                on the site ("Die meisten Autowäschen setzen auf Geschwindigkeit und Masse")
+                was five sections down. The argument now runs in order, and the packages are
+                the answer to it rather than the opening bid.
+
+                Section ids are unchanged — Navbar, Footer and Hero all target them by id and
+                dereference with ?.scrollIntoView, so a stale id fails silently. */}
             <Navbar />
             <Hero entranceReady={preloaderDone} />
-            <Features />
-            <MobileService />
-            <GoogleReviews />
-            <Philosophy />
-            <Protocol />
-            <Gallery />
-            <Pricing />
+            <Philosophy />      {/* WHY / the enemy: Masse und Geschwindigkeit   #philosophy */}
+            <Protocol />        {/* HOW: the three craft steps                   #protocol   */}
+            <Gallery />         {/* PROOF: the work itself                       #gallery    */}
+            <GoogleReviews />   {/* SOCIAL PROOF                                 #reviews    */}
+            <Pricing />         {/* WHAT: the packages                           #pricing    */}
+            <MobileService />   {/* CONVENIENCE — demoted from 3rd               #mobile-service */}
+            <Features />        {/* WHY US, as a closing recap                   #features   */}
             <FAQ />
             <Footer />
         </div>
@@ -119,8 +190,14 @@ function HomePage({ preloaderDone }) {
 }
 
 function ScrollToTop() {
-    const { pathname } = useLocation();
-    useEffect(() => { window.scrollTo(0, 0); }, [pathname]);
+    const { pathname, hash } = useLocation();
+    useEffect(() => {
+        // A fragment target owns the scroll position — HomePage's handler above is about to
+        // scroll to it. Resetting to 0 here would race it and win, which is why /#pricing
+        // used to land at the top of the page.
+        if (hash) return;
+        window.scrollTo(0, 0);
+    }, [pathname, hash]);
     return null;
 }
 

@@ -75,7 +75,10 @@
     @apply bg-clip-text text-transparent bg-gradient-to-r from-ivory to-ivory/50;
   }
 
-  /* Magnetic Button Layer — actual magnetic behavior handled by useMagnetic hook.
+  /* Magnetic Button Layer — actual magnetic behavior handled by useMagneticGlobal()
+     in src/App.jsx, a single document-level mousemove that pulls any .btn-magnetic
+     toward the cursor. (The old per-component useMagnetic hook and MagneticButton
+     wrapper were imported by nothing and have been removed.)
      CSS fallback provides scale on hover for non-JS / touch devices. */
   .btn-magnetic {
     @apply relative overflow-hidden;

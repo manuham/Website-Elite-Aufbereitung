@@ -6,6 +6,7 @@ import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 import Img from '../components/Img';
+import { prefersReducedMotion } from '../lib/motion';
 
 const projects = [
     {
@@ -77,6 +78,8 @@ function BeforeAfterSlider({ img, label, car, tag }) {
     useEffect(() => {
         const el = containerRef.current;
         if (!el || hinted.current) return;
+
+        if (prefersReducedMotion()) return;
 
         const st = ScrollTrigger.create({
             trigger: el,

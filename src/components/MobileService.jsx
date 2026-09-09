@@ -5,6 +5,7 @@ import { Truck, Clock, ShieldCheck } from 'lucide-react';
 import { MOBILE_SURCHARGE } from '../lib/pricing';
 import SplitText from './SplitText';
 import Img from './Img';
+import { prefersReducedMotion } from '../lib/motion';
 
 const benefits = [
     { icon: Truck, title: 'Wir kommen zu Ihnen', desc: 'Kein Weg, kein Stress' },
@@ -16,6 +17,8 @@ export default function MobileService() {
     const containerRef = useRef(null);
 
     useEffect(() => {
+        if (prefersReducedMotion()) return;
+
         const ctx = gsap.context(() => {
             gsap.from('.mobile-badge', {
                 scrollTrigger: { trigger: containerRef.current, start: 'top 80%' },

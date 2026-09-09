@@ -9,6 +9,7 @@ import useIsomorphicLayoutEffect from '../hooks/useIsomorphicLayoutEffect';
 import { tierPackages } from '../data/services';
 import { formatFrom } from '../lib/pricing';
 import Img from '../components/Img';
+import { prefersReducedMotion } from '../lib/motion';
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -47,6 +48,8 @@ export default function EliteEndstufe() {
     // Layout effect: this page is prerendered, so .hero-anim is painted before React runs. A
     // gsap.from() in an ordinary effect would apply its from-state after that first paint and flash.
     useIsomorphicLayoutEffect(() => {
+        if (prefersReducedMotion()) return;
+
         const ctx = gsap.context(() => {
             // Hero animations
             gsap.from('.hero-anim', {

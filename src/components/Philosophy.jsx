@@ -4,6 +4,7 @@ import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import SplitText from './SplitText';
 import Img from './Img';
+import { prefersReducedMotion } from '../lib/motion';
 const stats = [
     { value: '500+', label: 'Fahrzeuge aufbereitet' },
     { value: '60k', label: 'km Keramik-Garantie' },
@@ -18,6 +19,8 @@ export default function Philosophy() {
     const [playing, setPlaying] = useState(false);
 
     useEffect(() => {
+        if (prefersReducedMotion()) return;
+
         const ctx = gsap.context(() => {
             gsap.to('.parallax-bg', {
                 scrollTrigger: {
@@ -90,10 +93,15 @@ export default function Philosophy() {
             {/* Parallax background texture */}
             <div className="absolute inset-0 z-0">
                 <div className="parallax-bg absolute -top-[10vh] left-0 w-full h-[120vh]">
+                    {/* lazy, and that matters more than it used to: this section is now
+                        second on the page, so an eager fetch here races the preloaded hero
+                        image for the connection during the LCP window. It is a decorative
+                        15%-opacity texture — it can wait. */}
                     <Img
                         src="/assets/Außenreinigung/P1334666.jpg"
                         sizes="(min-width: 1024px) 50vw, 100vw"
-                        alt="Elite Aufbereitung Hintergrund"
+                        alt=""
+                        loading="lazy"
                         className="w-full h-full object-cover opacity-15 mix-blend-luminosity"
                     />
                 </div>
@@ -147,7 +155,14 @@ export default function Philosophy() {
                 <div className="stats-row grid grid-cols-3 gap-6 sm:gap-12 max-w-2xl">
                     {stats.map((s) => (
                         <div key={s.label} className="stat-item flex flex-col gap-1">
-                            <span className="stat-counter font-mono text-3xl sm:text-4xl font-bold text-champagne" data-target={s.value}>0</span>
+                            {/* The real value is the rendered text, not "0".
+                                These pages are prerendered and the count-up runs in a
+                                ScrollTrigger onEnter, which never fires under
+                                renderToString — so hardcoding "0" here meant every
+                                prerendered document, and Googlebot's first fetch, read
+                                "0 Fahrzeuge aufbereitet". The animation is now an
+                                enhancement over a correct document. */}
+                            <span className="stat-counter font-mono text-3xl sm:text-4xl font-bold text-champagne" data-target={s.value}>{s.value}</span>
                             <span className="font-sans text-xs sm:text-sm text-ivory/80 leading-snug">{s.label}</span>
                         </div>
                     ))}

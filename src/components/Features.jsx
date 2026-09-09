@@ -5,6 +5,7 @@ import { Droplets, ShieldCheck, CalendarCheck } from 'lucide-react';
 import SplitText from './SplitText';
 import { useTilt } from '../hooks/useTilt';
 import Img from './Img';
+import { prefersReducedMotion } from '../lib/motion';
 
 function TiltCard({ children, className }) {
     const tiltRef = useTilt(6, 800, true);
@@ -17,12 +18,13 @@ function TiltCard({ children, className }) {
 
 export default function Features() {
     const containerRef = useRef(null);
-    const trackRef = useRef(null);
 
     useEffect(() => {
         if (!containerRef.current) return;
 
         ScrollTrigger.refresh();
+
+        if (prefersReducedMotion()) return;
 
         const ctx = gsap.context(() => {
             // Header entrance
@@ -58,44 +60,30 @@ export default function Features() {
                 }
             );
 
-            // --- Horizontal scroll on desktop (lg+) ---
-            const mm = gsap.matchMedia();
-
-            mm.add('(min-width: 1024px)', () => {
-                const track = trackRef.current;
-                if (!track) return;
-
-                const getScrollAmount = () => track.scrollWidth - track.offsetWidth;
-
-                if (getScrollAmount() <= 0) return;
-
-                gsap.to(track, {
-                    x: () => -getScrollAmount(),
-                    ease: 'none',
+            // The desktop horizontal-scroll pin used to live here. It was removed: the track
+            // is three lg:max-w-[420px] cards plus two gap-8 gutters ≈ 1324px, and the
+            // container's inner width at 1440px is ≈ 1312px — so `track.scrollWidth -
+            // track.offsetWidth` was about 12px. The section pinned the viewport, took over
+            // the scroll, and travelled a dozen pixels; at some widths `getScrollAmount() <= 0`
+            // made it silently do nothing at all. Pinning also forces a pin-spacer wrapper that
+            // has to be remeasured on every ScrollTrigger.refresh() — and refresh fires on
+            // mount, again when the preloader unlocks the body, and on every resize.
+            //
+            // The cards are a plain lg:grid-cols-3 now. Nothing was lost but the pin.
+            // Vertical parallax on the card images. This was inside a
+            // matchMedia('(max-width: 1023px)') branch only because the pin owned desktop;
+            // with the pin gone the layout is the same vertical scroll at every width, so
+            // the branch is gone too.
+            gsap.utils.toArray('.feature-card-img').forEach(img => {
+                gsap.to(img, {
                     scrollTrigger: {
-                        trigger: containerRef.current,
-                        start: 'top top',
-                        end: () => `+=${getScrollAmount()}`,
-                        pin: true,
-                        scrub: 1,
-                        invalidateOnRefresh: true,
+                        trigger: img.closest('.feature-card'),
+                        start: 'top bottom',
+                        end: 'bottom top',
+                        scrub: true,
                     },
-                });
-            });
-
-            // Mobile: keep vertical parallax on images
-            mm.add('(max-width: 1023px)', () => {
-                gsap.utils.toArray('.feature-card-img').forEach(img => {
-                    gsap.to(img, {
-                        scrollTrigger: {
-                            trigger: img.closest('.feature-card'),
-                            start: 'top bottom',
-                            end: 'bottom top',
-                            scrub: true,
-                        },
-                        y: -40,
-                        ease: 'none',
-                    });
+                    y: -40,
+                    ease: 'none',
                 });
             });
         }, containerRef);
@@ -131,9 +119,9 @@ export default function Features() {
         <section id="features" ref={containerRef} className="bg-background relative z-10 overflow-hidden">
             {/* Header — always visible, not part of scroll track */}
             <div className="feature-header flex flex-col gap-2 items-center text-center pt-24 sm:pt-32 pb-12 px-4 sm:px-8 lg:px-12 xl:px-16">
-                <h3 className="font-sans font-bold text-lg text-ivory/60 uppercase tracking-widest">
+                <p className="font-sans font-bold text-lg text-ivory/60 uppercase tracking-widest">
                     Warum Elité?
-                </h3>
+                </p>
                 <h2 className="font-drama italic text-[2.5rem] leading-[1.1] sm:text-5xl text-ivory">
                     <SplitText type="words" triggerStart="top 85%">
                         Der Unterschied liegt im
@@ -147,11 +135,11 @@ export default function Features() {
                 </h2>
             </div>
 
-            {/* Cards — horizontal scroll track on lg, vertical grid on mobile */}
+            {/* Cards — one column on mobile, three across from lg. Was a horizontal scroll
+                track driven by a pinned ScrollTrigger; see the effect above for why not. */}
             <div
-                ref={trackRef}
                 className="grid grid-cols-1 gap-6 px-4 sm:px-8 pb-24 sm:pb-32
-                           lg:flex lg:flex-nowrap lg:justify-center lg:gap-8 lg:px-12 xl:px-16 lg:pb-24"
+                           lg:grid-cols-3 lg:gap-8 lg:px-12 xl:px-16 lg:pb-24"
                 style={{ perspective: '800px' }}
             >
                 {features.map((feature) => {
@@ -159,8 +147,7 @@ export default function Features() {
                     return (
                         <TiltCard
                             key={feature.title}
-                            className="feature-card glass-panel rounded-[2rem] flex flex-col overflow-hidden group hover:shadow-2xl transition-shadow duration-500
-                                       lg:min-w-[min(420px,80vw)] lg:max-w-[420px] lg:flex-shrink-0"
+                            className="feature-card glass-panel rounded-[2rem] flex flex-col overflow-hidden group hover:shadow-2xl transition-shadow duration-500"
                         >
                             {/* Image area */}
                             <div className="relative h-72 lg:h-80 overflow-hidden">

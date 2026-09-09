@@ -12,7 +12,7 @@ export default function FAQ() {
 
                 {/* Header */}
                 <div className="flex flex-col gap-4 items-center text-center">
-                    <h3 className="font-sans font-bold text-lg text-ivory/60 uppercase tracking-widest">Häufige Fragen</h3>
+                    <p className="font-sans font-bold text-lg text-ivory/60 uppercase tracking-widest">Häufige Fragen</p>
                     <h2 className="font-drama italic text-4xl sm:text-5xl lg:text-6xl text-ivory">
                         <SplitText type="words" triggerStart="top 85%">
                             Fragen &

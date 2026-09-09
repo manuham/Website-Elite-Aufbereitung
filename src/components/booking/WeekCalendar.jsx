@@ -13,6 +13,7 @@ import {
   sameDay, isoKey, minToTime, isWorkingDay, durLabel, daysLabel, germanFull,
   sameDayPlan, freeStartCount, workingSpan, multiDayStartFree, multiDayTerms,
 } from '../../lib/scheduling';
+import { prefersReducedMotion } from '../../lib/motion';
 
 const ACCENT = '#4DB292';
 const GLOW = '#2ce09a';
@@ -22,11 +23,6 @@ const acc = (a) => `rgba(77,178,146,${a})`;
 const iv = (a) => `rgba(250,248,245,${a})`;
 const MIN_PX = 0.9;
 const GUTTER = 48;
-
-function prefersReducedMotion() {
-  return typeof window !== 'undefined' && window.matchMedia &&
-    window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-}
 
 // Quiet recess for any unavailable time (past / busy / after-hours / closed). One flat, near-black
 // treatment — no hatching, no border, no label. The client asked us to stop emphasising WHY a time

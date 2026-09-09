@@ -4,6 +4,7 @@ import { Instagram, Facebook } from 'lucide-react';
 import SplitText from './SplitText';
 import { useTilt } from '../hooks/useTilt';
 import Img from './Img';
+import { prefersReducedMotion } from '../lib/motion';
 
 function TiltItem({ children, className }) {
     const tiltRef = useTilt(5, 900, true);
@@ -69,6 +70,8 @@ export default function Gallery() {
     const containerRef = useRef(null);
 
     useEffect(() => {
+        if (prefersReducedMotion()) return;
+
         const ctx = gsap.context(() => {
             gsap.from('.gallery-header', {
                 scrollTrigger: {
