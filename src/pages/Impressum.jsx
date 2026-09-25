@@ -36,7 +36,7 @@ export default function Impressum() {
                     <h2 className="font-sans font-bold text-sm uppercase tracking-widest text-ivory/50">Unternehmensangaben</h2>
                     <div className="flex flex-col gap-1 text-ivory/80 leading-relaxed">
                         <p>Inhaber: Matthias Kaufmann</p>
-                        <p>UID-Nummer: ATU78342619</p>
+                        <p>UID-Nummer: ATU81687006</p>
                         <p>Mitglied der Wirtschaftskammer Vorarlberg</p>
                         <p>Gewerbebehörde: Bezirkshauptmannschaft Bludenz</p>
                         <p>Gerichtsstand: Feldkirch</p>
