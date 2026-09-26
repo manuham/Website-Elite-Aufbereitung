@@ -1,5 +1,21 @@
 # Build pipeline & SEO invariants
 
+> ## ⭐ Since the relaunch (branch `relaunch/new-design`, 2026-09-26) — read this first
+>
+> The site is the **new design**: ten finished static pages in `site/`, exported from the HMMR design
+> folder (`10-websites/design-reviews/elite-hero-2026-09-16`, `node _build/export-live.mjs <repo>/site`).
+> **Do not edit `site/` by hand** — change the design folder and export again.
+>
+> - `npm run build` = `node scripts/build-static.mjs`: `dist/` = `public/` + `site/`, a sitemap of the ten
+>   paths, and a guard (unique titles, descriptions, www canonicals, no noindex/„Entwurf"/Google Fonts,
+>   no inline script — the CSP — and every local href/src/srcset/url() must resolve). It fails the build.
+> - `vercel.json`: `cleanUrls` (projekte.html serves /projekte), **no rewrites** (unknown URLs 404 → 404.html),
+>   the seven Wix redirects unchanged, fonts cached immutably, images/films 30 days, nothing else long —
+>   `/assets/data/pricing.js` is not hashed and must reach returning visitors.
+> - The React app in `src/` is **not built any more** and stays for the way back: `npm run build:react`.
+>   Everything below this box describes that React pipeline and stays true of it.
+> - The `/api` functions are unchanged; the new `buchen` page calls them exactly as BookingPage.jsx did.
+
 How `npm run build` works since 2026-08-03, and which properties are enforced rather than hoped for.
 Read this before changing the build, adding a route, or touching `vercel.json`.
 

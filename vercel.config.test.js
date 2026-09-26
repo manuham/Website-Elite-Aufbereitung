@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { readFileSync } from 'node:fs';
+import { readFileSync, existsSync } from 'node:fs';
 
 const config = JSON.parse(
     readFileSync(new URL('./vercel.json', import.meta.url), 'utf8')
@@ -34,7 +34,7 @@ describe('vercel.json — legacy Wix redirects', () => {
         // Vercel evaluates `redirects` before the filesystem and before `rewrites`, so the SPA
         // catch-all cannot shadow them. Moving these into `rewrites` would silently break that.
         expect(Array.isArray(config.redirects)).toBe(true);
-        const rewriteSources = config.rewrites.map((r) => r.source);
+        const rewriteSources = (config.rewrites ?? []).map((r) => r.source);
         for (const [source] of WIX_REDIRECTS) {
             expect(rewriteSources).not.toContain(source);
         }
@@ -46,39 +46,42 @@ describe('vercel.json — legacy Wix redirects', () => {
     });
 });
 
-describe('vercel.json — SPA rewrites', () => {
-    const catchAll = config.rewrites.at(-1);
+describe('vercel.json — clean URLs (the static relaunch, 2026-09-26)', () => {
+    // Since the relaunch the site is ten finished static pages in site/ (scripts/build-static.mjs).
+    // Each file is named after its path — projekte.html serves /projekte — and cleanUrls drops the
+    // extension (and 308s /projekte.html to /projekte). No rewrite is needed and none may exist: the
+    // old SPA catch-all would hand every unknown URL the homepage instead of an honest 404.
 
-    it('falls back to the SPA shell last, after every explicit route', () => {
-        expect(catchAll.destination).toBe('/index.html');
+    it('serves the pages without their extension', () => {
+        expect(config.cleanUrls).toBe(true);
     });
 
-    it('excludes /assets and /api from the catch-all', () => {
-        const pattern = new RegExp(`^${catchAll.source}$`);
-        // Unknown /api/* must 404 honestly rather than being handed the SPA shell — which is what
-        // GET /api/reviews did after that endpoint was deleted.
-        expect(pattern.test('/api/reviews')).toBe(false);
-        expect(pattern.test('/api/availability')).toBe(false);
-        expect(pattern.test('/assets/VAN/VAN-1024.webp')).toBe(false);
-        // Unknown page paths still get the shell, which renders the in-app 404.
-        expect(pattern.test('/gibt-es-nicht')).toBe(true);
+    it('has no rewrites at all — unknown URLs 404 honestly', () => {
+        expect(config.rewrites ?? []).toEqual([]);
     });
 
-    it('routes every prerendered page to its own document', () => {
+    it('has a real document for every page, named after its path', () => {
         for (const path of [
-            '/mobiler-service',
-            '/elite-endstufe',
-            '/projekte',
-            '/buchen',
-            '/impressum',
-            '/datenschutz',
-            '/agb',
-            '/widerruf',
+            '/mobiler-service', '/elite-endstufe', '/projekte', '/buchen', '/kontakt',
+            '/impressum', '/datenschutz', '/agb', '/widerruf',
         ]) {
-            const rule = config.rewrites.find((r) => r.source === path);
-            expect(rule, `no explicit rewrite for ${path}`).toBeDefined();
-            expect(rule.destination).toBe(`${path}/index.html`);
+            const file = new URL(`./site${path}.html`, import.meta.url);
+            expect(existsSync(file), `site${path}.html is missing`).toBe(true);
         }
+        expect(existsSync(new URL('./site/index.html', import.meta.url))).toBe(true);
+        expect(existsSync(new URL('./site/404.html', import.meta.url))).toBe(true);
+    });
+
+    it('lands every Wix redirect on a page that exists', () => {
+        for (const r of config.redirects) {
+            const file = r.destination === '/' ? 'index' : r.destination.slice(1);
+            expect(existsSync(new URL(`./site/${file}.html`, import.meta.url)), r.destination).toBe(true);
+        }
+    });
+
+    it('builds with the static build, into dist/', () => {
+        expect(config.buildCommand).toBe('npm run build');
+        expect(config.outputDirectory).toBe('dist');
     });
 
     it('normalises trailing slashes, so /projekte/ is not a duplicate URL', () => {
@@ -91,50 +94,40 @@ describe('vercel.json — caching', () => {
         rule.headers.some((h) => h.key === 'Cache-Control')
     );
 
-    /** Vercel `source` is path-to-regexp; these two rules are a literal prefix plus a regex group. */
+    /** Vercel `source` is path-to-regexp; these rules are a literal prefix plus a regex group. */
     const matches = (source, path) => new RegExp(`^${source}$`).test(path);
+    const valueOf = (rule) => rule.headers.find((h) => h.key === 'Cache-Control').value;
 
-    it('caches the hashed build output immutably', () => {
-        const rule = cacheRules.find((r) => r.source.includes('js|css'));
+    it('caches only the fonts immutably', () => {
+        const rule = cacheRules.find((r) => r.source.includes('fonts'));
         expect(rule).toBeDefined();
-        const value = rule.headers.find((h) => h.key === 'Cache-Control').value;
-        expect(value).toContain('immutable');
-        expect(value).toContain('max-age=31536000');
-        expect(matches(rule.source, '/assets/index-Dhd0sRTq.js')).toBe(true);
-        expect(matches(rule.source, '/assets/index-Dhd0sRTq.css')).toBe(true);
+        expect(valueOf(rule)).toContain('immutable');
+        expect(matches(rule.source, '/assets/fonts/inter-latin-opsz.woff2')).toBe(true);
     });
 
-    it('caches images long, but NOT immutably', () => {
+    it('caches images and films long, but NOT immutably', () => {
         const rule = cacheRules.find((r) => r.source.includes('webp'));
         expect(rule).toBeDefined();
-        const value = rule.headers.find((h) => h.key === 'Cache-Control').value;
-        // Files in public/assets have stable, unhashed names and can be overwritten in place.
-        // `immutable` would strand a replaced photo in caches for a year.
-        expect(value).not.toContain('immutable');
-        expect(value).toContain('max-age=2592000');
+        // stable, unhashed names that can be overwritten in place — `immutable` would strand a
+        // replaced photo in caches for a year
+        expect(valueOf(rule)).not.toContain('immutable');
+        expect(valueOf(rule)).toContain('max-age=2592000');
+        expect(matches(rule.source, '/assets/img/van-cut-900.webp')).toBe(true);
+        expect(matches(rule.source, '/assets/video/mobil-reel-720.mp4')).toBe(true);
         expect(matches(rule.source, '/assets/VAN/VAN-1024.webp')).toBe(true);
-        expect(matches(rule.source, '/assets/Autos/IMG_2195.jpg')).toBe(true);
     });
 
-    it('never lets a cache rule catch an HTML document', () => {
-        // A cached HTML document is how a deploy silently fails to reach anyone. The prerendered
-        // route documents must keep Vercel's default max-age=0, must-revalidate.
-        const htmlPaths = [
-            '/',
-            '/index.html',
-            '/projekte',
-            '/projekte/index.html',
-            '/impressum/index.html',
-            '/assets/index.html',
-            '/sitemap.xml',
-            '/robots.txt',
+    it('never caches a page, a script, a stylesheet or the price data long', () => {
+        // None of the relaunch's scripts and stylesheets carry a hash in their name. A long cache on
+        // /assets/data/pricing.js would keep an old price in a returning visitor's browser; a cached
+        // HTML document is how a deploy silently fails to reach anyone.
+        const shortPaths = [
+            '/', '/index.html', '/projekte', '/projekte.html', '/impressum', '/sitemap.xml', '/robots.txt',
+            '/hero.css', '/booking.js', '/assets/data/pricing.js', '/assets/data/services.js', '/vendor/gsap.min.js',
         ];
         for (const rule of cacheRules) {
-            for (const path of htmlPaths) {
-                expect(
-                    matches(rule.source, path),
-                    `cache rule "${rule.source}" must not match ${path}`
-                ).toBe(false);
+            for (const path of shortPaths) {
+                expect(matches(rule.source, path), `cache rule "${rule.source}" must not match ${path}`).toBe(false);
             }
         }
     });

@@ -1,0 +1,675 @@
+/* ===================================================================================
+   „Élite Endstufe" (endstufe.html) — the cinematic rebuild, Manuel's picks 2026-09-26.
+
+     1 .es-open   „Light sweep"      a studio light glides over the black paint
+     2 .es-words  „Word by word"     the promise lights up as you scroll (pinned)
+     3 .es-steps  „Stacked screens"  four sticky sheets, each sliding over the last
+     4 .es-spot   „Spotlight"        eight inclusions, one at a time (pinned)
+     5 .es-gift   „Unboxing"         the gift items rise out of a lit box (pinned)
+     6 .es-end    „Lights on"        the light comes up with the scroll, the price lands
+
+   The page before („Der Aufstieg") is in _archive/2026-09-26-endstufe-aufstieg/.
+   Tokens (--hx-ink, --hx-paper, --hx-gutter, --hx-font/-weight/-track, .hx-label) come from
+   hero.css; the navbar from nav.css; the buttons' size and hover from solid.css (§8, §9).
+   `html.es-static` (reduced motion, or no animation frame) turns every scene into a plain page.
+   =================================================================================== */
+
+.es-page {
+  --es-acc: #4DB292;
+  --es-acc-deep: #0a6a52;       /* the accent on light ground */
+  --es-ground: #07070A;
+  --es-bar: 55px;               /* the fixed navbar */
+  background: var(--es-ground);
+}
+.es { position: relative; }
+.es-label { color: var(--es-acc); }
+.es-acc { color: var(--es-acc); }
+
+/* the section headline of the page, one voice with the home page's */
+.es-h2 {
+  margin: clamp(10px, 1.6vh, 16px) 0 0;
+  font-family: var(--hx-font);
+  font-weight: var(--hx-weight);
+  font-size: clamp(40px, 6.2vw, 118px);
+  letter-spacing: var(--hx-track);
+  line-height: .9;
+  color: var(--hx-paper);
+}
+.es-h2-l { display: inline-block; }
+
+/* ---------------------------------------------------------------- 1 · the light sweep */
+
+.es-open {
+  position: relative;
+  height: 100svh;
+  min-height: 560px;
+  overflow: hidden;
+  background: #000;
+}
+.es-plate { position: absolute; inset: 0; }
+.es-plate img,
+.es-plate-lit {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+.es-plate img { object-fit: cover; }
+/* the paint in the dark, and the same paint under the lamp — the lamp is a soft band of the bright copy */
+.es-plate-base { filter: brightness(.3) saturate(.8) contrast(1.06); }
+.es-plate-lit {
+  --sweep: -40%;
+  -webkit-mask-image: linear-gradient(104deg,
+    transparent calc(var(--sweep) - 26%), rgba(0, 0, 0, .5) calc(var(--sweep) - 10%),
+    #000 var(--sweep), rgba(0, 0, 0, .5) calc(var(--sweep) + 10%), transparent calc(var(--sweep) + 26%));
+  mask-image: linear-gradient(104deg,
+    transparent calc(var(--sweep) - 26%), rgba(0, 0, 0, .5) calc(var(--sweep) - 10%),
+    #000 var(--sweep), rgba(0, 0, 0, .5) calc(var(--sweep) + 10%), transparent calc(var(--sweep) + 26%));
+}
+.es-plate-img { filter: brightness(1.32) contrast(1.12) saturate(1.04); }
+/* the lamp's own streak on the lacquer — a transform only, so it costs nothing per frame */
+.es-beam {
+  position: absolute;
+  top: -12%;
+  bottom: -12%;
+  left: 0;
+  width: 14vw;
+  background: linear-gradient(90deg, transparent 0%, rgba(255, 255, 255, .07) 38%, rgba(255, 255, 255, .2) 50%, rgba(255, 255, 255, .07) 62%, transparent 100%);
+  transform: translateX(-40vw) skewX(-14deg);
+  pointer-events: none;
+  will-change: transform;
+}
+/* the ground has to carry type: a wash from the foot and one from the left */
+.es-open::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(to top, rgba(7, 7, 10, .92) 0%, rgba(7, 7, 10, .5) 30%, rgba(7, 7, 10, 0) 62%),
+    linear-gradient(to right, rgba(7, 7, 10, .6) 0%, rgba(7, 7, 10, 0) 55%);
+  pointer-events: none;
+}
+.es-open-in {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: clamp(34px, 7.5vh, 92px);
+  z-index: 2;
+  max-width: 1640px;
+  margin: 0 auto;
+  padding: 0 var(--hx-gutter);
+}
+/* 2026-09-26, Manuel: „remove the Élite Exklusiv and call it big Die Endstufe" — the live page's own h1.
+   One line on a wide screen (it is ~5.7 em wide, so 15.5vw fills the text width), two on a phone. */
+.es-title {
+  margin: 0 0 0 -.045em;   /* the optical pull of the D onto the text edge */
+  font-family: var(--hx-font);
+  font-weight: var(--hx-weight);
+  font-size: clamp(56px, 15.5vw, 262px);
+  letter-spacing: var(--hx-track);
+  line-height: .8;
+  color: var(--hx-paper);
+}
+.es-title-l { display: inline-block; }
+.es-sub {
+  margin: clamp(14px, 2.2vh, 24px) 0 0;
+  font-size: clamp(18px, 1.7vw, 30px);
+  line-height: 1.3;
+  color: rgba(250, 248, 245, .8);
+}
+.es-price {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 6px 14px;
+  margin: clamp(14px, 2.4vh, 26px) 0 0;
+}
+.es-price b {
+  font-family: var(--hx-font);
+  font-weight: var(--hx-weight);
+  font-size: clamp(28px, 3vw, 52px);
+  letter-spacing: -.02em;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+  color: var(--es-acc);
+}
+.es-price span,
+.es-end-p span {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: .17em;
+  text-transform: uppercase;
+  color: rgba(250, 248, 245, .5);
+}
+
+/* ---------------------------------------------------------------- 2 · word by word */
+
+.es-words {
+  position: relative;
+  min-height: 100svh;
+  display: flex;
+  align-items: center;
+  background: var(--es-ground);
+}
+/* 2026-09-26, Manuel: „shorten this text and put this video next to it so the video explains" — the words
+   of the client's own reel on the left, the reel itself (the interior shot) in a portrait frame on the right */
+.es-words-in {
+  width: 100%;
+  max-width: 1640px;
+  margin: 0 auto;
+  padding: calc(var(--es-bar) + clamp(20px, 4vh, 48px)) var(--hx-gutter) clamp(24px, 5vh, 56px);
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  column-gap: clamp(36px, 5.5vw, 120px);
+}
+.es-words-h {
+  margin: 0 0 0 -.03em;
+  font-family: var(--hx-font);
+  font-weight: var(--hx-weight);
+  font-size: clamp(46px, min(8.4vw, 14vh), 170px);   /* fills its column: the first look left a gap to the reel */
+  letter-spacing: var(--hx-track);
+  line-height: .9;
+  color: var(--hx-paper);
+}
+.es-words-t {
+  max-width: 30ch;
+  margin: clamp(20px, 3.4vh, 36px) 0 0;
+  font-family: var(--hx-font);
+  font-weight: 600;
+  font-size: clamp(20px, min(2.8vw, 4.8vh), 50px);
+  letter-spacing: -.018em;
+  line-height: 1.22;
+  color: var(--hx-paper);
+  text-wrap: pretty;
+}
+.es-words-e { margin-top: clamp(14px, 2.4vh, 26px); }
+.es-reel {
+  position: relative;
+  height: min(calc(100svh - var(--es-bar) - 90px), 820px);
+  aspect-ratio: 9 / 16;
+  margin: 0;
+  overflow: hidden;
+  border-radius: clamp(18px, 1.6vw, 28px);
+  background: #111116;
+  box-shadow: 0 40px 100px -40px rgba(0, 0, 0, .9), inset 0 0 0 1px rgba(250, 248, 245, .08);
+}
+.es-reel-v { display: block; width: 100%; height: 100%; object-fit: cover; }
+/* the sound: the round frosted control of the photo viewer on arbeit.html (Apple's), bottom right */
+.es-reel-snd {
+  position: absolute;
+  right: 14px;
+  bottom: 18px;
+  z-index: 2;
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: rgba(66, 66, 69, .72);
+  -webkit-backdrop-filter: saturate(180%) blur(20px);
+  backdrop-filter: saturate(180%) blur(20px);
+  color: rgba(255, 255, 255, .86);
+  cursor: pointer;
+  transition: background-color .24s ease, color .24s ease;
+}
+.es-reel-snd:hover { background: rgba(92, 92, 96, .8); color: #fff; }
+.es-reel-snd:focus-visible { outline: 2px solid var(--hx-paper); outline-offset: 3px; }
+.es-reel-snd svg { width: 21px; height: 21px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+.es-reel-snd .es-snd-on,
+.es-reel-snd[aria-pressed="true"] .es-snd-off { display: none; }
+.es-reel-snd[aria-pressed="true"] .es-snd-on { display: block; }
+/* how far the reel has run — a hairline along the foot of the frame */
+.es-reel-bar { position: absolute; left: 0; right: 0; bottom: 0; z-index: 2; height: 3px; background: rgba(250, 248, 245, .14); }
+.es-reel-bar i { display: block; height: 100%; background: var(--es-acc); transform: scaleX(0); transform-origin: 0 50%; }
+.hx-js .es-w { opacity: .15; }
+.es-w--acc { color: var(--es-acc); }
+
+/* ---------------------------------------------------------------- 3 · stacked screens */
+
+.es-steps { position: relative; padding: clamp(46px, 9vh, 120px) 0 clamp(30px, 6vh, 80px); }
+.es-steps-head {
+  max-width: 1640px;
+  margin: 0 auto;
+  padding: 0 var(--hx-gutter) clamp(26px, 4.4vh, 52px);
+}
+.es-stack {
+  --peek: 14px;                 /* how much of each sheet below stays visible above the next */
+  --gap-top: 16px;
+  max-width: 1640px;
+  margin: 0 auto;
+  padding: 0 var(--hx-gutter);
+}
+.es-card {
+  position: sticky;
+  top: calc(var(--es-bar) + var(--gap-top) + var(--i) * var(--peek));
+  height: calc(100svh - var(--es-bar) - var(--gap-top) - 3 * var(--peek) - 18px);
+  min-height: 460px;
+  margin: 0 0 12vh;
+  overflow: hidden;
+  border-radius: clamp(18px, 1.8vw, 30px);
+  background: #101016;
+  box-shadow: 0 -30px 70px -30px rgba(0, 0, 0, .95), inset 0 1px 0 rgba(250, 248, 245, .08);
+  transform-origin: 50% 0;
+}
+.es-card:last-child { margin-bottom: 0; }
+.es-card-at { display: block; height: 0; }   /* where a sheet sits in the flow — the triggers measure this */
+/* the sheet that has been covered goes quiet — endstufe.js drives --dim */
+.es-card::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  background: #000;
+  opacity: var(--dim, 0);
+  pointer-events: none;
+}
+/* 2026-09-26, first look at the frames: with the photograph beside the words, the words' half of every
+   sheet was mostly empty dark. The photograph fills the sheet now and the words stand on its shadow side. */
+.es-card-in {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 24px;
+  padding: clamp(24px, 3.4vw, 64px);
+}
+.es-card-copy { max-width: min(760px, 62%); }
+.es-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background:
+    linear-gradient(90deg, rgba(7, 7, 10, .88) 0%, rgba(7, 7, 10, .55) 38%, rgba(7, 7, 10, 0) 72%),
+    linear-gradient(to top, rgba(7, 7, 10, .78) 0%, rgba(7, 7, 10, 0) 52%);
+  pointer-events: none;
+}
+.es-ticks { display: flex; gap: 6px; margin: 0; padding: 0; list-style: none; }
+.es-ticks li { width: clamp(22px, 2vw, 34px); height: 3px; border-radius: 2px; background: rgba(250, 248, 245, .16); }
+.es-ticks li.is-on { background: var(--es-acc); }
+.es-card-t {
+  margin: 0 0 0 -.03em;
+  font-family: var(--hx-font);
+  font-weight: var(--hx-weight);
+  font-size: clamp(46px, 7.4vw, 144px);
+  letter-spacing: var(--hx-track);
+  line-height: .88;
+  color: var(--hx-paper);
+}
+.es-card-d {
+  max-width: 34ch;
+  margin: clamp(14px, 2.2vh, 24px) 0 0;
+  font-size: clamp(16px, 1.35vw, 22px);
+  line-height: 1.45;
+  color: rgba(250, 248, 245, .74);
+}
+.es-card-notes {
+  display: grid;
+  gap: 8px;
+  max-width: 44ch;
+  margin: clamp(16px, 2.4vh, 26px) 0 0;
+  padding: clamp(14px, 2vh, 20px) 0 0;
+  border-top: 1px solid rgba(250, 248, 245, .12);
+  list-style: none;
+}
+.es-card-notes li {
+  position: relative;
+  padding-left: 16px;
+  font-size: clamp(13.5px, 1vw, 16px);
+  line-height: 1.45;
+  color: rgba(250, 248, 245, .62);
+}
+.es-card-notes li::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: .62em;
+  width: 7px;
+  height: 1px;
+  background: var(--es-acc);
+}
+.es-card-pic { position: absolute; inset: 0; overflow: hidden; }
+.es-card-img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  will-change: transform;
+}
+
+/* ---------------------------------------------------------------- 4 · spotlight */
+
+.es-spot {
+  position: relative;
+  height: 100svh;
+  min-height: 560px;
+  overflow: hidden;
+  background: #000;
+}
+.es-spot-bgs,
+.es-spot-bg { position: absolute; inset: 0; }
+.es-spot-bg { opacity: 0; }
+.es-spot-bg.is-on { opacity: 1; }
+.es-spot-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  filter: brightness(.56) saturate(.92);
+  will-change: transform;
+}
+.es-spot::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(90deg, rgba(7, 7, 10, .9) 0%, rgba(7, 7, 10, .55) 46%, rgba(7, 7, 10, .1) 100%),
+    linear-gradient(to top, rgba(7, 7, 10, .75) 0%, rgba(7, 7, 10, 0) 45%);
+  pointer-events: none;
+}
+/* „Was ist enthalten?" — before the eight arrive, the question fills the screen over a dark veil;
+   endstufe.js lifts both away as the first inclusion lands */
+.es-spot-veil { position: absolute; inset: 0; z-index: 2; background: #07070A; pointer-events: none; }
+.es-ask {
+  position: absolute;
+  inset: 0;
+  z-index: 4;
+  display: grid;
+  place-items: center;
+  margin: 0;
+  padding: var(--es-bar) var(--hx-gutter) 0;
+  font-family: var(--hx-font);
+  font-weight: var(--hx-weight);
+  font-size: clamp(54px, 12.6vw, 240px);   /* almost the full width: one line is ~7.6 em */
+  letter-spacing: var(--hx-track);
+  line-height: .9;
+  text-align: center;
+  color: var(--hx-paper);
+  pointer-events: none;
+}
+.es-ask-l { display: inline-block; }
+.es-spot-in {
+  position: relative;
+  z-index: 3;
+  height: 100%;
+  max-width: 1640px;
+  margin: 0 auto;
+  padding: calc(var(--es-bar) + clamp(22px, 4.4vh, 52px)) var(--hx-gutter) clamp(26px, 5vh, 56px);
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr) auto;
+}
+.es-spot-head { display: flex; align-items: baseline; justify-content: flex-end; gap: 20px; }
+.es-spot-count { display: flex; align-items: baseline; gap: 8px; margin: 0; color: var(--hx-paper); }
+.es-spot-count b {
+  font-family: var(--hx-font);
+  font-weight: var(--hx-weight);
+  font-size: clamp(38px, 4.2vw, 78px);
+  letter-spacing: -.03em;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+.es-spot-count span { font-size: clamp(14px, 1.1vw, 18px); color: rgba(250, 248, 245, .45); }
+.es-spot-list { position: relative; margin: 0; padding: 0; list-style: none; }
+.es-spot-item {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  opacity: 0;
+  visibility: hidden;
+}
+.es-spot-item.is-on { opacity: 1; visibility: visible; }
+.es-spot-t {
+  max-width: 15ch;
+  margin: 0 0 0 -.02em;
+  font-family: var(--hx-font);
+  font-weight: var(--hx-weight);
+  font-size: clamp(36px, 5.8vw, 112px);
+  letter-spacing: var(--hx-track);
+  line-height: .94;
+  color: var(--hx-paper);
+  text-wrap: balance;
+}
+/* 2026-09-26, Manuel: „add some colors to the text to highlight the important words" — colour only,
+   never italic (an italic accent word is one of the stock looks we ban) */
+.es-hl { font-style: normal; color: var(--es-acc); }
+.es-spot-rail { display: flex; gap: 6px; margin: clamp(22px, 3.6vh, 38px) 0 0; padding: 0; list-style: none; }
+.es-spot-rail li { flex: 1; height: 2px; overflow: hidden; border-radius: 2px; background: rgba(250, 248, 245, .16); }
+.es-spot-rail i { display: block; height: 100%; background: var(--es-acc); transform: scaleX(0); transform-origin: 0 50%; }
+.es-spot-rail li.is-on i { transform: scaleX(1); }
+
+/* ---------------------------------------------------------------- 5 · unboxing */
+
+.es-gift {
+  position: relative;
+  min-height: 100svh;
+  display: flex;
+  align-items: center;
+  overflow: hidden;
+  background: var(--es-ground);
+}
+.es-gift-in {
+  width: 100%;
+  max-width: 1640px;
+  margin: 0 auto;
+  padding: calc(var(--es-bar) + clamp(20px, 4vh, 50px)) var(--hx-gutter) clamp(30px, 6vh, 70px);
+  text-align: center;
+}
+.es-box {
+  position: relative;
+  width: min(100%, 1180px);
+  height: clamp(150px, 25vh, 250px);
+  margin: clamp(28px, 5.5vh, 64px) auto 0;
+}
+/* the light that spills out when the lid lifts */
+.es-box-glow {
+  position: absolute;
+  left: -10%;
+  right: -10%;
+  bottom: 0;
+  height: 190%;
+  background: radial-gradient(52% 58% at 50% 100%, rgba(250, 248, 245, .4) 0%, rgba(77, 178, 146, .16) 40%, transparent 72%);
+  opacity: 0;
+  transform-origin: 50% 100%;
+  pointer-events: none;
+}
+.es-box-floor,
+.es-box-lid {
+  position: absolute;
+  left: 4%;
+  right: 4%;
+  bottom: 0;
+  height: 1px;
+}
+.es-box-floor { background: rgba(250, 248, 245, .3); }
+.es-box-lid {
+  background: linear-gradient(90deg, transparent, rgba(250, 248, 245, .85) 18%, rgba(250, 248, 245, .85) 82%, transparent);
+  box-shadow: 0 0 18px rgba(250, 248, 245, .35);
+}
+/* the items stand inside the box: they are clipped at its floor, so they rise OUT of it */
+.es-gift-l {
+  position: absolute;
+  left: 4%;
+  right: 4%;
+  bottom: 1px;
+  top: 0;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  align-items: center;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  list-style: none;
+}
+.es-gift-l li { display: block; }
+.es-gift-l span {
+  display: inline-block;
+  font-family: var(--hx-font);
+  font-weight: 600;
+  font-size: clamp(19px, 1.95vw, 36px);
+  letter-spacing: -.022em;
+  line-height: 1.05;
+  color: var(--hx-paper);
+}
+.es-gift-d {
+  max-width: 56ch;
+  margin: clamp(24px, 4vh, 44px) auto 0;
+  font-size: clamp(15px, 1.2vw, 20px);
+  line-height: 1.5;
+  color: rgba(250, 248, 245, .62);
+}
+
+/* ---------------------------------------------------------------- 6 · lights on */
+
+.es-end {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  min-height: min(100svh, 920px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: clamp(70px, 12vh, 140px) var(--hx-gutter);
+  background: var(--es-ground);
+  color: var(--hx-ink);
+  text-align: center;
+}
+/* the studio lights: the whole light ground of the old closing sheet, switched on by endstufe.js */
+.es-end-light {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: radial-gradient(120% 80% at 50% 0%, #FFFFFF 0%, #F7F3ED 55%, #E9E2D8 100%);
+  opacity: 0;
+}
+.es-end-in { max-width: 1100px; }
+.es-end-t {
+  margin: 0;
+  font-family: var(--hx-font);
+  font-weight: var(--hx-weight);
+  font-size: clamp(44px, 7vw, 134px);
+  letter-spacing: var(--hx-track);
+  line-height: .9;
+}
+.es-end-acc { color: var(--es-acc-deep); }
+.es-end-d {
+  max-width: 52ch;
+  margin: clamp(14px, 2.2vh, 22px) auto 0;
+  font-size: clamp(15px, 1.2vw, 20px);
+  line-height: 1.5;
+  color: rgba(13, 13, 18, .62);
+}
+.es-end-p {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  margin: clamp(24px, 4.4vh, 50px) 0 0;
+}
+.es-end-p b {
+  font-family: var(--hx-font);
+  font-weight: var(--hx-weight);
+  font-size: clamp(56px, 9vw, 170px);
+  letter-spacing: -.03em;
+  line-height: .9;
+  font-variant-numeric: tabular-nums;
+}
+.es-end-p span { color: rgba(13, 13, 18, .5); text-wrap: balance; }
+.es-end-btns { display: flex; flex-wrap: wrap; justify-content: center; gap: 12px; margin: clamp(24px, 4vh, 42px) 0 0; }
+.he-btn {
+  border-radius: 999px;
+  background: var(--hx-ink);
+  color: var(--hx-paper);
+  font-weight: 650;
+  text-decoration: none;
+}
+.he-btn--ghost { background: transparent; color: var(--hx-ink); }
+.he-btn:focus-visible { outline: 2px solid var(--es-acc-deep); outline-offset: 3px; }
+.es-home {
+  display: inline-block;
+  margin: clamp(22px, 3.4vh, 36px) 0 0;
+  font-size: 13.5px;
+  font-weight: 600;
+  color: rgba(13, 13, 18, .5);
+  text-decoration: none;
+  border-bottom: 1px solid rgba(13, 13, 18, .18);
+  transition: color .3s ease, border-color .3s ease;
+}
+.es-home:hover { color: var(--hx-ink); border-bottom-color: rgba(13, 13, 18, .5); }
+
+/* ---------------------------------------------------------------- start states (endstufe.js plays them) */
+
+.hx-js .es-fade,
+.hx-js .es-end-d,
+.hx-js .es-end-p,
+.hx-js .es-end-btns,
+.hx-js .es-home,
+.hx-js .es-gift-d { opacity: 0; }
+
+/* ---------------------------------------------------------------- narrow screens */
+
+@media (max-width: 899px) {
+  .es-stack { --peek: 10px; --gap-top: 12px; }
+  .es-card { margin-bottom: 8vh; }
+  .es-card::before { background: linear-gradient(to top, rgba(7, 7, 10, .94) 0%, rgba(7, 7, 10, .72) 42%, rgba(7, 7, 10, .1) 72%); }
+  .es-card-in { gap: 14px; }
+  .es-card-copy { max-width: none; }
+  .es-spot::after {
+    background: linear-gradient(to top, rgba(7, 7, 10, .94) 0%, rgba(7, 7, 10, .7) 42%, rgba(7, 7, 10, .25) 100%);
+  }
+  .es-gift-l { grid-template-columns: repeat(2, minmax(0, 1fr)); row-gap: 10px; }
+  /* the reel goes under the words, not beside them, and the section is not held (endstufe.js) */
+  .es-words-in { grid-template-columns: minmax(0, 1fr); row-gap: clamp(26px, 4vh, 40px); }
+  .es-words-h { font-size: clamp(46px, 12vw, 96px); }
+  .es-words-t { font-size: clamp(19px, 4.9vw, 30px); max-width: none; }
+  .es-reel { height: auto; width: min(80%, 380px); justify-self: center; }
+  .es-box { height: clamp(170px, 26vh, 230px); }
+}
+@media (max-width: 699px) {
+  .es-title { font-size: clamp(56px, 19vw, 150px); }
+  .es-title-l { display: block; }
+}
+@media (max-width: 599px) {
+  .es-price span { flex-basis: 100%; }
+  .es-card-notes li { font-size: 13px; }
+  /* the closing sheet is shorter than a phone's screen: a screen-tall sheet left a blank band under it */
+  .es-end { min-height: 0; padding: 96px var(--hx-gutter) 84px; }
+}
+
+/* ---------------------------------------------------------------- a plain page: reduced motion, no animation frame,
+   or a screen too short to hold a sheet (a phone on its side) */
+
+html.es-static .es-plate-lit { -webkit-mask-image: none; mask-image: none; opacity: .5; }
+html.es-static .es-beam { display: none; }
+html.es-static .es-fade,
+html.es-static .es-end-d,
+html.es-static .es-end-p,
+html.es-static .es-end-btns,
+html.es-static .es-home,
+html.es-static .es-gift-d { opacity: 1; }
+html.es-static .es-w { opacity: 1; }
+html.es-static .es-card { position: relative; top: auto; height: auto; min-height: 0; margin-bottom: 18px; }
+html.es-static .es-card { aspect-ratio: 16 / 10; min-height: 420px; }
+html.es-static .es-spot { height: auto; min-height: 0; }
+html.es-static .es-spot-bgs { display: none; }
+html.es-static .es-spot::after { display: none; }
+html.es-static .es-spot { background: var(--es-ground); }
+html.es-static .es-spot-in { height: auto; display: block; }
+html.es-static .es-spot-count,
+html.es-static .es-spot-rail { display: none; }
+html.es-static .es-spot-item { position: relative; opacity: 1; visibility: visible; padding: clamp(18px, 3vh, 30px) 0; border-top: 1px solid rgba(250, 248, 245, .12); }
+html.es-static .es-spot-t { font-size: clamp(26px, 3vw, 48px); }
+html.es-static .es-spot-veil { display: none; }
+html.es-static .es-ask { position: relative; inset: auto; display: block; padding: clamp(40px, 8vh, 90px) var(--hx-gutter) 20px; font-size: clamp(40px, 6vw, 110px); }
+html.es-static .es-box-lid { transform: translateY(calc(-1 * clamp(150px, 25vh, 250px))); }
+html.es-static .es-box-glow { opacity: 1; }
+html.es-static .es-end-light { opacity: 1; }
+@media (max-height: 520px) {
+  .es-card { position: relative; top: auto; height: auto; min-height: 0; margin-bottom: 18px; }
+  .es-card { aspect-ratio: 16 / 9; min-height: 340px; }
+}

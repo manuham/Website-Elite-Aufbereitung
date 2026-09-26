@@ -1,0 +1,532 @@
+/* ===================================================================================
+   „Mobiler Service" (mobil.html) — the cinematic rebuild, Manuel's picks 2026-09-26.
+
+     1 .mo-open   „Drive-in"        the van rolls in on the scroll (pinned on a wide screen)
+     2 .mo-reel   „Phone rises"     the reel climbs up in a phone, the promise beside it
+     3 .mo-where  „One per screen"  Einfahrt · Stellplatz · Haustür, a still behind each (pinned)
+     4 .mo-kit    „Laid out"        the three tools land side by side
+     5 .mo-split  „Split screen"    two halves meet: what we bring · what helps at your place
+     6 .mo-end    „Lights on"       the light comes up; the trip fee beside the booking button
+
+   No labels, chips or captions — Manuel: „no AI buttons and no AI small text".
+   The page before („Die Einfahrt") is in _archive/2026-09-26-mobil-einfahrt/.
+   Tokens (--hx-ink, --hx-paper, --hx-gutter, --hx-font/-weight/-track) come from hero.css; the
+   navbar from nav.css; the buttons' size and hover from solid.css (§8, §9).
+   `html.mo-static` (reduced motion, or no animation frame) turns every scene into a plain page.
+   =================================================================================== */
+
+.mo-page {
+  --mo-acc: #4DB292;
+  --mo-acc-deep: #0a6a52;       /* the accent on light ground */
+  --mo-ground: #07070A;
+  --mo-bar: 55px;               /* the fixed navbar */
+  background: var(--mo-ground);
+}
+.mo { position: relative; }
+.mo-acc { color: var(--mo-acc); }
+.mo-l { display: inline-block; }
+/* the important words in colour — never italic (an italic accent word is one of the stock looks we ban) */
+.mo-hl { font-style: normal; color: var(--mo-acc); }
+
+.mo-h2 {
+  margin: 0 0 0 -.03em;
+  font-family: var(--hx-font);
+  font-weight: var(--hx-weight);
+  font-size: clamp(46px, min(7.6vw, 13.5vh), 156px);
+  letter-spacing: var(--hx-track);
+  line-height: .9;
+  color: var(--hx-paper);
+}
+
+/* ---------------------------------------------------------------- 1 · drive-in */
+
+.mo-open {
+  position: relative;
+  height: 100svh;
+  min-height: 560px;
+  overflow: hidden;
+  /* a dark studio: the floor catches a little more light than the wall */
+  background: linear-gradient(to bottom, #060609 0%, #08080c 52%, #0f0f14 100%);
+}
+.mo-stage { position: absolute; inset: 0; }
+/* the patch of light the van parks in */
+.mo-pool {
+  position: absolute;
+  left: -10%;
+  right: -10%;
+  bottom: -18%;
+  height: 76%;
+  background: radial-gradient(40% 44% at 50% 70%, rgba(250, 248, 245, .12) 0%, rgba(250, 248, 245, .045) 50%, transparent 74%);
+  pointer-events: none;
+}
+/* 2026-09-26, first film: with the headline top left and the van bottom right, a dark square stood
+   empty under the words. Both are centred now — the headline over the parking spot, the van in it.
+   The van is as wide as the screen allows below the two headline lines (--t is the headline size). */
+.mo-van {
+  --t: clamp(56px, min(10vw, 17vh), 190px);
+  --w: min(62vw, 1040px, calc((100svh - var(--mo-bar) - 1.76 * var(--t) - clamp(26px, 5.5vh, 64px) - clamp(40px, 7vh, 84px)) * 1.578));
+  position: absolute;
+  left: 50%;
+  bottom: clamp(26px, 5vh, 64px);
+  width: var(--w);
+  margin-left: calc(var(--w) / -2);
+  aspect-ratio: 895 / 567;
+  transform-origin: 60% 100%;
+  will-change: transform;
+}
+.mo-van-img { position: relative; z-index: 1; display: block; width: 100%; height: auto; }
+/* where it meets the floor — the ground in its own photograph was cut away (_build/van-cutout.py),
+   and its last pixels fade, so the van settles into this shadow instead of ending on a hard edge */
+.mo-van-shadow {
+  position: absolute;
+  left: -4%;
+  right: -4%;
+  bottom: -9%;
+  height: 40%;
+  background: radial-gradient(50% 50% at 52% 60%, rgba(0, 0, 0, .95) 0%, rgba(0, 0, 0, .62) 42%, transparent 76%);
+  pointer-events: none;
+}
+
+.mo-open-in {
+  position: absolute;
+  top: calc(var(--mo-bar) + clamp(26px, 5.5vh, 64px));
+  left: 0;
+  right: 0;
+  z-index: 3;
+  max-width: 1640px;
+  margin: 0 auto;
+  padding: 0 var(--hx-gutter);
+  text-align: center;
+}
+.mo-title {
+  margin: 0;
+  font-family: var(--hx-font);
+  font-weight: var(--hx-weight);
+  font-size: clamp(56px, min(10vw, 17vh), 190px);
+  letter-spacing: var(--hx-track);
+  line-height: .88;
+  color: var(--hx-paper);
+}
+.mo-title .mo-l { display: block; }
+
+/* ---------------------------------------------------------------- 2 · the phone rises */
+
+.mo-reel {
+  position: relative;
+  min-height: 100svh;
+  display: flex;
+  align-items: center;
+  overflow: hidden;
+  background: var(--mo-ground);
+}
+.mo-reel-in {
+  width: 100%;
+  max-width: 1640px;
+  margin: 0 auto;
+  padding: calc(var(--mo-bar) + clamp(20px, 4vh, 48px)) var(--hx-gutter) clamp(24px, 5vh, 56px);
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  column-gap: clamp(36px, 5.5vw, 120px);
+  perspective: 1400px;
+}
+.mo-reel-t {
+  max-width: 28ch;
+  margin: clamp(22px, 3.6vh, 40px) 0 0;
+  font-family: var(--hx-font);
+  font-weight: 600;
+  font-size: clamp(20px, min(2.3vw, 4.2vh), 42px);
+  letter-spacing: -.018em;
+  line-height: 1.24;
+  color: rgba(250, 248, 245, .82);
+  text-wrap: pretty;
+}
+/* a plain phone: a dark rounded slab around the film, no maker's features */
+.mo-phone {
+  position: relative;
+  margin: 0;
+  padding: clamp(8px, .75vw, 12px);
+  border-radius: clamp(34px, 3vw, 54px);
+  background: linear-gradient(150deg, #2b2b31 0%, #121216 38%, #0b0b0e 100%);
+  box-shadow:
+    inset 0 0 0 1px rgba(250, 248, 245, .13),
+    inset 0 1px 0 rgba(250, 248, 245, .22),
+    0 60px 120px -40px rgba(0, 0, 0, .95);
+  transform-origin: 50% 100%;
+  will-change: transform;
+}
+.mo-phone-screen {
+  position: relative;
+  height: min(calc(100svh - var(--mo-bar) - 110px), 800px);
+  aspect-ratio: 9 / 16;
+  overflow: hidden;
+  border-radius: calc(clamp(34px, 3vw, 54px) - clamp(8px, .75vw, 12px));
+  background: #111116;
+}
+.mo-phone-v { display: block; width: 100%; height: 100%; object-fit: cover; cursor: pointer; }
+/* the sound: the round frosted control of the photo viewer on arbeit.html, bottom right */
+.mo-snd {
+  position: absolute;
+  right: 12px;
+  bottom: 16px;
+  z-index: 2;
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: rgba(66, 66, 69, .72);
+  -webkit-backdrop-filter: saturate(180%) blur(20px);
+  backdrop-filter: saturate(180%) blur(20px);
+  color: rgba(255, 255, 255, .86);
+  cursor: pointer;
+  transition: background-color .24s ease, color .24s ease;
+}
+.mo-snd:hover { background: rgba(92, 92, 96, .8); color: #fff; }
+.mo-snd:focus-visible { outline: 2px solid var(--hx-paper); outline-offset: 3px; }
+.mo-snd svg { width: 21px; height: 21px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+.mo-snd .mo-snd-on,
+.mo-snd[aria-pressed="true"] .mo-snd-off { display: none; }
+.mo-snd[aria-pressed="true"] .mo-snd-on { display: block; }
+/* how far the reel has run — a hairline along the foot of the screen */
+.mo-bar { position: absolute; left: 0; right: 0; bottom: 0; z-index: 2; height: 3px; background: rgba(250, 248, 245, .14); }
+.mo-bar i { display: block; height: 100%; background: var(--mo-acc); transform: scaleX(0); transform-origin: 0 50%; }
+
+/* ---------------------------------------------------------------- 3 · one per screen */
+
+.mo-where {
+  position: relative;
+  height: 100svh;
+  min-height: 560px;
+  overflow: hidden;
+  background: var(--mo-ground);
+}
+.mo-where-pics {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 50%;
+}
+.mo-where-pic { position: absolute; inset: 0; overflow: hidden; }
+.mo-where-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  filter: brightness(.8) saturate(.95);
+  will-change: transform;
+}
+/* the still melts into the dark on its left, so the line can run onto it */
+.mo-where-pics::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  background:
+    linear-gradient(90deg, var(--mo-ground) 0%, rgba(7, 7, 10, .55) 22%, rgba(7, 7, 10, 0) 48%),
+    linear-gradient(to top, rgba(7, 7, 10, .5) 0%, rgba(7, 7, 10, 0) 30%);
+  pointer-events: none;
+}
+.mo-where-in {
+  position: relative;
+  z-index: 3;
+  height: 100%;
+  max-width: 1640px;
+  margin: 0 auto;
+  padding: var(--mo-bar) var(--hx-gutter) 0;
+  display: flex;
+  align-items: center;
+}
+.mo-where-list { position: relative; width: 100%; height: 1.8em; margin: 0; padding: 0; list-style: none;
+  font-size: clamp(64px, min(11vw, 19.5vh), 230px); }
+.mo-where-item { position: absolute; left: 0; top: 0; }
+.hx-js .mo-where-item:not(.is-on) { opacity: 0; visibility: hidden; }
+.mo-where-w {
+  margin: 0 0 0 -.04em;
+  font-family: var(--hx-font);
+  font-weight: var(--hx-weight);
+  font-size: 1em;
+  letter-spacing: var(--hx-track);
+  line-height: .88;
+  color: var(--hx-paper);
+  text-shadow: 0 2px 40px rgba(7, 7, 10, .45);
+}
+.mo-where-w .mo-l { display: block; }
+
+/* ---------------------------------------------------------------- 4 · laid out */
+
+.mo-kit {
+  position: relative;
+  min-height: 100svh;
+  display: flex;
+  align-items: center;
+  background: var(--mo-ground);
+}
+.mo-kit-in {
+  width: 100%;
+  max-width: 1640px;
+  margin: 0 auto;
+  padding: calc(var(--mo-bar) + clamp(20px, 4vh, 46px)) var(--hx-gutter) clamp(28px, 5vh, 60px);
+}
+.mo-kit-l {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: clamp(14px, 1.6vw, 28px);
+  margin: clamp(26px, 4.6vh, 56px) 0 0;
+  padding: 0;
+  list-style: none;
+}
+.mo-tool { position: relative; }
+.mo-tool-pic {
+  position: relative;
+  z-index: 1;
+  height: clamp(260px, calc(100svh - 330px), 660px);
+  overflow: hidden;
+  border-radius: clamp(16px, 1.5vw, 26px);
+  background: #111116;
+  box-shadow: inset 0 0 0 1px rgba(250, 248, 245, .06);
+}
+.mo-tool-img { width: 100%; height: 100%; object-fit: cover; }
+/* the soft dark it lands on */
+.mo-tool-shadow {
+  position: absolute;
+  left: 6%;
+  right: 6%;
+  top: clamp(260px, calc(100svh - 330px), 660px);
+  height: 44px;
+  margin-top: -26px;
+  background: radial-gradient(50% 50% at 50% 50%, rgba(0, 0, 0, .85), transparent 75%);
+  pointer-events: none;
+}
+.mo-tool-t {
+  margin: clamp(14px, 2vh, 22px) 0 0;
+  font-family: var(--hx-font);
+  font-weight: 600;
+  font-size: clamp(20px, 2vw, 36px);
+  letter-spacing: -.022em;
+  line-height: 1.05;
+  color: var(--hx-paper);
+}
+
+/* ---------------------------------------------------------------- 5 · split screen */
+
+.mo-split {
+  position: relative;
+  height: 100svh;
+  min-height: 560px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  overflow: hidden;
+  background: var(--mo-ground);
+}
+.mo-half { position: relative; display: flex; align-items: center; will-change: transform; }
+.mo-half--a { background: linear-gradient(160deg, #111116 0%, #08080b 100%); color: var(--hx-paper); }
+.mo-half--b { background: radial-gradient(120% 90% at 30% 0%, #FFFFFF 0%, #F7F3ED 55%, #ECE5DB 100%); color: var(--hx-ink); }
+.mo-half-in { width: 100%; padding: var(--mo-bar) clamp(28px, 5vw, 96px) 0; }
+.mo-half-q {
+  margin: 0 0 0 -.03em;
+  font-family: var(--hx-font);
+  font-weight: var(--hx-weight);
+  font-size: clamp(44px, min(6.6vw, 13vh), 132px);
+  letter-spacing: var(--hx-track);
+  line-height: .9;
+}
+.mo-half-q .mo-l { display: block; }
+.mo-half-a {
+  max-width: 17ch;
+  margin: clamp(18px, 3vh, 34px) 0 0;
+  font-family: var(--hx-font);
+  font-weight: 600;
+  font-size: clamp(24px, min(3.1vw, 5.6vh), 60px);
+  letter-spacing: -.02em;
+  line-height: 1.14;
+  opacity: .9;
+}
+.mo-half--b .mo-hl { color: var(--mo-acc-deep); }
+
+/* ---------------------------------------------------------------- 6 · lights on */
+
+.mo-end {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  min-height: min(100svh, 920px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: clamp(70px, 12vh, 140px) var(--hx-gutter);
+  background: var(--mo-ground);
+  color: var(--hx-ink);
+  text-align: center;
+}
+/* the studio lights, brought up by mobil.js — smoothly, with the scroll; never a flash */
+.mo-end-light {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: radial-gradient(120% 80% at 50% 0%, #FFFFFF 0%, #F7F3ED 55%, #E9E2D8 100%);
+  opacity: 0;
+}
+.mo-end-in { max-width: 1100px; }
+.mo-end-t {
+  margin: 0;
+  font-family: var(--hx-font);
+  font-weight: var(--hx-weight);
+  font-size: clamp(44px, 7vw, 134px);
+  letter-spacing: var(--hx-track);
+  line-height: .9;
+}
+.mo-end-acc { color: var(--mo-acc-deep); }
+.mo-end-d {
+  max-width: 50ch;
+  margin: clamp(16px, 2.4vh, 24px) auto 0;
+  font-size: clamp(16px, 1.3vw, 21px);
+  line-height: 1.5;
+  color: rgba(13, 13, 18, .64);
+}
+/* the fee stands beside the button that books it */
+.mo-end-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: clamp(18px, 3vw, 48px);
+  margin: clamp(28px, 5vh, 56px) 0 0;
+}
+.mo-fee { display: flex; align-items: center; gap: 16px; margin: 0; text-align: left; }
+.mo-fee b {
+  font-family: var(--hx-font);
+  font-weight: var(--hx-weight);
+  font-size: clamp(52px, 6.4vw, 118px);
+  letter-spacing: -.03em;
+  line-height: .9;
+  font-variant-numeric: tabular-nums;
+  color: var(--hx-ink);
+}
+.mo-fee span {
+  max-width: 19ch;
+  font-size: clamp(15px, 1.1vw, 18px);
+  line-height: 1.35;
+  color: rgba(13, 13, 18, .62);
+}
+.mo-end-btns { display: flex; flex-wrap: wrap; justify-content: center; gap: 12px; }
+.mo-end-x {
+  max-width: 52ch;
+  margin: clamp(20px, 3.4vh, 34px) auto 0;
+  font-size: 15px;
+  line-height: 1.45;
+  color: rgba(13, 13, 18, .52);
+}
+.he-btn {
+  border-radius: 999px;
+  background: var(--hx-ink);
+  color: var(--hx-paper);
+  font-weight: 650;
+  text-decoration: none;
+}
+.he-btn--ghost { background: transparent; color: var(--hx-ink); }
+.he-btn:focus-visible { outline: 2px solid var(--mo-acc-deep); outline-offset: 3px; }
+.mo-home {
+  display: inline-block;
+  margin: clamp(22px, 3.4vh, 36px) 0 0;
+  font-size: 13.5px;
+  font-weight: 600;
+  color: rgba(13, 13, 18, .5);
+  text-decoration: none;
+  border-bottom: 1px solid rgba(13, 13, 18, .18);
+  transition: color .3s ease, border-color .3s ease;
+}
+.mo-home:hover { color: var(--hx-ink); border-bottom-color: rgba(13, 13, 18, .5); }
+
+/* ---------------------------------------------------------------- start states (mobil.js plays them) */
+
+.hx-js .mo-reel-t,
+.hx-js .mo-half-a,
+.hx-js .mo-tool-t,
+.hx-js .mo-end-d,
+.hx-js .mo-end-row,
+.hx-js .mo-end-x,
+.hx-js .mo-home { opacity: 0; }
+
+/* ---------------------------------------------------------------- narrower screens */
+
+@media (max-width: 1199px) and (min-width: 900px) {
+  .mo-where-pics { width: 58%; }
+}
+@media (max-width: 899px) {
+  /* the phone goes under the words, not beside them */
+  .mo-reel-in { grid-template-columns: minmax(0, 1fr); row-gap: clamp(28px, 4vh, 44px); }
+  .mo-h2 { font-size: clamp(46px, 12vw, 96px); }
+  .mo-reel-t { font-size: clamp(19px, 4.9vw, 30px); max-width: none; }
+  .mo-phone { justify-self: center; width: min(78%, 380px); }
+  .mo-phone-screen { height: auto; width: 100%; }
+  /* each still fills the screen, the line stands on its shadow */
+  .mo-where-pics { width: 100%; }
+  .mo-where-pics::after {
+    background:
+      linear-gradient(to top, rgba(7, 7, 10, .92) 0%, rgba(7, 7, 10, .55) 40%, rgba(7, 7, 10, .12) 75%),
+      linear-gradient(to bottom, rgba(7, 7, 10, .7) 0%, rgba(7, 7, 10, 0) 24%);   /* the bright sky under the bar */
+  }
+  .mo-where-in { align-items: flex-end; padding-bottom: clamp(40px, 9vh, 90px); }
+  .mo-where-list { font-size: clamp(56px, 16vw, 120px); }
+  /* the tools stand one under the other */
+  .mo-kit-l { grid-template-columns: minmax(0, 1fr); gap: clamp(26px, 5vh, 40px); }
+  .mo-tool-pic { height: auto; aspect-ratio: 4 / 3; }
+  .mo-tool-shadow { display: none; }
+  /* the halves stack */
+  .mo-split { height: auto; min-height: 0; grid-template-columns: minmax(0, 1fr); }
+  .mo-half { min-height: 56svh; }
+  .mo-half-in { padding: clamp(56px, 9vh, 90px) var(--hx-gutter); }
+  .mo-half-q { font-size: clamp(40px, 11vw, 80px); }
+  .mo-half-a { font-size: clamp(22px, 6vw, 36px); }
+}
+/* the opening stacks on any upright screen — a phone, or a tablet held upright (at 768 × 1024 the
+   side-by-side stage left half a screen of dark between the headline and a small van) */
+@media (max-aspect-ratio: 4/5) {
+  /* one screen: the headline at the top, the van parked at the foot, big, its tail still off the edge.
+     (First phone film: an opening only as tall as its contents let a black band of the next section in.) */
+  .mo-open {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    height: auto;
+    min-height: 100svh;
+    padding: calc(var(--mo-bar) + 34px) 0 clamp(30px, 6vh, 56px);
+  }
+  .mo-stage { position: relative; inset: auto; order: 2; }
+  .mo-open-in { position: relative; top: auto; }
+  .mo-title { font-size: clamp(56px, 18.5vw, 130px); }
+  .mo-van {
+    position: relative;
+    left: auto;
+    bottom: auto;
+    --w: min(138vw, calc((100svh - var(--mo-bar) - 34px - 2.7 * min(18.5vw, 130px) - 90px) * 1.578));
+    margin: clamp(24px, 4vh, 40px) 0 0 4vw;
+  }
+  .mo-pool { left: -30%; right: -60%; bottom: -30%; height: 130%; }
+}
+@media (max-width: 599px) {
+  .mo-end { min-height: 0; padding: 96px var(--hx-gutter) 84px; }
+  .mo-end-row { flex-direction: column; }
+  .mo-fee { flex-direction: column; text-align: center; gap: 8px; }
+}
+
+/* ---------------------------------------------------------------- a plain page: reduced motion, no animation frame */
+
+html.mo-static .mo-reel-t,
+html.mo-static .mo-half-a,
+html.mo-static .mo-tool-t,
+html.mo-static .mo-end-d,
+html.mo-static .mo-end-row,
+html.mo-static .mo-end-x,
+html.mo-static .mo-home { opacity: 1; }
+html.mo-static .mo-where { height: auto; min-height: 0; }
+html.mo-static .mo-where-pics { display: none; }
+html.mo-static .mo-where-in { height: auto; padding: clamp(60px, 10vh, 110px) var(--hx-gutter); }
+html.mo-static .mo-where-list { height: auto; font-size: clamp(48px, 7vw, 120px); }
+/* :not(.is-on) matches the start-state rule it has to beat (.hx-js … :not(.is-on)) */
+html.mo-static .mo-where-item,
+html.mo-static .mo-where-item:not(.is-on) { position: relative; opacity: 1; visibility: visible; margin: 0 0 .35em; }
+html.mo-static .mo-end-light { opacity: 1; }

@@ -1,0 +1,1422 @@
+/* Elité — the booking flow (buchen.html), rebuilt 2026-09-17 in the new design.
+   Tokens, fonts and .hx-label come from hero.css; the navbar from nav.css. Everything here is
+   prefixed bk-.
+
+   The language, in one line: square corners, hairlines, full-bleed columns with 2 px of ground
+   between them, and ONE way of saying "chosen" — the panel inverts to paper. No pills, no glows,
+   no shadows, no gradients. */
+
+:root {
+  --bk-acc: #4DB292;          /* the site's own accent: the green in the logo and in Endstufe's colour */
+  --bk-nav: 55px;             /* the navbar's height, as set in index.html */
+  --bk-rail: 46px;
+  --bk-line: rgba(250, 248, 245, .13);
+  --bk-line-soft: rgba(250, 248, 245, .08);
+  --bk-dim: rgba(250, 248, 245, .55);
+}
+
+.bk-page {
+  background: var(--hx-ink);
+  color: var(--hx-paper);
+  font-family: var(--hx-font);
+}
+.bk { padding-top: var(--bk-nav); }
+
+/* ---------------------------------------------------------------- the five steps */
+
+.bk-rail {
+  position: sticky;
+  top: var(--bk-nav);
+  z-index: 30;
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 1px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  /* the 1 px gaps between the steps ARE this background — on its own it is see-through, so on the
+     sticky rail the page showed in every gap. Same fix as .bk-step.is-now below (2026-09-25). */
+  background: linear-gradient(var(--bk-line), var(--bk-line)), var(--hx-ink);
+  border-bottom: 1px solid var(--bk-line);
+}
+.bk-step {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  width: 100%;
+  height: var(--bk-rail);
+  padding: 0 clamp(8px, 1vw, 16px);
+  background: var(--hx-ink);
+  border: 0;
+  color: rgba(250, 248, 245, .3);
+  font: inherit;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: .15em;
+  text-transform: uppercase;
+  text-align: left;
+  cursor: default;
+  transition: color .3s var(--hx-ease-out), background .3s var(--hx-ease-out);
+}
+.bk-step-n {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 20px;
+  height: 20px;
+  box-shadow: inset 0 0 0 1px currentColor;
+  font-size: 10px;
+  letter-spacing: 0;
+}
+.bk-step-t { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.bk-step.is-done { color: rgba(250, 248, 245, .62); cursor: pointer; }
+.bk-step.is-done .bk-step-n { background: var(--hx-paper); color: var(--hx-ink); box-shadow: none; }
+/* ⚠ 2026-09-25 (page sweep): the rail is sticky, so a see-through tint here let the page scroll visibly
+   UNDER the step („Wählen S…" behind the ①). The tint now sits on the solid ink, as a second layer. */
+.bk-step.is-done:hover { color: var(--hx-paper); background: linear-gradient(rgba(250, 248, 245, .05), rgba(250, 248, 245, .05)), var(--hx-ink); }
+.bk-step.is-now {
+  color: var(--hx-paper);
+  background: linear-gradient(rgba(250, 248, 245, .07), rgba(250, 248, 245, .07)), var(--hx-ink);
+  box-shadow: inset 0 -2px 0 var(--bk-acc);
+}
+
+/* ---------------------------------------------------------------- stage */
+
+.bk-stage { display: grid; grid-template-columns: minmax(0, 1fr); }
+/* an explicit second column is reserved even when the aside is [hidden] — so drop it by hand */
+.bk-stage.is-solo { grid-template-columns: minmax(0, 1fr) !important; }
+.bk-main {
+  min-width: 0;
+  padding: clamp(30px, 5.2vh, 64px) var(--hx-gutter) clamp(48px, 9vh, 110px);
+}
+/* The step entrance is a CSS animation, not a tween: a GSAP tween stops with the rAF clock when the
+   tab goes to the background, and a half-finished tween leaves a transform on .bk-main — which turns
+   it into the containing block for `position: fixed` and traps the dialog inside the column. */
+@keyframes bk-in-fwd { from { opacity: 0; transform: translate3d(60px, 0, 0); } to { opacity: 1; transform: none; } }
+@keyframes bk-in-back { from { opacity: 0; transform: translate3d(-60px, 0, 0); } to { opacity: 1; transform: none; } }
+.bk-main.is-fwd { animation: bk-in-fwd .42s var(--hx-ease-out) both; }
+.bk-main.is-back { animation: bk-in-back .42s var(--hx-ease-out) both; }
+@media (prefers-reduced-motion: reduce) {
+  .bk-main.is-fwd,
+  .bk-main.is-back { animation: none; }
+}
+
+.bk-side { border-top: 1px solid var(--bk-line); }
+.bk-side-in { padding: clamp(24px, 3.6vh, 36px) var(--hx-gutter); }
+@media (min-width: 1100px) {
+  .bk-stage { grid-template-columns: minmax(0, 1fr) 360px; align-items: start; }
+  .bk-side { border-top: 0; border-left: 1px solid var(--bk-line); }
+  .bk-side-in {
+    position: sticky;
+    top: calc(var(--bk-nav) + var(--bk-rail));
+    padding: clamp(24px, 3.6vh, 36px) clamp(20px, 2vw, 30px);
+  }
+}
+
+/* the whole-width helper: columns run to both screen edges, ground shows only in the seams */
+.bk-bleed { margin-left: calc(var(--hx-gutter) * -1); margin-right: calc(var(--hx-gutter) * -1); }
+
+/* ---------------------------------------------------------------- step head */
+
+.bk-step-head { padding-bottom: clamp(22px, 3.6vh, 42px); }
+.bk-h {
+  margin: 0;
+  font-weight: var(--hx-weight);
+  font-size: clamp(32px, 4.6vw, 64px);
+  letter-spacing: var(--hx-track);
+  line-height: .92;
+}
+.bk-lead {
+  max-width: 62ch;
+  margin: clamp(12px, 1.8vh, 18px) 0 0;
+  font-size: clamp(14px, 1.05vw, 16px);
+  line-height: 1.5;
+  color: var(--bk-dim);
+}
+.bk-note {
+  margin: clamp(14px, 2vh, 20px) 0 0;
+  font-size: 12px;
+  line-height: 1.55;
+  color: rgba(250, 248, 245, .38);
+}
+.bk-warn {
+  margin: 0 0 clamp(14px, 2vh, 20px);
+  padding: 12px 15px;
+  box-shadow: inset 0 0 0 1px rgba(245, 158, 11, .45);
+  font-size: 12.5px;
+  line-height: 1.5;
+  color: #FCD34D;
+}
+
+/* ---------------------------------------------------------------- the one way of choosing */
+
+.bk-opt {
+  position: relative;
+  display: flex;
+  background: rgba(250, 248, 245, .035);
+  box-shadow: inset 0 0 0 1px rgba(250, 248, 245, .11);
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition: background .26s var(--hx-ease-out), box-shadow .26s var(--hx-ease-out), color .26s var(--hx-ease-out);
+}
+.bk-opt:hover { background: rgba(250, 248, 245, .075); box-shadow: inset 0 0 0 1px rgba(250, 248, 245, .26); }
+.bk-opt.is-on {
+  background: var(--hx-paper);
+  color: var(--hx-ink);
+  box-shadow: inset 0 0 0 1px var(--hx-paper);
+}
+.bk-opt.is-off { opacity: .42; cursor: not-allowed; }
+.bk-opt.is-off:hover { background: rgba(250, 248, 245, .035); box-shadow: inset 0 0 0 1px rgba(250, 248, 245, .11); }
+.bk-opt:focus-visible { outline: 2px solid var(--bk-acc); outline-offset: -2px; }
+
+/* the square mark that says picked / not picked */
+.bk-mark {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 22px;
+  height: 22px;
+  box-shadow: inset 0 0 0 1px rgba(250, 248, 245, .3);
+  font-size: 13px;
+  line-height: 1;
+}
+.bk-opt.is-on .bk-mark { background: var(--hx-ink); color: var(--hx-paper); box-shadow: none; }
+
+/* ---------------------------------------------------------------- step 0 · Standort */
+
+.bk-modes { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 2px; }
+.bk-mode {
+  flex-direction: column;
+  justify-content: space-between;
+  gap: clamp(20px, 4vh, 44px);
+  min-height: clamp(240px, 40vh, 400px);
+  padding: clamp(20px, 2.2vw, 34px);
+}
+.bk-mode > span:first-child { display: flex; flex-direction: column; align-items: flex-start; gap: 8px; }
+.bk-mode-t {
+  display: block;
+  margin: 0;
+  font-weight: var(--hx-weight);
+  font-size: clamp(24px, 2.4vw, 38px);
+  letter-spacing: var(--hx-track);
+  line-height: .95;
+}
+.bk-mode-s { display: block; margin: 0; font-size: 14px; color: var(--bk-dim); }
+.bk-opt.is-on .bk-mode-s,
+.bk-opt.is-on .bk-mode-f { color: rgba(13, 13, 18, .6); }
+.bk-mode-f { display: flex; align-items: center; justify-content: space-between; gap: 12px; font-size: 12.5px; color: var(--bk-dim); }
+.bk-tagnew {
+  align-self: flex-start;
+  padding: 3px 9px 4px;
+  background: var(--bk-acc);
+  color: var(--hx-ink);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: .16em;
+  text-transform: uppercase;
+}
+.bk-surcharge { color: var(--bk-acc); font-variant-numeric: tabular-nums; }
+.bk-opt.is-on .bk-surcharge { color: #0a6a52; }
+
+.bk-places { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 2px; margin-top: 2px; }
+.bk-place { align-items: center; gap: 14px; padding: clamp(15px, 1.6vw, 22px); }
+.bk-place-n { font-size: 16px; font-weight: 650; }
+.bk-place-a { display: block; margin-top: 3px; font-size: 12.5px; font-weight: 400; color: var(--bk-dim); }
+.bk-opt.is-on .bk-place-a { color: rgba(13, 13, 18, .6); }
+.bk-place-x {
+  margin-left: auto;
+  padding: 3px 9px 4px;
+  box-shadow: inset 0 0 0 1px rgba(245, 158, 11, .5);
+  color: #F59E0B;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+/* ---------------------------------------------------------------- step 1 · Service */
+
+.bk-tabs {
+  display: flex;
+  gap: 1px;
+  overflow-x: auto;
+  scrollbar-width: none;
+  background: var(--bk-line);
+  margin-bottom: 2px;
+}
+.bk-tabs::-webkit-scrollbar { display: none; }
+.bk-tab {
+  flex: 1 0 auto;
+  padding: 13px clamp(12px, 1.4vw, 22px);
+  background: var(--hx-ink);
+  border: 0;
+  color: rgba(250, 248, 245, .5);
+  font: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: background .24s var(--hx-ease-out), color .24s var(--hx-ease-out);
+}
+.bk-tab:hover { color: var(--hx-paper); background: rgba(250, 248, 245, .06); }
+.bk-tab.is-on { background: var(--hx-paper); color: var(--hx-ink); }
+
+.bk-tiles { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 2px; }
+.bk-tiles--pkg { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+.bk-tile { flex-direction: column; padding: 0; }
+.bk-tile-band {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px clamp(14px, 1.3vw, 20px);
+  background: var(--bk-tier);
+  color: #fff;
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: .17em;
+  text-transform: uppercase;
+}
+.bk-tile-band i { width: 5px; height: 5px; border-radius: 50%; background: rgba(255, 255, 255, .88); }
+.bk-tile-in { display: flex; flex-direction: column; flex: 1; padding: clamp(14px, 1.4vw, 22px); }
+.bk-tile-top { display: flex; align-items: flex-start; gap: 12px; }
+.bk-tile-n { flex: 1; margin: 0; font-size: clamp(15px, 1.15vw, 19px); font-weight: 650; line-height: 1.2; }
+.bk-tile-s { margin: 5px 0 0; font-size: 12.5px; color: var(--bk-dim); }
+.bk-opt.is-on .bk-tile-s,
+.bk-opt.is-on .bk-tile-more { color: rgba(13, 13, 18, .6); }
+.bk-tile-p {
+  margin: 12px 0 0;
+  font-size: clamp(17px, 1.3vw, 22px);
+  font-weight: 650;
+  letter-spacing: -.015em;
+  font-variant-numeric: tabular-nums;
+  color: var(--bk-acc);
+}
+.bk-opt.is-on .bk-tile-p { color: #0a6a52; }
+.bk-tile-f { flex: 1; margin: 12px 0 0; padding: 0; list-style: none; }
+.bk-tile-f li {
+  padding: 7px 0;
+  border-top: 1px solid rgba(250, 248, 245, .09);
+  font-size: 12px;
+  line-height: 1.38;
+  color: rgba(250, 248, 245, .62);
+}
+.bk-opt.is-on .bk-tile-f li { border-top-color: rgba(13, 13, 18, .12); color: rgba(13, 13, 18, .6); }
+.bk-tile-f li.is-bold { font-weight: 650; color: rgba(250, 248, 245, .92); }
+.bk-opt.is-on .bk-tile-f li.is-bold { color: var(--hx-ink); }
+.bk-tile-f li.is-muted { opacity: .5; }
+.bk-tile-more {
+  align-self: flex-start;
+  margin-top: 9px;
+  padding: 0;
+  background: none;
+  border: 0;
+  color: rgba(250, 248, 245, .45);
+  font: inherit;
+  font-size: 11.5px;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+}
+.bk-tile-more:hover { color: var(--bk-acc); }
+.bk-phone {
+  flex: none;
+  padding: 4px 9px 5px;
+  box-shadow: inset 0 0 0 1px rgba(250, 248, 245, .28);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: .13em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  color: var(--bk-dim);
+}
+
+/* recommendations + the basket */
+.bk-block { margin-top: 2px; padding: clamp(16px, 2vw, 26px); box-shadow: inset 0 0 0 1px var(--bk-line); }
+.bk-block-h {
+  margin: 0 0 14px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: .18em;
+  text-transform: uppercase;
+  color: rgba(250, 248, 245, .45);
+}
+.bk-recs { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 2px; }
+.bk-rec { flex-direction: column; gap: 6px; padding: 14px 16px; }
+.bk-rec-n { font-size: 14px; font-weight: 650; }
+.bk-rec-r { font-size: 12px; line-height: 1.4; color: var(--bk-dim); }
+.bk-rec-p { margin-top: 2px; font-size: 13px; font-weight: 650; color: var(--bk-acc); font-variant-numeric: tabular-nums; }
+.bk-save {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 14px;
+  margin-top: 2px;
+  padding: 14px 16px;
+  box-shadow: inset 0 0 0 1px var(--bk-acc);
+}
+.bk-save-t { flex: 1; min-width: 220px; font-size: 13.5px; line-height: 1.45; }
+.bk-save b { color: var(--bk-acc); }
+.bk-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 7px 8px 7px 14px;
+  box-shadow: inset 0 0 0 1px var(--bk-line);
+  font-size: 13px;
+}
+.bk-chips { display: flex; flex-wrap: wrap; gap: 2px; }
+.bk-chip-p { color: var(--bk-acc); font-variant-numeric: tabular-nums; }
+.bk-chip-x {
+  display: grid;
+  place-items: center;
+  width: 20px;
+  height: 20px;
+  background: none;
+  border: 0;
+  color: rgba(250, 248, 245, .45);
+  font: inherit;
+  font-size: 14px;
+  line-height: 1;
+  cursor: pointer;
+}
+.bk-chip-x:hover { color: #fff; background: rgba(250, 248, 245, .12); }
+
+/* ---------------------------------------------------------------- step 2 · Fahrzeug */
+
+.bk-rows { display: flex; flex-direction: column; gap: 2px; }
+.bk-row { align-items: center; gap: clamp(12px, 1.4vw, 20px); padding: clamp(14px, 1.6vw, 22px); }
+.bk-row-b { flex: 1; min-width: 0; }
+.bk-row-n { font-size: clamp(15px, 1.1vw, 17px); font-weight: 650; }
+.bk-row-e { display: block; margin-top: 3px; font-size: 12.5px; color: var(--bk-dim); }
+.bk-row-d { display: block; font-size: 11.5px; color: rgba(250, 248, 245, .32); }
+.bk-opt.is-on .bk-row-e { color: rgba(13, 13, 18, .6); }
+.bk-opt.is-on .bk-row-d { color: rgba(13, 13, 18, .4); }
+.bk-row-f { flex: none; font-size: 13.5px; font-weight: 650; font-variant-numeric: tabular-nums; color: var(--bk-acc); }
+.bk-row-f.is-quiet { color: rgba(250, 248, 245, .35); font-weight: 400; }
+.bk-opt.is-on .bk-row-f { color: #0a6a52; }
+.bk-opt.is-on .bk-row-f.is-quiet { color: rgba(13, 13, 18, .45); }
+
+/* ---------------------------------------------------------------- step 3 · Termin */
+
+.bk-cal { box-shadow: inset 0 0 0 1px var(--bk-line); }
+.bk-cal-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px clamp(12px, 1.4vw, 18px);
+  border-bottom: 1px solid var(--bk-line);
+}
+.bk-cal-w { flex: 1; min-width: 0; font-size: 13px; font-weight: 650; letter-spacing: .01em; }
+.bk-btn {
+  padding: 8px 13px;
+  background: none;
+  box-shadow: inset 0 0 0 1px var(--bk-line);
+  border: 0;
+  color: var(--bk-dim);
+  font: inherit;
+  font-size: 11.5px;
+  font-weight: 600;
+  letter-spacing: .06em;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: color .22s, box-shadow .22s, background .22s;
+}
+.bk-btn:hover:not([disabled]) { color: var(--hx-paper); box-shadow: inset 0 0 0 1px rgba(250, 248, 245, .35); }
+.bk-btn[disabled] { opacity: .3; cursor: not-allowed; }
+.bk-btn--arrow { padding: 8px 12px; font-size: 14px; line-height: 1; }
+
+.bk-grid { display: grid; grid-template-columns: 52px repeat(7, minmax(0, 1fr)); }
+.bk-caps { position: sticky; top: 0; z-index: 7; background: var(--hx-ink); border-bottom: 1px solid var(--bk-line); }
+.bk-axis-cap { position: sticky; left: 0; z-index: 8; background: var(--hx-ink); }
+.bk-cap { padding: 9px 4px; text-align: center; border-left: 1px solid var(--bk-line-soft); }
+.bk-cap-d { font-size: 10.5px; font-weight: 600; letter-spacing: .14em; text-transform: uppercase; color: rgba(250, 248, 245, .4); }
+.bk-cap-n { margin-top: 2px; font-size: 15px; font-weight: 650; font-variant-numeric: tabular-nums; }
+.bk-cap.is-today .bk-cap-n { color: var(--bk-acc); }
+.bk-cap.is-off .bk-cap-n { color: rgba(250, 248, 245, .22); }
+.bk-scroll { max-height: min(60vh, 600px); overflow: auto; scrollbar-width: thin; overscroll-behavior: contain; }
+/* sticky so the hours stay readable when the week is scrolled sideways on a phone */
+.bk-axis { position: sticky; left: 0; z-index: 6; background: var(--hx-ink); }
+.bk-hour {
+  position: absolute;
+  right: 7px;
+  transform: translateY(-50%);
+  font-size: 10px;
+  font-variant-numeric: tabular-nums;
+  color: rgba(250, 248, 245, .28);
+}
+/* Open time carries a faint light; anything unavailable (past, busy, closed, after hours) falls back
+   to the page's own ground. One quiet recess, no hatching and no label — the live site's rule. */
+.bk-col { position: relative; background: rgba(250, 248, 245, .045); border-left: 1px solid var(--bk-line-soft); }
+.bk-line-h { position: absolute; left: 0; right: 0; border-top: 1px solid rgba(250, 248, 245, .05); }
+.bk-recess { position: absolute; left: 0; right: 0; background: var(--hx-ink); }
+.bk-empty {
+  position: absolute;
+  inset: 0;
+  z-index: 5;
+  display: grid;
+  place-items: center;
+  padding: 0 20px;
+  font-size: 13px;
+  text-align: center;
+  color: rgba(250, 248, 245, .4);
+  pointer-events: none;
+}
+.bk-empty--flow { position: static; padding: 16px; }
+.bk-slot {
+  position: absolute;
+  left: 2px;
+  right: 2px;
+  display: flex;
+  align-items: flex-start;
+  justify-content: flex-start;
+  padding: 6px 8px;
+  background: rgba(77, 178, 146, .16);
+  box-shadow: inset 0 0 0 1px rgba(77, 178, 146, .5);
+  border: 0;
+  color: var(--hx-paper);
+  font: inherit;
+  font-size: 12px;
+  font-weight: 650;
+  font-variant-numeric: tabular-nums;
+  cursor: pointer;
+  overflow: hidden;
+  transition: background .2s, box-shadow .2s;
+}
+.bk-slot:hover { background: rgba(77, 178, 146, .3); box-shadow: inset 0 0 0 1px var(--bk-acc); }
+.bk-slot.is-on { background: var(--hx-paper); color: var(--hx-ink); box-shadow: none; }
+.bk-now { position: absolute; left: -3px; right: 0; z-index: 4; display: flex; align-items: center; pointer-events: none; }
+.bk-now i { width: 6px; height: 6px; border-radius: 50%; background: var(--bk-acc); }
+.bk-now span { flex: 1; height: 1px; background: var(--bk-acc); opacity: .8; }
+
+/* multi-day: seven day panels instead of a time grid */
+.bk-days { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 1px; background: var(--bk-line-soft); }
+.bk-day { flex-direction: column; align-items: center; justify-content: center; gap: 6px; min-height: 124px; padding: 12px 8px; text-align: center; }
+.bk-day-d { font-size: 10.5px; font-weight: 600; letter-spacing: .14em; text-transform: uppercase; color: rgba(250, 248, 245, .4); }
+.bk-day-n { font-size: 20px; font-weight: 650; font-variant-numeric: tabular-nums; }
+.bk-day-s { font-size: 10.5px; letter-spacing: .05em; color: var(--bk-acc); }
+.bk-opt.is-on .bk-day-d,
+.bk-opt.is-on .bk-day-s { color: rgba(13, 13, 18, .6); }
+.bk-day.in-span { background: rgba(77, 178, 146, .16); box-shadow: inset 0 0 0 1px rgba(77, 178, 146, .4); }
+
+.bk-pick {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-top: 2px;
+  padding: 14px clamp(14px, 1.6vw, 20px);
+  box-shadow: inset 0 0 0 1px var(--bk-acc);
+}
+.bk-pick-l { font-size: 10.5px; font-weight: 600; letter-spacing: .16em; text-transform: uppercase; color: rgba(250, 248, 245, .45); }
+.bk-pick-v { margin-top: 3px; font-size: 14.5px; font-weight: 650; color: var(--bk-acc); }
+.bk-pick-x {
+  margin-left: auto;
+  background: none;
+  border: 0;
+  color: var(--bk-dim);
+  font: inherit;
+  font-size: 12px;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+}
+
+/* ---------------------------------------------------------------- step 4 · Kontakt */
+
+.bk-form { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: clamp(18px, 2.6vh, 26px) clamp(20px, 2.4vw, 38px); }
+.bk-field { display: flex; flex-direction: column; gap: 6px; }
+.bk-field--wide { grid-column: 1 / -1; }
+.bk-field label { font-size: 10.5px; font-weight: 600; letter-spacing: .16em; text-transform: uppercase; color: rgba(250, 248, 245, .45); }
+.bk-field input,
+.bk-field textarea {
+  width: 100%;
+  padding: 9px 0;
+  background: transparent;
+  border: 0;
+  border-bottom: 1px solid rgba(250, 248, 245, .22);
+  color: var(--hx-paper);
+  font: inherit;
+  font-size: 15px;
+  resize: none;
+}
+.bk-field input::placeholder,
+.bk-field textarea::placeholder { color: rgba(250, 248, 245, .22); }
+.bk-field input:focus,
+.bk-field textarea:focus { outline: none; border-bottom-color: var(--bk-acc); }
+.bk-err { font-size: 11.5px; color: #F87171; }
+
+.bk-drop {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  padding: clamp(22px, 3.4vh, 38px);
+  box-shadow: inset 0 0 0 1px var(--bk-line);
+  color: var(--bk-dim);
+  font-size: 13.5px;
+  cursor: pointer;
+  transition: color .24s, box-shadow .24s;
+}
+.bk-drop:hover { color: var(--hx-paper); box-shadow: inset 0 0 0 1px rgba(250, 248, 245, .34); }
+.bk-drop span { font-size: 11px; letter-spacing: .12em; text-transform: uppercase; color: rgba(250, 248, 245, .32); }
+.bk-shots { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 2px; margin-top: 2px; }
+.bk-shot { position: relative; aspect-ratio: 1; overflow: hidden; }
+.bk-shot img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.bk-shot button {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 26px;
+  height: 26px;
+  background: rgba(13, 13, 18, .78);
+  border: 0;
+  color: #fff;
+  font: inherit;
+  font-size: 14px;
+  line-height: 1;
+  cursor: pointer;
+}
+.bk-consent { display: flex; align-items: flex-start; gap: 11px; font-size: 12.5px; line-height: 1.55; color: var(--bk-dim); cursor: pointer; }
+.bk-consent input { flex: none; margin-top: 2px; width: 15px; height: 15px; accent-color: var(--bk-acc); }
+.bk-consent a { color: var(--hx-paper); text-decoration: underline; text-underline-offset: 3px; }
+
+/* ---------------------------------------------------------------- foot buttons */
+
+.bk-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-top: clamp(26px, 4.4vh, 48px);
+  padding-top: clamp(18px, 2.6vh, 28px);
+  border-top: 1px solid var(--bk-line);
+}
+.bk-next {
+  margin-left: auto;
+  padding: 15px clamp(24px, 2.6vw, 40px);
+  background: var(--hx-paper);
+  border: 0;
+  color: var(--hx-ink);
+  font: inherit;
+  font-size: 14px;
+  font-weight: 650;
+  cursor: pointer;
+  transition: background .24s var(--hx-ease-out), color .24s var(--hx-ease-out);
+}
+.bk-next:hover:not([disabled]) { background: var(--bk-acc); color: #fff; }
+.bk-next[disabled] { opacity: .26; cursor: not-allowed; }
+.bk-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0;
+  background: none;
+  border: 0;
+  color: rgba(250, 248, 245, .5);
+  font: inherit;
+  font-size: 14px;
+  cursor: pointer;
+  transition: color .24s;
+}
+.bk-back:hover { color: var(--hx-paper); }
+
+/* ---------------------------------------------------------------- the running summary */
+
+.bk-sum-h { margin: 0 0 14px; font-size: 11px; font-weight: 600; letter-spacing: .18em; text-transform: uppercase; color: rgba(250, 248, 245, .45); }
+.bk-sum-row { display: flex; justify-content: space-between; align-items: baseline; gap: 14px; padding: 9px 0; border-bottom: 1px solid var(--bk-line-soft); font-size: 13px; }
+.bk-sum-row span:first-child { color: var(--bk-dim); }
+.bk-sum-row b { font-weight: 650; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.bk-sum-row.is-add b { color: var(--bk-acc); }
+.bk-sum-total { display: flex; justify-content: space-between; align-items: baseline; gap: 14px; padding-top: 14px; }
+.bk-sum-total span { font-size: 12px; letter-spacing: .1em; text-transform: uppercase; color: var(--bk-dim); }
+.bk-sum-total b { font-size: clamp(20px, 1.6vw, 26px); font-weight: 650; color: var(--bk-acc); font-variant-numeric: tabular-nums; }
+.bk-sum-hint { margin: 10px 0 0; font-size: 11.5px; line-height: 1.5; color: rgba(250, 248, 245, .38); }
+.bk-sum-empty { margin: 0; font-size: 13px; color: rgba(250, 248, 245, .34); }
+
+/* ---------------------------------------------------------------- confirmation */
+
+.bk-done { max-width: 760px; }
+.bk-tick { width: 54px; height: 54px; margin-bottom: clamp(18px, 2.6vh, 26px); stroke: var(--bk-acc); stroke-width: 6; fill: none; }
+.bk-table { margin-top: clamp(24px, 3.6vh, 36px); padding: clamp(18px, 2.2vw, 28px); box-shadow: inset 0 0 0 1px var(--bk-line); }
+.bk-contact { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 2px; margin-top: 2px; }
+.bk-contact a,
+.bk-contact div {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 14px 16px;
+  box-shadow: inset 0 0 0 1px var(--bk-line);
+  color: var(--hx-paper);
+  font-size: 13.5px;
+  text-decoration: none;
+  word-break: break-word;
+}
+.bk-contact a:hover { box-shadow: inset 0 0 0 1px var(--bk-acc); }
+.bk-contact small { font-size: 10.5px; font-weight: 600; letter-spacing: .16em; text-transform: uppercase; color: rgba(250, 248, 245, .4); }
+.bk-home {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  margin-top: clamp(22px, 3.4vh, 34px);
+  padding: 14px 26px;
+  box-shadow: inset 0 0 0 1px var(--bk-line);
+  color: var(--hx-paper);
+  font-size: 14px;
+  font-weight: 650;
+  text-decoration: none;
+  transition: box-shadow .24s, background .24s;
+}
+.bk-home:hover { box-shadow: inset 0 0 0 1px var(--bk-acc); background: rgba(77, 178, 146, .1); }
+
+/* ---------------------------------------------------------------- the price disclaimer, as on the live site */
+
+.bk-veil { position: fixed; inset: 0; z-index: 70; display: grid; place-items: center; padding: 20px; background: rgba(0, 0, 0, .74); }
+.bk-dialog { width: min(440px, 100%); padding: clamp(24px, 3vw, 34px); background: var(--hx-ink); box-shadow: inset 0 0 0 1px var(--bk-line); text-align: center; }
+.bk-dialog h3 { margin: 0 0 12px; font-size: clamp(22px, 2vw, 28px); font-weight: var(--hx-weight); letter-spacing: var(--hx-track); }
+.bk-dialog p { margin: 0 0 22px; font-size: 13.5px; line-height: 1.6; color: var(--bk-dim); }
+.bk-dialog .bk-next { margin: 0 auto; }
+
+/* ---------------------------------------------------------------- the live calendar's and the sending's own words (2026-09-26) */
+
+.bk-msg {
+  margin: 0 0 16px;
+  padding: 14px 16px;
+  border-radius: 14px;
+  background: rgba(250, 248, 245, .05);
+  font-size: 14px;
+  line-height: 1.5;
+  color: rgba(250, 248, 245, .78);
+}
+.bk-msg a { color: var(--hx-paper); text-decoration: underline; text-underline-offset: 3px; }
+.bk-warn { background: rgba(214, 150, 60, .12); color: #F1D3A6; }
+.bk-retry { margin: 0 0 16px; }
+
+/* ---------------------------------------------------------------- what a prototype cannot have */
+
+.bk-dev {
+  position: fixed;
+  left: 0;
+  bottom: 0;
+  z-index: 60;
+  margin: 0;
+  padding: 6px 13px 7px;
+  background: rgba(13, 13, 18, .9);
+  box-shadow: inset 0 1px 0 var(--bk-line), inset -1px 0 0 var(--bk-line);
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: .07em;
+  text-transform: uppercase;
+  color: rgba(250, 248, 245, .4);
+  pointer-events: none;
+}
+
+/* ---------------------------------------------------------------- smaller screens */
+
+@media (max-width: 1099px) {
+  .bk-tiles--pkg { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 899px) {
+  .bk-tiles { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .bk-grid { grid-template-columns: 44px repeat(7, minmax(0, 1fr)); }
+  .bk-days { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+}
+@media (max-width: 699px) {
+  :root { --bk-rail: 40px; }
+  .bk-step { padding: 0 6px; gap: 0; justify-content: center; }
+  .bk-step-t { display: none; }
+  .bk-modes,
+  .bk-places,
+  .bk-tiles,
+  .bk-tiles--pkg,
+  .bk-form { grid-template-columns: minmax(0, 1fr); }
+  .bk-days { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .bk-scroll .bk-grid { min-width: 580px; grid-template-columns: 40px repeat(7, minmax(0, 1fr)); }
+  .bk-cap-n { font-size: 14px; }
+  .bk-slot { font-size: 11px; padding: 5px 6px; }
+  .bk-cal-bar { flex-wrap: wrap; }
+  .bk-cal-w { flex: 1 0 100%; }
+  .bk-shots { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .bk-foot { gap: 10px; }
+  .bk-next { padding: 14px 20px; }
+}
+
+/* =================================================================================
+   „Die Karte" — 2026-09-20, Manuel's pick after ten real booking flows were examined.
+
+   ⚠ Everything ABOVE this line is the first build's language: „square corners,
+   hairlines, no pills, no shadows, no gradients". It is superseded, not deleted —
+   that language is exactly why the page read as an admin panel next to the rest of
+   the site. This block re-dresses it in the site's own material and changes nothing
+   about the flow, the prices or the rules.
+
+   What was taken from the flows that were looked at first:
+     · Walmart Auto Care — a day with nothing free says „ausgebucht" out loud, and
+       every service card carries its DURATION beside its price;
+     · GoDaddy — the free times are pills under Vormittag / Nachmittag;
+     · Square — the summary is a receipt, and the confirmation DOES something;
+     · KAYAK / Turo — the total never leaves the screen.
+   ================================================================================= */
+
+.bk-page { --bk-r: clamp(13px, 1.1vw, 19px); }
+
+/* one card material for every choosable thing: light from above, in the dark */
+.bk-opt {
+  border-radius: var(--bk-r);
+  background: radial-gradient(130% 62% at 50% 0%, #1E1E27 0%, #17171E 58%, #121218 100%);
+  box-shadow: 0 16px 40px -32px rgba(0, 0, 0, .9), inset 0 0 0 1px rgba(250, 248, 245, .1);
+  overflow: hidden;
+}
+.bk-opt:hover {
+  background: radial-gradient(130% 62% at 50% 0%, #26262F 0%, #1C1C24 58%, #16161C 100%);
+  box-shadow: 0 22px 48px -30px rgba(0, 0, 0, .95), inset 0 0 0 1px rgba(250, 248, 245, .22);
+}
+/* „chosen" stays what it was — the card turns to paper. It is the clearest signal on the page. */
+.bk-opt.is-on {
+  background: radial-gradient(130% 62% at 50% 0%, #FFFFFF 0%, #F7F3ED 58%, #EDE7DE 100%);
+  color: var(--hx-ink);
+  box-shadow: 0 22px 52px -28px rgba(0, 0, 0, .8), inset 0 0 0 1px rgba(13, 13, 18, .12);
+}
+.bk-opt.is-off:hover {
+  background: radial-gradient(130% 62% at 50% 0%, #1E1E27 0%, #17171E 58%, #121218 100%);
+  box-shadow: 0 16px 40px -32px rgba(0, 0, 0, .9), inset 0 0 0 1px rgba(250, 248, 245, .1);
+}
+.bk-mark { border-radius: 999px; }
+
+/* air between the cards instead of a 2 px seam */
+.bk-modes,
+.bk-tiles,
+.bk-tiles--pkg,
+.bk-places,
+.bk-rows,
+.bk-recs { gap: clamp(9px, .95vw, 16px); }
+
+/* ---- step 0 · the two doors, each with its own photograph */
+.bk-mode { flex-direction: column; gap: 0; min-height: 0; padding: 0; justify-content: flex-start; }
+.bk-mode-img {
+  width: 100%;
+  height: clamp(150px, 19vw, 260px);
+  object-fit: cover;
+  display: block;
+  filter: saturate(.92) contrast(1.02);
+  transition: transform .8s var(--hx-ease-out);
+}
+.bk-mode:hover .bk-mode-img { transform: scale(1.04); }
+.bk-mode-b {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 7px;
+  padding: clamp(16px, 1.7vw, 26px);
+}
+.bk-mode-f { font-size: 12.5px; color: rgba(250, 248, 245, .55); }
+.bk-opt.is-on .bk-mode-f { color: rgba(13, 13, 18, .58); }
+.bk-mode-f.bk-surcharge { color: var(--bk-acc); font-weight: 650; }
+
+/* ---- step 1 · price AND how long it takes, the way a service card should read */
+.bk-tile-line { display: flex; align-items: baseline; flex-wrap: wrap; gap: 4px 12px; margin: 12px 0 0; }
+.bk-tile-p { margin: 0; }
+.bk-tile-d {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: rgba(250, 248, 245, .45);
+}
+.bk-opt.is-on .bk-tile-d { color: rgba(13, 13, 18, .5); }
+
+/* ---- step 3 · seven days, then the free times of the one you opened */
+.bk-dps {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: clamp(6px, .7vw, 11px);
+  margin: 0 0 clamp(18px, 2.6vh, 30px);
+}
+.bk-dp {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  padding: clamp(11px, 1.1vw, 17px) 4px clamp(10px, 1vw, 15px);
+  border: 0;
+  border-radius: var(--bk-r);
+  background: rgba(250, 248, 245, .05);
+  box-shadow: inset 0 0 0 1px rgba(250, 248, 245, .1);
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+  transition: background .26s var(--hx-ease-out), box-shadow .26s var(--hx-ease-out), color .26s var(--hx-ease-out);
+}
+.bk-dp:hover { background: rgba(250, 248, 245, .1); box-shadow: inset 0 0 0 1px rgba(250, 248, 245, .24); }
+.bk-dp.is-on {
+  background: var(--hx-paper);
+  color: var(--hx-ink);
+  box-shadow: inset 0 0 0 1px var(--hx-paper);
+}
+.bk-dp.is-off { opacity: .4; cursor: not-allowed; }
+.bk-dp.is-off:hover { background: rgba(250, 248, 245, .05); box-shadow: inset 0 0 0 1px rgba(250, 248, 245, .1); }
+.bk-dp:focus-visible { outline: 2px solid var(--bk-acc); outline-offset: 2px; }
+.bk-dp-d { font-size: 10.5px; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; opacity: .62; }
+.bk-dp-n { font-size: clamp(19px, 1.5vw, 25px); font-weight: 650; line-height: 1; font-variant-numeric: tabular-nums; }
+/* a day with nothing free SAYS so — an empty column reads as broken, not as booked out */
+.bk-dp-s { font-size: 10.5px; letter-spacing: .02em; opacity: .66; white-space: nowrap; }
+.bk-dp.is-today .bk-dp-d { color: var(--bk-acc); opacity: 1; }
+.bk-dp.is-on.is-today .bk-dp-d { color: #0a6a52; }
+
+.bk-times-h {
+  margin: 0 0 clamp(12px, 1.8vh, 18px);
+  font-size: clamp(16px, 1.25vw, 21px);
+  font-weight: 650;
+  letter-spacing: -.01em;
+}
+.bk-tg + .bk-tg { margin-top: clamp(16px, 2.2vh, 24px); }
+.bk-tg-h {
+  margin: 0 0 9px;
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: .16em;
+  text-transform: uppercase;
+  color: rgba(250, 248, 245, .42);
+}
+.bk-tps { display: flex; flex-wrap: wrap; gap: clamp(7px, .7vw, 11px); }
+.bk-tp {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1px;
+  min-width: 84px;
+  padding: 11px 15px 10px;
+  border: 0;
+  border-radius: 999px;
+  background: rgba(250, 248, 245, .06);
+  box-shadow: inset 0 0 0 1px rgba(250, 248, 245, .13);
+  font: inherit;
+  font-size: 15px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  color: inherit;
+  cursor: pointer;
+  transition: background .24s var(--hx-ease-out), box-shadow .24s var(--hx-ease-out), color .24s var(--hx-ease-out);
+}
+.bk-tp small { font-size: 10px; font-weight: 500; letter-spacing: .02em; opacity: .5; }
+.bk-tp:hover { background: rgba(250, 248, 245, .13); box-shadow: inset 0 0 0 1px rgba(250, 248, 245, .3); }
+.bk-tp.is-on { background: var(--bk-acc); color: #07120E; box-shadow: inset 0 0 0 1px var(--bk-acc); }
+.bk-tp.is-on small { opacity: .68; }
+.bk-tp:focus-visible { outline: 2px solid var(--bk-acc); outline-offset: 3px; }
+
+/* ---- the running total, as a receipt rather than a legend */
+.bk-side-in {
+  margin: clamp(18px, 2.6vh, 28px) var(--hx-gutter);
+  padding: clamp(18px, 1.8vw, 26px);
+  border-radius: var(--bk-r);
+  background: radial-gradient(130% 62% at 50% 0%, #1E1E27 0%, #17171E 58%, #121218 100%);
+  box-shadow: 0 16px 40px -32px rgba(0, 0, 0, .9), inset 0 0 0 1px rgba(250, 248, 245, .1);
+}
+.bk-sum-h { font-size: 11px; letter-spacing: .17em; }
+.bk-sum-row { font-size: 13px; }
+.bk-sum-row b { font-size: 13.5px; }
+.bk-sum-total { font-size: 15px; }
+.bk-sum-total b { font-size: clamp(20px, 1.5vw, 26px); }
+
+/* ---- the confirmation does something */
+.bk-acts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin: clamp(22px, 3.4vh, 36px) 0 0;
+}
+.bk-act {
+  padding: 13px 22px 14px;
+  border: 0;
+  border-radius: 999px;
+  background: rgba(250, 248, 245, .07);
+  box-shadow: inset 0 0 0 1px rgba(250, 248, 245, .2);
+  font: inherit;
+  font-size: 14px;
+  font-weight: 650;
+  color: var(--hx-paper);
+  text-decoration: none;
+  cursor: pointer;
+  transition: background .26s var(--hx-ease-out), color .26s var(--hx-ease-out);
+}
+.bk-act:hover { background: rgba(250, 248, 245, .16); }
+.bk-act--main { background: var(--hx-paper); color: var(--hx-ink); box-shadow: none; }
+.bk-act--main:hover { background: var(--bk-acc); color: #07120E; }
+.bk-act:focus-visible { outline: 2px solid var(--bk-acc); outline-offset: 3px; }
+
+.bk-step-n { border-radius: 999px; }
+
+@media (max-width: 699px) {
+  .bk-dps { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  .bk-dp-n { font-size: 20px; }
+  .bk-tp { min-width: 0; flex: 1 1 88px; }
+  .bk-mode-img { height: 140px; }
+}
+
+/* The week used to be a full-bleed frame with a grid filling it edge to edge. With pills inside,
+   that left the day buttons and the times hugging the screen edge — so it is a card now. */
+.bk-cal {
+  margin-inline: 0;
+  padding: 0 clamp(14px, 1.5vw, 22px) clamp(18px, 2.4vh, 26px);
+  border-radius: var(--bk-r);
+  box-shadow: inset 0 0 0 1px rgba(250, 248, 245, .1);
+  overflow: hidden;
+}
+.bk-cal-bar {
+  margin: 0 calc(clamp(14px, 1.5vw, 22px) * -1) clamp(16px, 2.2vh, 24px);
+  padding-inline: clamp(14px, 1.5vw, 22px);
+  border-bottom-color: rgba(250, 248, 245, .1);
+}
+.bk-pick { margin-inline: 0; margin-top: clamp(10px, 1.4vh, 16px); border-radius: var(--bk-r); }
+.bk-empty { margin: 0; }
+
+/* The first build ran its columns edge to edge with a 2 px seam. Rounded cards cannot do that —
+   a card cut off by the screen edge reads as broken — so the bleed is off on this page. */
+.bk-bleed { margin-left: 0; margin-right: 0; }
+
+/* the category row becomes pills, like the tabs on the price section of the home page */
+.bk-tabs { gap: 7px; flex-wrap: wrap; }
+.bk-tab {
+  border-radius: 999px;
+  padding: 9px 16px 10px;
+  background: rgba(250, 248, 245, .06);
+  box-shadow: inset 0 0 0 1px rgba(250, 248, 245, .11);
+}
+.bk-tab:hover { background: rgba(250, 248, 245, .13); }
+.bk-tab.is-on { background: var(--hx-paper); color: var(--hx-ink); box-shadow: none; }
+
+/* „Ihr Termin“: the label above its value, not beside it */
+.bk-pick > span:first-child { display: flex; flex-direction: column; }
+
+/* the receipt: a name and its price on one line, never wrapped into two */
+.bk-sum-row > span:first-child { min-width: 0; }
+
+/* The confirmation was a 760 px column in a 1080 px stage — a third of the screen was empty.
+   The receipt and the three contact tiles stand side by side now, and the actions run under both. */
+.bk-table { border-radius: var(--bk-r); box-shadow: inset 0 0 0 1px rgba(250, 248, 245, .1); }
+.bk-contact { gap: clamp(8px, .9vw, 13px); }
+.bk-contact a,
+.bk-contact div { border-radius: var(--bk-r); box-shadow: inset 0 0 0 1px rgba(250, 248, 245, .1); }
+.bk-home { border-radius: 999px; box-shadow: inset 0 0 0 1px rgba(250, 248, 245, .2); }
+
+@media (min-width: 900px) {
+  .bk-done {
+    max-width: none;
+    display: grid;
+    grid-template-columns: minmax(0, 1.15fr) minmax(0, .85fr);
+    column-gap: clamp(20px, 2.4vw, 42px);
+    align-items: start;
+  }
+  .bk-tick, .bk-h, .bk-lead { grid-column: 1 / -1; }
+  .bk-table { grid-column: 1; grid-row: 4; margin-top: clamp(24px, 3.6vh, 36px); }
+  .bk-contact {
+    grid-column: 2;
+    grid-row: 4;
+    grid-template-columns: minmax(0, 1fr);
+    align-content: start;
+    margin-top: clamp(24px, 3.6vh, 36px);
+  }
+  .bk-acts { grid-column: 1 / -1; grid-row: 5; }
+  .bk-home { grid-column: 1 / -1; grid-row: 6; }
+}
+
+/* ===================================================================================
+   2026-09-22 — Manuel, with a screenshot of the square „Weiter →“: „all buttons need
+   this rounded edges style all over the page.“
+
+   Walked the whole flow (five steps) and audited every visible control at each one:
+   „Weiter“ was the only real button on the site still carrying square corners. The
+   rest of the booking page had already been rounded with „Die Karte“ on 09-20; the
+   handful below never appear on step 1, so they were missed then and are rounded now.
+
+   ⛔ `.bk-step` stays square ON PURPOSE. It is not a row of buttons — it is one
+   progress rail cut into five segments that meet edge to edge, with a rule between
+   them and a green underline under the one you are on. Rounding the segments would
+   open gaps between them and break the underline.
+   =================================================================================== */
+
+.bk-next,
+.bk-btn,
+.bk-chip,
+.bk-chip-x,
+.bk-shot button { border-radius: 999px; }
+.bk-save,
+.bk-drop { border-radius: var(--bk-r); }
+
+/* ===================================================================================
+   2026-09-22, four things Manuel found in one pass over the booking page.
+   =================================================================================== */
+
+/* 1 — THE SUMMARY ROW OVERLAPPED ITSELF.
+   „Ihre Auswahl" is about 230 px wide. The row is a flex line with the label left and
+   the value right, and the value carried `white-space: nowrap` so prices never break.
+   With „Studio · 6800 Feldkirch" in it the value could not shrink, so it overflowed its
+   own flex item and PAINTED OVER the label, which had wrapped to two lines underneath.
+   Two fixes, both needed: the value may wrap now, and booking.js splits that one long
+   value into two short rows („Service-Art: Im Studio" and „Standort: Feldkirch"). */
+.bk-sum-row { flex-wrap: wrap; }
+.bk-sum-row > span:first-child { flex: 1 1 auto; min-width: 0; }
+.bk-sum-row b {
+  flex: 0 1 auto;
+  min-width: 0;
+  text-align: right;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+
+/* 2 — THE CATEGORY PILLS STRETCHED AND THE LAST ONE WAS CUT OFF.
+   The pills are a wrapping row since „Die Karte", but each one still carried
+   `flex: 1 0 auto` from the old edge-to-edge tab bar, so whatever landed on the last
+   line grew to fill it — and on a wide screen the row scrolled sideways instead, which
+   clips the last pill. A pill is as wide as its word, and the row simply wraps. */
+.bk-tabs { overflow: visible; }
+.bk-tab { flex: 0 0 auto; }
+
+/* 3 — „make the labels of the cards bigger so it's easier to see." */
+.bk-tile-n { font-size: clamp(17px, 1.35vw, 23px); }
+.bk-tile-f li { font-size: 13.5px; line-height: 1.45; }
+.bk-tile-d { font-size: 12.5px; }
+.bk-tile-more { font-size: 13px; }
+.bk-place-n { font-size: 17px; }
+.bk-place-a { font-size: 13.5px; }
+
+/* 4 — „make the standort wählen a popup and not on the buttom of the card."
+   Same veil and dialog as the price notice, one size wider, and the two studios stand
+   under each other so each keeps its full address on one line. */
+/* the dialog is a panel like the cards, so it takes the cards radius — a square box full of
+   rounded things looked like two designs in one window. */
+.bk-dialog { border-radius: var(--bk-r); }
+.bk-place-x { border-radius: 999px; }
+.bk-dialog--wide { width: min(560px, 100%); text-align: left; }
+.bk-dialog--wide h3,
+.bk-dialog--wide > p { text-align: center; }
+.bk-dialog--wide .bk-places {
+  grid-template-columns: minmax(0, 1fr);
+  gap: 9px;
+  margin: 0 0 clamp(18px, 2vw, 26px);
+}
+/* top-aligned inside the dialog: on a phone the closed studio wraps its note over five lines,
+   and a centred badge then floats in the middle of a paragraph. */
+.bk-dialog--wide .bk-place { border-radius: var(--bk-r); align-items: flex-start; }
+.bk-dialog--wide .bk-place-x { margin-top: 1px; }
+.bk-dialog--wide .bk-next { display: block; }
+
+/* ===================================================================================
+   2026-09-22, second pass — Manuel walked the booking page and named nine things.
+   Everything below supersedes rules above it; nothing above was deleted.
+   =================================================================================== */
+
+/* 1 — THE GREY BAND behind the category pills. It was the ground of the old
+   edge-to-edge tab bar, where the 1 px gaps between tabs WERE the design. The pills
+   float on the page now, so the band has nothing left to show. */
+.bk-tabs {
+  background: none;
+  padding: 0;
+  /* 2026-09-22, Manuel: centred like the cards under them, and with real air between the two —
+     the 2 px below was the seam of the old edge-to-edge bar, not a gap. */
+  justify-content: center;
+  margin-bottom: clamp(18px, 2.6vh, 32px);
+}
+
+/* 2 — ALL-IN-ONE IS THE OFFER, so its pill wears the accent and opens the step. */
+.bk-tab--aio {
+  background: rgba(77, 178, 146, .14);
+  box-shadow: inset 0 0 0 1px rgba(77, 178, 146, .5);
+  color: var(--bk-acc);
+}
+.bk-tab--aio:hover { background: rgba(77, 178, 146, .22); color: #7fd8ba; }
+.bk-tab--aio.is-on { background: var(--bk-acc); color: #07120E; box-shadow: none; }
+
+/* 3 — THE PLUS: bigger, and the glyph sits in the middle of its circle. A „+“ has no
+   descender, so centring the LINE BOX leaves it visually low — hence the nudge. */
+.bk-tile .bk-mark,
+.bk-veh .bk-mark {
+  width: 32px;
+  height: 32px;
+  font-size: 19px;
+  line-height: 1;
+  font-weight: 400;
+  padding-bottom: 2px;
+}
+.bk-tile.is-on .bk-mark,
+.bk-veh.is-on .bk-mark { font-size: 15px; padding-bottom: 0; }
+
+/* 4 — A HALF-EMPTY ROW IS CENTRED.
+   Manuel: „when there is only one card left … it does not look like something is missing.“
+   A grid cannot do that — `1fr` columns exist whether a card sits in them or not. So the
+   cards are a wrapping flex row that does not GROW (`flex: 0 1`), and the row centres
+   whatever is on it. The widths are the same as the old three and four columns. */
+.bk-page { --bk-g: clamp(9px, .95vw, 16px); }
+.bk-tiles,
+.bk-tiles--pkg,
+.bk-vehs {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--bk-g);
+}
+.bk-tiles > .bk-tile { flex: 0 1 calc((100% - 2 * var(--bk-g)) / 3); }
+.bk-tiles--pkg > .bk-tile { flex: 0 1 calc((100% - 3 * var(--bk-g)) / 4); }
+.bk-vehs > .bk-veh { flex: 0 1 calc((100% - 2 * var(--bk-g)) / 3); }
+
+@media (max-width: 1099px) {
+  .bk-tiles--pkg > .bk-tile { flex-basis: calc((100% - var(--bk-g)) / 2); }
+  .bk-vehs > .bk-veh { flex-basis: calc((100% - var(--bk-g)) / 2); }
+}
+@media (max-width: 899px) {
+  .bk-tiles > .bk-tile { flex-basis: calc((100% - var(--bk-g)) / 2); }
+}
+@media (max-width: 699px) {
+  .bk-tiles > .bk-tile,
+  .bk-tiles--pkg > .bk-tile,
+  .bk-vehs > .bk-veh { flex-basis: 100%; }
+}
+
+/* 5 — „PASST DAZU“: a grey rectangle that looked like a fence, around the one block on
+   the page whose whole job is to be clicked. The fence is gone; the block now reads as an
+   offer — accent ground, a plus that fills on hover, the card lifting a little. */
+.bk-block {
+  margin-top: clamp(20px, 2.6vh, 34px);
+  padding: clamp(18px, 2vw, 28px);
+  border-radius: var(--bk-r);
+  box-shadow: none;
+  background:
+    radial-gradient(80% 140% at 6% 0%, rgba(77, 178, 146, .13) 0%, transparent 62%),
+    rgba(250, 248, 245, .035);
+}
+.bk-block-h { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 14px; color: var(--bk-acc); }
+.bk-block-s { letter-spacing: .02em; text-transform: none; font-weight: 500; font-size: 12px; color: rgba(250, 248, 245, .45); }
+.bk-rec {
+  flex-direction: column;
+  gap: 7px;
+  padding: clamp(14px, 1.5vw, 20px);
+  border-radius: var(--bk-r);
+  background: rgba(250, 248, 245, .045);
+  box-shadow: inset 0 0 0 1px rgba(77, 178, 146, .22);
+  transition: background .26s var(--hx-ease-out), box-shadow .26s var(--hx-ease-out), translate .26s var(--hx-ease-out);
+}
+.bk-rec:hover {
+  background: rgba(77, 178, 146, .12);
+  box-shadow: inset 0 0 0 1px rgba(77, 178, 146, .6);
+  translate: 0 -2px;
+}
+.bk-rec-t { display: flex; align-items: center; gap: 10px; width: 100%; }
+.bk-rec-n { flex: 1; font-size: 14.5px; }
+.bk-rec-plus {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 26px;
+  height: 26px;
+  border-radius: 999px;
+  box-shadow: inset 0 0 0 1px rgba(77, 178, 146, .55);
+  color: var(--bk-acc);
+  font-size: 16px;
+  line-height: 1;
+  padding-bottom: 2px;
+  transition: background .26s var(--hx-ease-out), color .26s var(--hx-ease-out);
+}
+.bk-rec:hover .bk-rec-plus { background: var(--bk-acc); color: #07120E; box-shadow: none; }
+.bk-rec-p { color: var(--bk-acc); font-weight: 650; }
+/* one quiet sweep when the block first appears — enough to catch the eye, over in a second */
+@keyframes bk-notice { from { box-shadow: inset 0 0 0 1px rgba(77, 178, 146, .8); } to { box-shadow: inset 0 0 0 1px rgba(77, 178, 146, .22); } }
+.bk-rec { animation: bk-notice 1.6s var(--hx-ease-out) 1; }
+@media (prefers-reduced-motion: reduce) { .bk-rec { animation: none; } }
+
+/* 6 — „NUR AUF TERMIN“: it looked like a quiet note, and clicking the card did nothing.
+   It is amber now, and the card says in words what happens; booking.js opens a dialog with
+   the telephone number. */
+.bk-phone {
+  padding: 5px 11px 6px;
+  border-radius: 999px;
+  background: rgba(245, 158, 11, .14);
+  box-shadow: inset 0 0 0 1px rgba(245, 158, 11, .5);
+  color: #F5B342;
+  font-size: 10.5px;
+}
+.bk-phone-l {
+  margin: 8px 0 0;
+  font-size: 12.5px;
+  line-height: 1.45;
+  color: rgba(245, 179, 66, .78);
+}
+.bk-opt.is-on .bk-phone-l { color: rgba(13, 13, 18, .6); }
+.bk-dialog-x { display: block; margin: 14px auto 0; }
+
+/* 7 — IHR FAHRZEUG: five cards instead of five nearly empty rows, and each one answers
+   „what does it cost me“ with the client's own computeTotals. */
+.bk-lead { max-width: 80ch; }
+.bk-veh {
+  flex-direction: column;
+  align-items: stretch;
+  gap: 4px;
+  padding: clamp(18px, 1.9vw, 26px);
+  border-radius: var(--bk-r);
+}
+.bk-veh-top { display: flex; align-items: flex-start; gap: 12px; }
+.bk-veh-n { flex: 1; font-size: clamp(16px, 1.25vw, 21px); font-weight: 650; line-height: 1.2; }
+.bk-veh-e { font-size: 13.5px; color: rgba(250, 248, 245, .74); }
+.bk-veh-d { font-size: 12.5px; color: rgba(250, 248, 245, .42); }
+.bk-opt.is-on .bk-veh-e { color: rgba(13, 13, 18, .72); }
+.bk-opt.is-on .bk-veh-d { color: rgba(13, 13, 18, .45); }
+.bk-veh-foot {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px 14px;
+  margin-top: clamp(12px, 1.6vh, 18px);
+  padding-top: clamp(12px, 1.6vh, 18px);
+  border-top: 1px solid var(--bk-line-soft);
+}
+.bk-opt.is-on .bk-veh-foot { border-top-color: rgba(13, 13, 18, .14); }
+.bk-veh-f { font-size: 13px; font-weight: 650; color: var(--bk-acc); font-variant-numeric: tabular-nums; }
+.bk-veh-f.is-quiet { color: rgba(250, 248, 245, .38); font-weight: 400; }
+.bk-opt.is-on .bk-veh-f { color: #0a6a52; }
+.bk-veh-p { font-size: clamp(16px, 1.25vw, 21px); font-weight: 650; font-variant-numeric: tabular-nums; }
+
+/* 8 — THE WEEK: which day is free has to be readable at a glance.
+   A booked day carries one thin diagonal, which is the oldest way of saying „taken“. */
+.bk-btn--main {
+  background: var(--bk-acc);
+  color: #07120E;
+  padding: 11px 20px 12px;
+  font-size: 13.5px;
+  font-weight: 650;
+}
+.bk-btn--main:hover:not([disabled]) { background: #63c9a8; color: #07120E; box-shadow: none; }
+.bk-dp { position: relative; overflow: hidden; }
+.bk-dp--free .bk-dp-s { color: var(--bk-acc); font-weight: 650; }
+.bk-dp--full .bk-dp-s { color: #F87171; }
+.bk-dp--full::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(to bottom right,
+    transparent calc(50% - .6px), rgba(248, 113, 113, .5) calc(50% - .6px),
+    rgba(248, 113, 113, .5) calc(50% + .6px), transparent calc(50% + .6px));
+}
+.bk-dp.is-today { box-shadow: inset 0 0 0 1px rgba(77, 178, 146, .55); }
+.bk-dp.is-today.is-on { box-shadow: none; }
+.bk-dp.is-today .bk-dp-d { color: var(--bk-acc); }
+.bk-dp.is-on.is-today .bk-dp-d { color: #0a6a52; }
+
+/* 9 — THE DAY, AS A DAY.
+   Manuel wanted an Apple-Calendar day instead of a list of pills. It only works because the
+   client's planner hands back NON-OVERLAPPING starts (`sameDayPlan` steps by durMin + BUFFER),
+   so each free slot is simply a block on one axis. */
+.bk-cd { margin-top: clamp(14px, 1.8vh, 22px); }
+.bk-cd-h {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 6px 16px;
+  margin: 0 0 clamp(10px, 1.4vh, 16px);
+  font-size: clamp(15px, 1.15vw, 19px);
+  font-weight: 650;
+}
+.bk-cd-h span { font-size: 12.5px; font-weight: 500; color: var(--bk-acc); }
+.bk-cd-body { display: grid; grid-template-columns: 56px minmax(0, 1fr); }
+.bk-cd-axis { position: relative; height: var(--bk-cd-h); }
+.bk-cd-hr {
+  position: absolute;
+  right: 12px;
+  transform: translateY(-50%);
+  font-size: 11.5px;
+  font-variant-numeric: tabular-nums;
+  color: rgba(250, 248, 245, .36);
+}
+.bk-cd-col {
+  position: relative;
+  height: var(--bk-cd-h);
+  border-radius: var(--bk-r);
+  background: rgba(250, 248, 245, .03);
+  box-shadow: inset 0 0 0 1px var(--bk-line-soft);
+  overflow: hidden;
+}
+.bk-cd-line { position: absolute; left: 0; right: 0; height: 1px; background: var(--bk-line-soft); }
+.bk-cd-band {
+  position: absolute;
+  left: 0;
+  right: 0;
+  display: flex;
+  align-items: center;
+  padding: 0 14px;
+  font-size: 11.5px;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+}
+.bk-cd-past {
+  background: repeating-linear-gradient(45deg, rgba(250, 248, 245, .05) 0 6px, transparent 6px 12px);
+  color: rgba(250, 248, 245, .3);
+}
+.bk-cd-busy {
+  background: repeating-linear-gradient(45deg, rgba(248, 113, 113, .16) 0 6px, transparent 6px 12px);
+  color: rgba(248, 113, 113, .8);
+}
+.bk-cd-slot {
+  position: absolute;
+  left: 8px;
+  right: 8px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 2px;
+  padding: 0 14px;
+  border: 0;
+  border-radius: 12px;
+  background: rgba(77, 178, 146, .14);
+  box-shadow: inset 0 0 0 1px rgba(77, 178, 146, .4);
+  color: var(--hx-paper);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  overflow: hidden;
+  transition: background .24s var(--hx-ease-out), box-shadow .24s var(--hx-ease-out);
+}
+.bk-cd-slot:hover { background: rgba(77, 178, 146, .26); box-shadow: inset 0 0 0 1px rgba(77, 178, 146, .8); }
+.bk-cd-slot.is-on { background: var(--hx-paper); color: var(--hx-ink); box-shadow: none; }
+.bk-cd-slot:focus-visible { outline: 2px solid var(--bk-acc); outline-offset: -3px; }
+.bk-cd-t { font-size: 13.5px; font-weight: 650; font-variant-numeric: tabular-nums; }
+.bk-cd-s { font-size: 11px; letter-spacing: .1em; text-transform: uppercase; color: var(--bk-acc); }
+.bk-cd-slot.is-on .bk-cd-s { color: #0a6a52; }
+
+/* 10 — „IHRE AUSWAHL“ STAYS WITH YOU.
+   It was already `position: sticky`, and it still scrolled away: the column is a grid item
+   and the stage said `align-items: start`, so the column was only as tall as the card and a
+   sticky box had no room to travel. Stretch the column and it stays.
+   The border of that column is also the grey line Manuel wanted aligned with the fifth step
+   above it — the rail is five equal columns, so the aside has to be exactly one fifth. */
+@media (min-width: 1100px) {
+  .bk-stage { align-items: stretch; grid-template-columns: minmax(0, 4fr) minmax(270px, 1fr); }
+  .bk-side { align-self: stretch; }
+  .bk-side-in { position: sticky; top: calc(var(--bk-nav) + var(--bk-rail)); }
+}
+
+/* 11 — THE ESTIMATE MUST NOT BREAK.
+   Letting the summary values wrap (fix 1 of this pass) was right for a place name and wrong
+   for the big number at the bottom, which broke into „ab" and „€350,–" on two lines. */
+.bk-sum-total b { white-space: nowrap; }
+
+/* 12 — Manuel: „the descriptions of what is free and what is already booked are very small."
+   They carry the whole message of that row, so they are the size of ordinary text now. */
+.bk-dp-d { font-size: 11.5px; opacity: .72; }
+.bk-dp-s { font-size: 12.5px; opacity: 1; }
+.bk-dp--past .bk-dp-s,
+.bk-dp--closed .bk-dp-s { color: rgba(250, 248, 245, .4); }
+
+/* 13 — on a phone the seven day pills are only about 78 px wide: „· heute“ wrapped the
+   weekday onto two lines and „ausgebucht“ did not fit. The accent ring already says which
+   day is today, so the words step aside and the label shrinks a little. */
+@media (max-width: 699px) {
+  .bk-dp-t { display: none; }
+  /* „geschlossen“ is the longest label at 71 px and the pill is 76 px wide including 4 px of
+     padding on each side — it overflowed by 3. Two less padding and half a point smaller. */
+  .bk-dp { padding-left: 2px; padding-right: 2px; }
+  .bk-dp-s { font-size: 11px; }
+}

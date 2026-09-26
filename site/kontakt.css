@@ -1,0 +1,436 @@
+/* ===================================================================================
+   „Kontakt" (kontakt.html) — „Die Tür", built 2026-09-22.
+
+   The page answers WHERE and WHEN before anything else, because that is what a person
+   opening a contact page came for. Seven bands, none of them full screen except the
+   closing sheet, so the whole page is under five screens.
+
+   ⚠ Two addresses, no photographs of them: nothing in the audited set shows either
+   studio building, so the towns are set at headline size instead. A close-up captioned
+   „Feldkirch" would be an invented fact.
+
+   Tokens (--hx-ink, --hx-paper, --hx-gutter, the Inter faces, .hx-label) come from
+   hero.css; the navbar from nav.css.
+   =================================================================================== */
+
+.ko-page {
+  --ko-acc: #4DB292;
+  --ko-line: rgba(250, 248, 245, .1);
+  --ko-dim: rgba(250, 248, 245, .56);
+  --ko-r: clamp(13px, 1.1vw, 20px);
+  background: #07070A;
+}
+.ko-k { color: var(--ko-acc); }
+.ko-h,
+.ko-town,
+.ko-title,
+.ko-end-t {
+  font-family: var(--hx-font);
+  font-weight: var(--hx-weight);
+  letter-spacing: var(--hx-track);
+}
+
+/* ---------------------------------------------------------------- 1 · the way in */
+
+.ko-head {
+  position: relative;
+  /* 2026-09-22, Manuel: „remove the line between these two sections, so all fits on one page".
+     The rule and the two labels are gone, and the air below is halved — headline and the two
+     addresses now read as one block instead of two stacked sections. */
+  padding: calc(55px + clamp(40px, 7vh, 88px)) var(--hx-gutter) clamp(20px, 3vh, 36px);
+  background:
+    radial-gradient(90% 120% at 12% 0%, rgba(77, 178, 146, .12) 0%, transparent 62%),
+    linear-gradient(to bottom, #0B0B0F 0%, #07070A 100%);
+}
+.ko-head-in { max-width: 1640px; margin: 0 auto; }
+.ko-label { color: var(--ko-acc); }
+.ko-title {
+  margin: clamp(10px, 1.6vh, 18px) 0 0;
+  font-size: clamp(44px, 7.6vw, 140px);
+  line-height: .86;
+  color: var(--hx-paper);
+}
+.ko-title span { display: block; }
+.ko-title-acc { color: var(--ko-acc); }
+.ko-lead {
+  /* one line, not two (Manuel, 2026-09-22): the sentence is 77 characters and measures about
+     620 px at this size, so nothing needs to cap it on a desktop. Narrow screens still wrap. */
+  max-width: none;
+  margin: clamp(14px, 2vh, 22px) 0 0;
+  font-size: clamp(15px, 1.2vw, 20px);
+  line-height: 1.5;
+  color: rgba(250, 248, 245, .72);
+}
+.ko-btns { display: flex; flex-wrap: wrap; gap: 11px; margin: clamp(18px, 2.8vh, 30px) 0 0; }
+.ko-btn {
+  padding: 15px 30px 16px;
+  border-radius: 999px;
+  background: var(--hx-paper);
+  color: var(--hx-ink);
+  font-size: 14.5px;
+  font-weight: 650;
+  text-decoration: none;
+  transition: background .3s var(--hx-ease-out), color .3s var(--hx-ease-out);
+}
+.ko-btn:hover { background: var(--ko-acc); color: #07120E; }
+.ko-btn--ghost {
+  background: transparent;
+  color: var(--hx-paper);
+  box-shadow: inset 0 0 0 1px rgba(250, 248, 245, .28);
+}
+.ko-btn--ghost:hover { background: var(--hx-paper); color: var(--hx-ink); }
+.ko-btn:focus-visible { outline: 2px solid var(--ko-acc); outline-offset: 3px; }
+.ko-reply {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  margin: clamp(16px, 2.2vh, 24px) 0 0;
+  font-size: 13.5px;
+  color: var(--ko-dim);
+}
+.ko-reply i {
+  flex: none;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--ko-acc);
+  box-shadow: 0 0 0 4px rgba(77, 178, 146, .16);
+}
+
+/* ---------------------------------------------------------------- 2 · the two addresses */
+
+.ko-where {
+  max-width: 1640px;
+  margin: 0 auto;
+  padding: 0 var(--hx-gutter) clamp(34px, 5vh, 62px);
+}
+.ko-adrs {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: clamp(14px, 1.6vw, 26px);
+  margin: 0;
+}
+.ko-adr {
+  display: flex;
+  flex-direction: column;
+  padding: clamp(22px, 2.6vw, 40px);
+  border: 1px solid var(--ko-line);
+  border-radius: var(--ko-r);
+  background: linear-gradient(to bottom, rgba(250, 248, 245, .045) 0%, rgba(250, 248, 245, .015) 100%);
+}
+.ko-town {
+  margin: 0;
+  font-size: clamp(30px, 3.9vw, 66px);
+  line-height: .96;
+  color: var(--hx-paper);
+}
+.ko-street {
+  margin: clamp(10px, 1.4vh, 16px) 0 0;
+  font-size: clamp(14.5px, 1.05vw, 17px);
+  font-style: normal;
+  line-height: 1.6;
+  color: rgba(250, 248, 245, .68);
+}
+/* the closed studio keeps its place and says why — it is not hidden */
+.ko-adr.is-blocked .ko-town,
+.ko-adr.is-blocked .ko-street { color: rgba(250, 248, 245, .44); }
+.ko-flag {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 9px;
+  margin: clamp(12px, 1.6vh, 18px) 0 0;
+  font-size: 13px;
+  line-height: 1.5;
+  color: rgba(250, 248, 245, .5);
+}
+.ko-flag b {
+  padding: 4px 10px 5px;
+  border-radius: 999px;
+  background: rgba(214, 137, 96, .16);
+  box-shadow: inset 0 0 0 1px rgba(214, 137, 96, .34);
+  color: #E2A279;
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+}
+.ko-adr-btns { display: flex; flex-wrap: wrap; gap: 9px; margin: clamp(18px, 2.4vh, 28px) 0 0; }
+.ko-mini {
+  padding: 10px 19px 11px;
+  border-radius: 999px;
+  background: var(--ko-acc);
+  color: #07120E;
+  font-size: 13px;
+  font-weight: 650;
+  text-decoration: none;
+  transition: background .3s var(--hx-ease-out), color .3s var(--hx-ease-out);
+}
+.ko-mini:hover { background: #63c9a8; }
+.ko-mini--ghost {
+  background: transparent;
+  color: rgba(250, 248, 245, .84);
+  box-shadow: inset 0 0 0 1px rgba(250, 248, 245, .22);
+}
+.ko-mini--ghost:hover { background: rgba(250, 248, 245, .1); color: var(--hx-paper); }
+
+/* ---------------------------------------------------------------- 3 · one photograph */
+
+.ko-shot { position: relative; }
+.ko-shot-img {
+  display: block;
+  width: 100%;
+  height: auto;
+  /* its own ratio, because height:100% in an auto-height row silently falls back to auto */
+  aspect-ratio: 25 / 9;
+  object-fit: cover;
+  object-position: 50% 52%;
+  filter: saturate(.94) contrast(1.03) brightness(.92);
+}
+/* 2026-09-22: the caption („Sitzwange · Leder und Perforierung") is gone on Manuel's word.
+   The description lives on in the image's alt text, where a screen reader still finds it. */
+
+/* ---------------------------------------------------------------- 4 · when
+
+   „Online buchbare Termine" is the client's own heading and the only honest one:
+   their repo still carries a TODO to confirm the official opening hours per location,
+   so this page never calls these times Öffnungszeiten. */
+
+.ko-when {
+  display: grid;
+  grid-template-columns: minmax(0, 1.05fr) minmax(300px, .95fr);
+  align-items: start;
+  gap: clamp(24px, 3.4vw, 64px);
+  max-width: 1640px;
+  margin: 0 auto;
+  padding: clamp(42px, 7vh, 90px) var(--hx-gutter) clamp(38px, 6vh, 76px);
+}
+.ko-h {
+  margin: clamp(10px, 1.6vh, 18px) 0 0;
+  font-size: clamp(28px, 3.6vw, 62px);
+  line-height: .96;
+  color: var(--hx-paper);
+}
+.ko-note {
+  max-width: 48ch;
+  margin: clamp(14px, 2vh, 22px) 0 0;
+  font-size: clamp(14px, 1.02vw, 16.5px);
+  line-height: 1.58;
+  color: rgba(250, 248, 245, .64);
+}
+.ko-note a { color: var(--ko-acc); text-decoration: none; border-bottom: 1px solid rgba(77, 178, 146, .34); }
+.ko-note a:hover { border-bottom-color: var(--ko-acc); }
+
+.ko-tbl {
+  width: 100%;
+  border-collapse: collapse;
+  border: 1px solid var(--ko-line);
+  border-radius: var(--ko-r);
+  overflow: hidden;
+}
+.ko-tbl tr { border-bottom: 1px solid var(--ko-line); }
+.ko-tbl tr:last-child { border-bottom: 0; }
+.ko-tbl th,
+.ko-tbl td { padding: clamp(13px, 1.6vh, 19px) clamp(16px, 1.6vw, 26px); text-align: left; }
+.ko-tbl th {
+  width: 42%;
+  font-size: clamp(13.5px, 1vw, 16px);
+  font-weight: 600;
+  color: rgba(250, 248, 245, .62);
+}
+.ko-tbl td {
+  font-size: clamp(14.5px, 1.15vw, 19px);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  color: var(--hx-paper);
+}
+.ko-tbl tr.is-off th { color: rgba(250, 248, 245, .34); }
+.ko-tbl tr.is-off td { color: rgba(250, 248, 245, .34); font-weight: 400; }
+
+/* ---------------------------------------------------------------- 5 · the three ways */
+
+.ko-ways {
+  max-width: 1640px;
+  margin: 0 auto;
+  padding: 0 var(--hx-gutter) clamp(40px, 6.5vh, 84px);
+}
+.ko-way-g {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: clamp(12px, 1.4vw, 22px);
+  margin: clamp(16px, 2.4vh, 26px) 0 0;
+}
+.ko-way {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: clamp(20px, 2vw, 32px) clamp(14px, 1.2vw, 22px);
+  border: 1px solid var(--ko-line);
+  border-radius: var(--ko-r);
+  background: rgba(250, 248, 245, .028);
+  text-decoration: none;
+  transition: background .3s var(--hx-ease-out), border-color .3s var(--hx-ease-out);
+}
+.ko-way:hover { background: rgba(250, 248, 245, .06); border-color: rgba(77, 178, 146, .34); }
+/* 2026-09-22: the 01/02/03 numbers are gone — three cards do not need counting. */
+.ko-way-t {
+  margin: 0;
+  font-family: var(--hx-font);
+  font-weight: var(--hx-weight);
+  font-size: clamp(19px, 1.6vw, 28px);
+  letter-spacing: var(--hx-track);
+  color: var(--hx-paper);
+}
+.ko-way-v {
+  margin: 6px 0 0;
+  font-size: clamp(13.5px, 1vw, 16px);
+  font-weight: 600;
+  color: var(--ko-acc);
+  overflow-wrap: anywhere;
+}
+/* Manuel, 2026-09-22: „every text gets one line and is not cut into two lines." The tightest
+   case is the THREE-column desktop, not the phone — at one or two columns a card is far wider.
+   So the size is tied to the viewport and the two lines I had written were shortened; the
+   client's own 24-hour sentence is the longest and sets the floor. */
+.ko-way-d {
+  margin: clamp(9px, 1.2vh, 13px) 0 0;
+  font-size: clamp(11.5px, .88vw, 13px);
+  line-height: 1.5;
+  white-space: nowrap;
+  color: rgba(250, 248, 245, .54);
+}
+
+/* ---------------------------------------------------------------- 6 · or we come to you */
+
+/* Manuel, 2026-09-22: „does not look like a real section." It was one sentence and a pill in a
+   tinted strip. Now it is a band with the weight of the others: its own heading, the client's
+   own area sentence, the fee as a figure beside it, and two ways on. */
+.ko-area {
+  border-top: 1px solid var(--ko-line);
+  border-bottom: 1px solid var(--ko-line);
+  background:
+    radial-gradient(70% 130% at 8% 50%, rgba(77, 178, 146, .16) 0%, transparent 64%),
+    linear-gradient(to bottom, #0A0A0E 0%, #07070A 100%);
+}
+.ko-area-in {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: clamp(22px, 3.4vw, 64px);
+  max-width: 1640px;
+  margin: 0 auto;
+  padding: clamp(44px, 7vh, 92px) var(--hx-gutter);
+}
+.ko-area-h {
+  margin: clamp(10px, 1.6vh, 18px) 0 0;
+  font-family: var(--hx-font);
+  font-weight: var(--hx-weight);
+  letter-spacing: var(--hx-track);
+  font-size: clamp(28px, 3.6vw, 62px);
+  line-height: .96;
+  color: var(--hx-paper);
+}
+.ko-area-t {
+  max-width: 56ch;
+  margin: clamp(12px, 1.8vh, 20px) 0 0;
+  font-size: clamp(14.5px, 1.1vw, 18px);
+  line-height: 1.55;
+  color: rgba(250, 248, 245, .72);
+}
+.ko-area-btns { display: flex; flex-wrap: wrap; gap: 11px; margin: clamp(18px, 2.6vh, 28px) 0 0; }
+.ko-area-fig {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 3px;
+  padding: clamp(22px, 2.4vw, 38px) clamp(26px, 2.8vw, 46px);
+  border: 1px solid rgba(77, 178, 146, .3);
+  border-radius: var(--ko-r);
+  background: rgba(77, 178, 146, .08);
+}
+.ko-fig-v {
+  font-family: var(--hx-font);
+  font-weight: var(--hx-weight);
+  letter-spacing: var(--hx-track);
+  font-size: clamp(34px, 3.4vw, 60px);
+  line-height: 1;
+  color: var(--ko-acc);
+}
+.ko-fig-k { margin-top: 6px; font-size: 13.5px; font-weight: 600; color: rgba(250, 248, 245, .82); }
+.ko-fig-d { font-size: 12.5px; color: rgba(250, 248, 245, .44); }
+
+/* ---------------------------------------------------------------- 7 · the close */
+
+.ko-end {
+  position: relative;
+  min-height: min(72svh, 660px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: clamp(54px, 8.5vh, 104px) var(--hx-gutter);
+  background: radial-gradient(120% 80% at 50% 0%, #FFFFFF 0%, #F7F3ED 55%, #E9E2D8 100%);
+  color: var(--hx-ink);
+  text-align: center;
+}
+.ko-end-label { color: #0a6a52; }
+.ko-end-t {
+  margin: clamp(12px, 1.8vh, 18px) 0 0;
+  font-size: clamp(34px, 5.2vw, 98px);
+  line-height: .92;
+}
+.ko-end-t em { font-style: normal; color: #0a6a52; }
+.ko-end-btns { display: flex; flex-wrap: wrap; justify-content: center; gap: 12px; margin: clamp(22px, 3.4vh, 38px) 0 0; }
+.ko-end .ko-btn { background: var(--hx-ink); color: var(--hx-paper); }
+.ko-end .ko-btn:hover { background: #0a6a52; color: #fff; }
+.ko-end .ko-btn--ghost { background: transparent; color: var(--hx-ink); box-shadow: inset 0 0 0 1px rgba(13, 13, 18, .26); }
+.ko-end .ko-btn--ghost:hover { background: var(--hx-ink); color: var(--hx-paper); }
+.ko-social { display: flex; gap: clamp(14px, 2vw, 28px); margin: clamp(20px, 3vh, 34px) 0 0; }
+.ko-social a {
+  font-size: 13.5px;
+  font-weight: 600;
+  color: rgba(13, 13, 18, .5);
+  text-decoration: none;
+  transition: color .3s ease;
+}
+.ko-social a:hover { color: #0a6a52; }
+.ko-home {
+  margin: clamp(16px, 2.4vh, 28px) 0 0;
+  font-size: 13.5px;
+  font-weight: 600;
+  color: rgba(13, 13, 18, .5);
+  text-decoration: none;
+}
+.ko-home:hover { color: var(--hx-ink); }
+.ko-home span { margin-right: 7px; }
+
+/* ---------------------------------------------------------------- the press
+
+   2026-09-22, later the same day: this page had its own `:active { scale: … }` block for a
+   few hours. `press.js` owns the press for all ten pages now — in JavaScript, because a
+   stylesheet cannot ADD `scale` to a transition without replacing the page's own, and because
+   GSAP's inline `scale: none` beats any stylesheet rule anyway. */
+
+/* ---------------------------------------------------------------- reveals */
+
+.hx-js .ko-reveal { opacity: 0; }
+
+@media (prefers-reduced-motion: reduce) {
+  .hx-js .ko-reveal { opacity: 1; }
+}
+
+/* ---------------------------------------------------------------- narrower */
+
+@media (max-width: 1099px) {
+  .ko-when { grid-template-columns: minmax(0, 1fr); }
+  .ko-area-in { grid-template-columns: minmax(0, 1fr); }
+  .ko-area-fig { align-self: start; }
+  .ko-way-g { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+@media (max-width: 719px) {
+  .ko-adrs { grid-template-columns: minmax(0, 1fr); }
+  .ko-way-g { grid-template-columns: minmax(0, 1fr); }
+  .ko-shot-img { aspect-ratio: 4 / 3; }
+}

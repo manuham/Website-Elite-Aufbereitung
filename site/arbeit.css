@@ -1,0 +1,343 @@
+/* ===================================================================================
+   „Unsere Arbeit" (arbeit.html) — „Die Kartei", Manuel's pick 2026-09-20.
+
+   A dense wall of photographs, edge to edge, with NO gaps: the wall is a grid with
+   `grid-auto-flow: dense`, a wide photo takes two columns, a tall one two rows, and
+   dense packing fills every hole that leaves. Nothing on the wall is written on —
+   a caption appears on hover and in the opened view, nowhere else.
+
+   Tokens (--hx-ink, --hx-paper, --hx-gutter, the Inter faces, .hx-label) come from
+   hero.css; the navbar from nav.css. This file owns only what is on this page.
+   =================================================================================== */
+
+.ha-page {
+  --ha-acc: #4DB292;
+  --ha-row: clamp(150px, 15.5vw, 250px);
+  background: #0B0B0F;
+}
+/* the opened photo (and the phone menu) lock the page with `overflow: hidden`; keeping the scrollbar's
+   gutter stops the wall jumping sideways under it — and keeps the zoom's way home on its tile */
+html { scrollbar-gutter: stable; }
+
+.ha {
+  position: relative;
+  padding: calc(55px + clamp(30px, 6vh, 74px)) 0 0;
+}
+
+/* ---- head */
+.ha-head {
+  padding: 0 var(--hx-gutter) clamp(26px, 4vh, 44px);
+  max-width: 1640px;
+  margin: 0 auto;
+}
+.ha-title {
+  margin: 0;
+  font-family: var(--hx-font);
+  font-weight: var(--hx-weight);
+  font-size: clamp(46px, 9vw, 148px);
+  letter-spacing: var(--hx-track);
+  line-height: .86;
+  color: var(--hx-paper);
+}
+.ha-line { display: inline-block; }
+.ha-line--acc { color: var(--ha-acc); }
+.ha-intro {
+  max-width: 62ch;
+  margin: clamp(16px, 2.4vh, 26px) 0 0;
+  font-size: clamp(15px, 1.15vw, 19px);
+  line-height: 1.55;
+  color: rgba(250, 248, 245, .62);
+}
+
+/* ---- the strip that re-lays the wall
+   2026-09-26, Manuel: centred, the home page's own button (`.hx-btn` in the markup — 50 px, 15 px/600),
+   no numbers. Its colours are in solid.css §4, its hover is solid.css §8, like every button's. */
+.ha-chips {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 10px;
+  margin: clamp(28px, 4.4vh, 48px) 0 0;
+}
+.ha-chip {
+  border: 0;
+  font-family: inherit;
+  cursor: pointer;
+}
+
+/* ---- the wall: four columns, no gaps, dense packing. Dense alone still left the END open (37 cells
+   never divide by 4, 3 or 2), so arbeit.js places the tiles and closes what is left — 2026-09-25. */
+.ha-wall {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-auto-rows: var(--ha-row);
+  grid-auto-flow: dense;
+  gap: 0;
+}
+.ha-tile {
+  position: relative;
+  display: block;
+  padding: 0;
+  border: 0;
+  background: #14141A;
+  overflow: hidden;
+  cursor: zoom-in;
+  grid-column: span 1;
+  grid-row: span 1;
+}
+.ha-tile.is-wide { grid-column: span 2; }
+.ha-tile.is-tall { grid-row: span 2; }
+.ha-tile[hidden] { display: none; }
+.ha-tile img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  transition: transform .8s var(--hx-ease-out), filter .5s var(--hx-ease-out);
+}
+@media (hover: hover) {
+  .ha-tile:hover img { transform: scale(1.045); }
+}
+.ha-tile:focus-visible { outline: 2px solid var(--ha-acc); outline-offset: -4px; z-index: 2; }
+
+/* the caption lives here and only here — the wall itself stays pictures */
+.ha-hover {
+  position: absolute;
+  inset: auto 0 0 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 34px clamp(12px, 1vw, 18px) clamp(11px, .9vw, 15px);
+  background: linear-gradient(180deg, transparent 0%, rgba(8, 8, 11, .82) 62%, rgba(8, 8, 11, .94) 100%);
+  text-align: left;
+  opacity: 0;
+  transform: translateY(8px);
+  transition: opacity .35s var(--hx-ease-out), transform .45s var(--hx-ease-out);
+  pointer-events: none;
+}
+/* hover only where there IS hover — on a touch screen `:hover` sticks to the last photo tapped */
+@media (hover: hover) {
+  .ha-tile:hover .ha-hover { opacity: 1; transform: translateY(0); }
+}
+.ha-tile:focus-visible .ha-hover { opacity: 1; transform: translateY(0); }
+.ha-hover b {
+  font-size: 13px;
+  font-weight: 650;
+  letter-spacing: -.005em;
+  color: var(--hx-paper);
+}
+.ha-hover i {
+  font-style: normal;
+  font-size: 11.5px;
+  line-height: 1.35;
+  color: rgba(250, 248, 245, .6);
+}
+
+/* ---- the closing line */
+.ha-foot {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  max-width: 1640px;
+  margin: 0 auto;
+  padding: clamp(28px, 4.5vh, 52px) var(--hx-gutter) clamp(44px, 8vh, 96px);
+  font-size: 13.5px;
+  color: rgba(250, 248, 245, .5);
+}
+.ha-foot b { font-weight: 600; color: var(--hx-paper); }
+.ha-cta {
+  padding: 13px 26px 14px;
+  border-radius: 999px;
+  background: var(--hx-paper);
+  color: #0B0B0F;
+  font-size: 14px;
+  font-weight: 650;
+  text-decoration: none;
+  transition: background .3s var(--hx-ease-out), color .3s var(--hx-ease-out);
+}
+.ha-cta:hover { background: var(--ha-acc); color: #0B0B0F; }
+.ha-cta:focus-visible { outline: 2px solid var(--ha-acc); outline-offset: 3px; }
+
+/* ---- the opened photograph
+   2026-09-26, Manuel: the controls „like Apple does". What Apple's viewers do, and this now does:
+   round controls in a frosted dark glass that lets the photo glow through, a DRAWN icon centred in
+   the circle (the ‹ › × text glyphs sat low and off-centre), no ring, a quiet hover that only
+   brightens. The photo itself grows out of its tile and flies back into it (arbeit.js). */
+.ha-view {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  display: grid;
+  place-items: center;
+  padding: clamp(18px, 4vh, 54px) clamp(70px, 8vw, 128px);
+}
+.ha-view[hidden] { display: none; }
+.ha-view-bg {
+  position: absolute;
+  inset: 0;
+  background: rgba(6, 6, 9, .94);
+  -webkit-backdrop-filter: blur(14px);
+  backdrop-filter: blur(14px);
+}
+.ha-view-in {
+  position: relative;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  max-height: 100%;
+}
+/* its width and height are set by arbeit.js (as large as the screen allows, never past its file) — a
+   CSS max-height here would squeeze the height alone and crop the photo */
+.ha-view-in img {
+  display: block;
+  object-fit: cover;
+  border-radius: 14px;
+  box-shadow: 0 40px 110px -40px rgba(0, 0, 0, .9);
+  will-change: transform;
+}
+.ha-view-in figcaption {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: center;
+  gap: 4px 10px;
+  text-align: center;
+}
+.ha-view-in b { font-size: 15px; font-weight: 650; color: var(--hx-paper); }
+.ha-view-in i { font-style: normal; font-size: 13.5px; color: rgba(250, 248, 245, .58); }
+
+.ha-ctl {
+  position: absolute;
+  z-index: 2;
+  display: grid;
+  place-items: center;
+  width: 48px;
+  height: 48px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: rgba(66, 66, 69, .72);
+  -webkit-backdrop-filter: saturate(180%) blur(20px);
+  backdrop-filter: saturate(180%) blur(20px);
+  color: rgba(255, 255, 255, .8);
+  cursor: pointer;
+  transition: background-color .24s ease, color .24s ease;
+}
+.ha-ctl svg {
+  display: block;
+  width: 20px;
+  height: 20px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2.1;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.ha-ctl:hover { background: rgba(92, 92, 96, .8); color: #fff; }
+.ha-ctl:focus-visible { outline: 2px solid var(--hx-paper); outline-offset: 3px; }
+.ha-close {
+  top: clamp(14px, 2.4vh, 26px);
+  right: clamp(14px, 2vw, 30px);
+  width: 40px;
+  height: 40px;
+}
+.ha-close svg { width: 18px; height: 18px; }
+/* centred by margin, not transform: press.js sinks every button with the CSS `scale` property */
+.ha-nav { top: 50%; margin-top: -24px; }
+.ha-nav--prev { left: clamp(12px, 2.2vw, 36px); }
+.ha-nav--next { right: clamp(12px, 2.2vw, 36px); }
+
+/* ---- the Zoom cursor (arbeit.js builds it; only with a mouse, only over the photos) */
+.ha-cursor {
+  position: fixed;
+  left: 0;
+  top: 0;
+  z-index: 150;
+  width: 0;
+  height: 0;
+  pointer-events: none;
+}
+.ha-cursor-sq,
+.ha-cursor-icon {
+  position: absolute;
+  left: -44px;
+  top: -44px;
+  width: 88px;
+  height: 88px;
+}
+.ha-cursor-blob {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: rgba(250, 248, 245, .93);
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+  box-shadow: 0 22px 44px -20px rgba(0, 0, 0, .7);
+}
+.ha-cursor-icon {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  color: var(--hx-ink);
+}
+.ha-cursor-icon svg {
+  width: 23px;
+  height: 23px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.9;
+  stroke-linecap: round;
+}
+.ha-cursor-icon b {
+  font-size: 9.5px;
+  font-weight: 700;
+  letter-spacing: .18em;
+  text-transform: uppercase;
+  padding-left: .18em;   /* the tracking hangs after the last letter — this re-centres the word */
+}
+/* with the badge, the normal pointer steps aside over the photos — and the photo leans toward it */
+html.ha-cur .ha-tile { cursor: none; }
+@media (hover: hover) {
+  html.ha-cur .ha-tile:hover img {
+    transform: scale(1.085) translate(calc(var(--px, 0) * -2.6%), calc(var(--py, 0) * -2.6%));
+    transition: transform 1s var(--hx-ease-out), filter .5s var(--hx-ease-out);
+  }
+}
+
+/* ---- reveals (hero.js's ease tokens; arbeit.js plays them) */
+.hx-js .ha-reveal { opacity: 0; }
+.hx-js .ha-tile { opacity: 0; }
+
+@media (max-width: 1279px) {
+  .ha-wall { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
+@media (max-width: 699px) {
+  .ha-page { --ha-row: 34vw; }
+  .ha-wall { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .ha-title { font-size: clamp(42px, 13vw, 62px); }
+  /* five buttons do not fit one phone line: they wrap, centred, the size the home page's buttons take
+     on a phone (a sideways strip would cut the last one off — that reads as broken) */
+  .ha-chips { gap: 8px; max-width: 320px; margin-inline: auto; }   /* 3 + 2, not 4 + a lone „Studio" */
+  .ha-chips .ha-chip { height: 36px; padding: 0 16px; font-size: 14px; }   /* one step under solid.css §9, which loads last — hence the two classes */
+  /* 2026-09-26: the captions used to stand on every photo here (a phone has no hover), which wrote
+     27 labels across the wall — the one thing „Die Kartei" said the wall never carries. A tap opens
+     the photo, and the caption is there. */
+  .ha-foot { justify-content: flex-start; }
+  /* the photo viewer: room at the sides for the photo, the arrows as a pair under it (and a swipe) */
+  .ha-view { padding: 64px 14px 96px; }
+  .ha-nav { top: auto; margin-top: 0; bottom: max(24px, env(safe-area-inset-bottom)); width: 46px; height: 46px; }
+  .ha-nav--prev { left: calc(50% - 56px); }
+  .ha-nav--next { right: calc(50% - 56px); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hx-js .ha-reveal,
+  .hx-js .ha-tile { opacity: 1; }
+  .ha-tile img { transition: none; }
+}

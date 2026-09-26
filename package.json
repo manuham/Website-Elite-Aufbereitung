@@ -5,12 +5,13 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "vite build && vite build --ssr src/entry-server.jsx --outDir dist-ssr && node scripts/prerender.mjs",
+    "build": "node scripts/build-static.mjs",
     "lint": "eslint . --ext js,jsx --report-unused-disable-directives --max-warnings 0",
     "preview": "vite preview",
     "images:optimize": "node scripts/optimize-images.mjs",
     "images:measure": "node scripts/seo/measure-images.mjs",
-    "test": "vitest run"
+    "test": "vitest run",
+    "build:react": "vite build && vite build --ssr src/entry-server.jsx --outDir dist-ssr && node scripts/prerender.mjs"
   },
   "dependencies": {
     "googleapis": "^171.4.0",

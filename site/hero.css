@@ -1,0 +1,3020 @@
+/* Elité — hero prototype (2026-09-16)
+   Everything for the new hero lives here, prefixed hx-. The navbar is NOT styled here:
+   its CSS is nav.css, compiled from the live site's own Tailwind classes. */
+
+/* Inter, self-hosted (variable wght 100–900 + opsz). The navbar asks for font-family "Inter",
+   exactly like the live site; at 15px the optical-size axis resolves to the text cut, at
+   hero sizes to the display cut — no second typeface needed. font-display: block so a filmed
+   take never reflows when the face arrives. */
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-display: block;
+  font-weight: 100 900;
+  src: url('assets/fonts/inter-latin-ext-opsz.woff2') format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329,
+    U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-display: block;
+  font-weight: 100 900;
+  src: url('assets/fonts/inter-latin-opsz.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308,
+    U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+/* Playfair Display Italic 400, Latin — self-hosted since the go-live (2026-09-26): loading it from
+   fonts.googleapis.com sends every visitor's IP address to Google (the Austrian/German courts'
+   Google-Fonts cases). File: fonts.gstatic.com …/playfairdisplay/v40/…tHA-Q.woff2, SIL Open Font
+   Licence. The pages' Google link is dropped by _build/export-live.mjs. */
+@font-face {
+  font-family: 'Playfair Display';
+  font-style: italic;
+  font-weight: 400;
+  font-display: swap;
+  src: url('assets/fonts/playfair-display-italic-latin.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308,
+    U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+:root {
+  --hx-ink: #0D0D12;          /* obsidian — the site's own ground */
+  --hx-paper: #FAF8F5;        /* ivory */
+  --hx-gutter: clamp(20px, 3.4vw, 64px);
+  --hx-bottom: clamp(28px, 5.6vh, 64px);
+  --hx-ease-out: cubic-bezier(.16, 1, .3, 1);
+}
+
+/* ---------------------------------------------------------------- stage */
+
+/* Scroll budget, in viewport heights: the van rises over --hx-rise, the landed frame holds for
+   --hx-hold, then the stage stays pinned for --hx-cover while section 2 slides in over it.
+   On :root because section 2 needs --hx-cover too (it starts 100 + cover up the page).
+   hero.js reads all three. History: --hx-cover was 100 for the first section 2, 0 while there was
+   none (2026-09-17), 100 again for the strip. */
+:root {
+  --hx-rise: 105;
+  --hx-hold: 20;
+  --hx-cover: 100;
+}
+.hx {
+  position: relative;
+  height: calc(100vh + (var(--hx-rise) + var(--hx-hold) + var(--hx-cover)) * 1vh);
+}
+.hx-stage {
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  overflow: hidden;
+  background: var(--hx-ink);
+  isolation: isolate;
+}
+@supports (height: 100lvh) {
+  .hx { height: calc(100lvh + (var(--hx-rise) + var(--hx-hold) + var(--hx-cover)) * 1lvh); }
+  .hx-stage { height: 100lvh; }
+}
+.hx-stage-dim {
+  position: absolute;
+  z-index: 10;
+  inset: 0;
+  background: var(--hx-ink);
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* ---------------------------------------------------------------- triptych */
+
+.hx-tri {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  will-change: transform;
+}
+
+/* Absolute thirds, each overlapping its right-hand neighbour by 1px: at widths not divisible
+   by three a plain 1fr grid lands the seam on a sub-pixel and the dark stage shows through as
+   a hairline. The later panel paints over the overlap, so the seam stays invisible. */
+.hx-panel {
+  position: absolute;
+  z-index: 0;          /* own stacking context: GSAP's z-index on the slides must stay inside it,
+                          or the incoming slide paints over the grade below */
+  top: 0;
+  bottom: 0;
+  overflow: hidden;
+  background: #111117;
+}
+.hx-panel[data-panel="left"]   { left: 0; width: calc(100% / 3 + 1px); }
+.hx-panel[data-panel="middle"] { left: calc(100% / 3); width: calc(100% / 3 + 1px); }
+.hx-panel[data-panel="right"]  { left: calc(200% / 3); right: 0; }
+
+.hx-slide {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  visibility: hidden;
+}
+.hx-slide-in {
+  position: absolute;
+  inset: 0;
+  will-change: transform;
+}
+.hx-slide-in img {
+  width: 100%;
+  height: 100%;
+  max-width: none;
+  object-fit: cover;
+}
+.hx-slide-shade {
+  position: absolute;
+  inset: 0;
+  background: #060609;
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* Without script the first photo of each column simply shows. */
+.hx-slide:first-child { visibility: visible; }
+.hx-js .hx-slide:first-child { visibility: hidden; }
+
+/* One grade over all three columns: a lid for the navbar, a floor for the text. */
+.hx-tri-grade {
+  position: absolute;
+  z-index: 1;
+  inset: 0;
+  pointer-events: none;
+  background:
+    linear-gradient(180deg, rgba(13, 13, 18, .62) 0%, rgba(13, 13, 18, 0) 24%),
+    linear-gradient(0deg, rgba(13, 13, 18, .94) 0%, rgba(13, 13, 18, .62) 26%, rgba(13, 13, 18, 0) 60%),
+    rgba(13, 13, 18, .14);
+}
+.hx-tri-dim {
+  position: absolute;
+  z-index: 1;
+  inset: 0;
+  background: var(--hx-ink);
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* ---------------------------------------------------------------- van plate */
+
+/* 2026-09-23, Manuel, holding a Mercedes page next to ours: the plate is a white sheet now, the
+   recommendation line sits ABOVE the picture, and the picture is a rounded frame inside the sheet.
+   Our wide format stays (his word: not the 4:3 of the reference), and the slogan, the sentence and
+   the button keep their places inside the picture.
+   ⚠ The sheet is white and the navbar is ivory-on-transparent — hero.js therefore counts .hx-van
+   among the light grounds, so the bar turns near-solid the moment the white reaches the top. */
+.hx-van {
+  /* clears the 55 px bar with air under it. 2026-09-26, Manuel: „thinn the white upper bar … so the space
+     on the page is more filled with the image" — was clamp(74px, 10.5vh, 116px), gap below 12–24 px. */
+  --hx-van-top: clamp(64px, 8.2vh, 92px);
+  --hx-van-edge: clamp(14px, 2.4vw, 46px);    /* the white margin around the picture */
+  --hx-van-in: clamp(18px, 2.2vw, 40px);      /* the text inset INSIDE the picture */
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  padding: var(--hx-van-top) var(--hx-van-edge) var(--hx-van-edge);
+  background: var(--hx-paper);
+  transform: translate3d(0, 100%, 0);
+  will-change: transform;
+  box-shadow: 0 -40px 90px -20px rgba(0, 0, 0, .6);
+}
+/* one line above the picture: the heading, then the subject in a softer ink */
+.hx-van-head {
+  flex: none;
+  margin: 0 0 clamp(8px, 1.3vh, 16px);
+  font-family: var(--hx-font);
+  font-weight: var(--hx-weight);
+  letter-spacing: var(--hx-track);
+  line-height: 1.05;
+  font-size: clamp(23px, 2.5vw, 42px);
+  color: var(--hx-ink);
+  text-wrap: balance;
+}
+/* No entrance of its own: the line belongs to the sheet and rides up with it. Fading it in after
+   the landing left a blank white band 140 px tall while the sheet was still rising (measured at
+   1440 on 2026-09-23) — the picture arrives with its heading already on it, as on the reference. */
+
+/* the picture itself: everything that used to sit on the plate now sits in here */
+.hx-van-frame {
+  position: relative;
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: hidden;
+  border-radius: clamp(12px, 1.25vw, 20px);
+  /* Code review 2026-09-24: the picture in here moves on every scroll frame (will-change: transform),
+     and Safari has a history of not clipping such a child to the rounded corners of a parent that is
+     not its own stacking context — square corners on the iPhone the demo is shown on. isolation makes
+     the frame that context; the geometry does not change. (Tried first: the same corner again as a
+     clip-path — it softened the frame's top edge by a pixel in Chrome, 953 px changed at 1440.)
+     Not checked on a real iPhone: there is no Safari on this machine. */
+  isolation: isolate;
+  container-type: size;                /* the picture's crop (below) is worked out from this frame's size */
+  background: var(--hx-ink);
+}
+.hx-van-img {
+  position: absolute;
+  inset: 0;
+  transform-origin: 50% 62%;
+  will-change: transform;
+}
+.hx-van-img img {
+  width: 100%;
+  height: 100%;
+  max-width: none;
+  object-fit: cover;
+  object-position: 50% 58%;            /* browsers without container units keep this */
+  /* 2026-09-24, Manuel with a screenshot: „can you move the van up a little so its not interfearing
+     with the text". On a wide screen the frame is wider than the 16:9 picture, so the picture is fitted
+     to the frame's width and cut off above and below — and 58 % put the plate and the white bumper
+     right behind „Sorgfalt fährt vor.". Now the picture sits as high as it can while the tip of the
+     antenna stays 12 px under the frame's top edge. The picture is 941/1672 = 56.28 % of its width
+     tall, and the tip sits at T % of its height, so the tip lands at  top + (T × 56.28 %) cqw.
+     max(…) keeps the picture's foot on the frame's foot (never a gap under it), min(0, …) leaves a
+     picture fitted by HEIGHT (tall frames) where it was. A new van picture needs T measured again:
+       2026-09-24  van (lake at sunset)          tip 24.44 %, roof 28.06 %  →  13.76 cqw
+       2026-09-26  van-2026-09-26 (Manuel's pick, in front of a building)  tip 16.47 %, roof 22.42 %  →  9.27 cqw
+     (the same number is in the sideways-phone block below) */
+  object-position: 50% min(0px, max(calc(100cqh - 56.28cqw), calc(12px - 9.27cqw)));
+}
+.hx-van-scrim {
+  position: absolute;
+  inset: 0;
+  background: var(--hx-ink);
+  opacity: .6;
+  pointer-events: none;
+}
+.hx-van-floor {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  pointer-events: none;
+  background:
+    linear-gradient(0deg, rgba(13, 13, 18, .9) 0%, rgba(13, 13, 18, .62) 22%, rgba(13, 13, 18, 0) 52%),
+    linear-gradient(180deg, rgba(13, 13, 18, .35) 0%, rgba(13, 13, 18, 0) 18%);
+}
+
+.hx-van-copy {
+  position: absolute;
+  left: var(--hx-van-in);
+  right: var(--hx-van-in);
+  bottom: var(--hx-van-in);
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: end;
+  column-gap: 48px;
+}
+.hx-js .hx-van-copy { visibility: hidden; }
+
+.hx-van-main { min-width: 0; }
+.hx-van-side {
+  width: min(400px, 27vw);
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 24px;
+  padding-bottom: 10px;               /* sits on the slogan's baseline, not its descender */
+}
+
+.hx-slogan {
+  display: inline-flex;
+  flex-wrap: nowrap;
+  column-gap: var(--hx-word-gap);
+  margin: clamp(14px, 2.2vh, 26px) 0 0 var(--hx-pull); /* optical: pull the first letter onto the text edge */
+  font-size: calc(clamp(56px, 9vw, 180px) * var(--hx-scale)); /* hero.js fits it to its column on wide screens */
+  line-height: .86;        /* one line here; the side column's baseline alignment is tuned to it */
+  color: var(--hx-paper);
+  white-space: nowrap;
+}
+.hx-word {
+  display: inline-block;
+  overflow: hidden;
+  /* the mask must clear an umlaut above a capital and the g below */
+  padding: .22em .06em .22em;
+  margin: -.22em -.06em -.22em;
+}
+.hx-word-in { display: inline-block; }
+.hx-js .hx-word-in { transform: translate3d(0, 160%, 0); } /* 160 = hero.js PARK — 115 let letter tops show as dots (2026-09-23) */
+
+/* ---------------------------------------------------------------- opening copy */
+
+.hx-copy {
+  position: absolute;
+  left: var(--hx-gutter);
+  right: var(--hx-gutter);
+  bottom: var(--hx-bottom);
+  z-index: 3;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: end;
+  column-gap: 48px;
+  pointer-events: none;
+}
+.hx-copy a { pointer-events: auto; }
+.hx-copy-main,
+.hx-copy-side { will-change: transform, opacity; }
+.hx-copy-side { width: min(400px, 27vw); padding-bottom: .2em; }
+
+.hx-title {
+  /* flow-root keeps the lines' negative mask margins inside the heading instead of collapsing
+     through it; the - .1em keeps the gap to the label above what the first build had. */
+  display: flow-root;
+  margin-top: calc(clamp(14px, 2.2vh, 26px) - .1em);
+  font-size: calc(clamp(46px, 6.5vw, 132px) * var(--hx-scale));
+  line-height: var(--hx-lead);
+  color: var(--hx-paper);
+}
+.hx-line {
+  display: block;
+  overflow: hidden;
+  padding: .22em 0 .18em;
+  margin: -.22em 0 -.18em;
+}
+.hx-line-in { display: block; }
+.hx-js .hx-line-in { transform: translate3d(0, 160%, 0); } /* 160 = hero.js PARK — 115 let letter tops show as dots (2026-09-23) */
+.hx-js .hx-reveal { opacity: 0; }
+
+/* ---- EXPERIMENT 2026-09-19: „Perfektion trifft / Präzision." (Manuel: "just as a test").
+   Same place as before (bottom left). The label sits centred over the headline between two short
+   rules, like the live site's old hero; the headline's two lines are fitted by hero.js (fitHero) —
+   „Präzision." to the column, „Perfektion trifft" one size down to almost the same width; the
+   sentence from the side column sits under the headline. The CSS sizes below are only the
+   no-JS / first-paint fallback. The version before is in _archive/2026-09-19-hero-before-experiment/. */
+.hx-copy--duo .hx-copy-side { width: auto; }
+/* shrink-wraps to the headline, so the label can centre itself over exactly that width */
+.hx-head {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: stretch;
+  max-width: 100%;
+}
+.hx-label--ruled {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  white-space: nowrap;
+}
+.hx-label--ruled::before,
+.hx-label--ruled::after {
+  content: '';
+  flex: 0 0 clamp(26px, 2.6vw, 46px);
+  height: 1px;
+  background: currentColor;
+  opacity: .55;
+}
+.hx-title--duo {
+  margin-top: calc(clamp(12px, 1.9vh, 22px) - .06em);
+  font-size: calc(clamp(52px, 7.6vw, 200px) * var(--hx-scale));
+}
+.hx-title--duo .hx-line--top { font-size: .56em; }
+/* Manuel's pick from the font lab (2026-09-19): C — „Perfektion trifft" in Playfair Display Italic (the
+   live site's own display serif, already loaded for the phone menu), „Präzision." in Inter 700. The
+   serif carries the craft, the grotesk the exactness. All eleven pairings: README → Font lab. */
+.hx-title--duo .hx-line--top {
+  font-family: 'Playfair Display', Georgia, serif;
+  font-style: italic;
+  font-weight: 400;
+  letter-spacing: -.005em;
+}
+.hx-title--duo .hx-line--big {
+  font-weight: 700;
+  letter-spacing: -.03em;
+}
+/* Two sizes on one line-height leave a wide gap under the small line (41 px ink gap at 1440). Pulled
+   up so the ink gap is about the same share of the big word as the old two-line headline had —
+   Manuel's standing taste: "less space in between the lines", then "just a bit closer". */
+.hx-title--duo .hx-line--big { margin-top: -.29em; }
+/* inline-block so hero.js can measure each line's own width; `top` so no baseline gap opens below */
+.hx-title--duo .hx-line-in {
+  display: inline-block;
+  vertical-align: top;
+  white-space: nowrap;           /* each line is ONE line — hero.js sizes it to fit, so it never needs to wrap */
+  margin-left: var(--hx-pull);   /* optical: the P's side bearing, pulled onto the text edge */
+}
+.hx-lede {
+  max-width: 62ch;
+  margin-top: clamp(14px, 2.2vh, 24px);
+  font-size: clamp(15px, 1.1vw, 19px);
+  line-height: 1.5;
+  color: rgba(250, 248, 245, .86);
+}
+/* two lines — like the old hero's subline. 2026-09-25, Manuel: the dash between them is gone, so the
+   break now does its job on every width (on a phone the two halves used to run on, joined by the dash). */
+.hx-lede span { display: block; }
+
+/* ---------------------------------------------------------------- display type */
+
+/* One display voice for both statements — the opening headline and the slogan.
+   Chosen by Manuel on 2026-09-16 from seven voices (A–G, archived in README.md): B, "but less
+   space in between the lines and a tiny bit thicker". The first build's −0.05em tracking was
+   the crushed "tech" look; this keeps the face and gives the letters their room back. */
+:root {
+  --hx-font: 'Inter', sans-serif;
+  --hx-weight: 650;        /* B had 600 */
+  --hx-track: -.028em;     /* the first build had -.05em */
+  --hx-lead: .84;          /* headline only. B had .98; .9, then "just a bit closer" (Manuel) */
+  --hx-scale: .96;
+  --hx-pull: -.04em;       /* optical: pulls the first letter onto the text edge */
+  --hx-word-gap: .24em;    /* slogan: gap between the masked words */
+}
+.hx-title,
+.hx-slogan {
+  font-family: var(--hx-font);
+  font-weight: var(--hx-weight);
+  letter-spacing: var(--hx-track);
+}
+
+/* ---------------------------------------------------------------- type + controls */
+
+.hx-label {
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1;
+  letter-spacing: .2em;
+  text-transform: uppercase;
+  color: rgba(250, 248, 245, .74);
+}
+.hx-body {
+  font-size: clamp(15px, 1.05vw, 18px);
+  font-weight: 400;
+  line-height: 1.55;
+  letter-spacing: -.006em;
+  color: rgba(250, 248, 245, .8);
+  text-wrap: pretty;
+}
+.hx-meta {
+  margin-top: 22px;
+  font-size: 13px;
+  line-height: 1;
+  letter-spacing: .01em;
+  color: rgba(250, 248, 245, .52);
+}
+.hx-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 14px 26px;
+  margin-top: 28px;
+}
+
+.hx-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  height: 50px;
+  padding: 0 24px;
+  border-radius: 999px;
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: -.01em;
+  white-space: nowrap;
+  transition: background-color .35s ease;
+}
+.hx-btn--light { background: var(--hx-paper); color: var(--hx-ink); }
+.hx-btn--light:hover { background: #fff; }
+/* EXPERIMENT 2026-09-19 — "make the buttons stand out more by using the Elite color, just like the
+   mobile service button": the site's own accent (tailwind `accent` #4DB292, the logo green), flat —
+   no glow, no gradient. The second button keeps the same shape in outline so the first stays first. */
+:root { --hx-brand: #4DB292; --hx-brand-hi: #62c3a3; }
+.hx-btn--brand { background: var(--hx-brand); color: var(--hx-ink); }
+.hx-btn--brand:hover { background: var(--hx-brand-hi); }
+.hx-btn--ghost {
+  background: rgba(13, 13, 18, .34);
+  color: var(--hx-paper);
+  box-shadow: inset 0 0 0 1.5px var(--hx-brand);
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
+  transition: background-color .35s ease, color .35s ease;
+}
+.hx-btn--ghost:hover { background: rgba(77, 178, 146, .2); }
+/* side by side (Manuel, 2026-09-19: "next to each other and not below each other") */
+.hx-copy--duo .hx-actions {
+  flex-direction: row;
+  flex-wrap: nowrap;
+  gap: 10px;
+  margin-top: 0;
+}
+/* 2026-09-25, Manuel: „Feldkirch · Nüziders · Mobiler Service" centred under the two buttons. The side
+   column shrink-wraps the buttons, so centring in it is centring under them. */
+.hx-copy--duo .hx-meta { text-align: center; }
+/* 2026-09-26: the arrows are gone from every button (Manuel: „premium car brands websites do not have
+   this") — with them their styles here, in .hk-, .hm-dest-, .hs- and .hq-, and the extra right padding
+   the arrow needed. The hover itself is one rule for the whole site, at the end of solid.css. */
+.hx-btn:focus-visible,
+.hx-link:focus-visible {
+  outline: 2px solid var(--hx-paper);
+  outline-offset: 4px;
+}
+
+.hx-link {
+  position: relative;
+  padding: 6px 0;
+  font-size: 15px;
+  font-weight: 500;
+  color: rgba(250, 248, 245, .92);
+}
+.hx-link::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 3px;
+  height: 1px;
+  background: currentColor;
+  opacity: .32;
+  transition: opacity .35s ease;
+}
+.hx-link:hover::after { opacity: 1; }
+
+/* ---------------------------------------------------------------- smaller screens */
+
+@media (max-width: 1023px) {
+  .hx-copy--duo .hx-actions { flex-direction: row; flex-wrap: wrap; }
+  .hx-copy--duo .hx-actions .hx-btn { justify-content: center; }
+  /* one column here, up to 520 px wide: shrink it to the buttons again so the line centres under them */
+  .hx-copy--duo .hx-copy-side { width: fit-content; max-width: 100%; }
+}
+/* phones: the two labels need ~395 px side by side and a phone has ~350 — so here they stack, full width */
+@media (max-width: 699px) {
+  .hx-copy--duo .hx-actions { flex-direction: column; align-items: stretch; }
+  .hx-copy--duo { row-gap: 20px; }
+  .hx-copy--duo .hx-copy-side { width: auto; }  /* the stacked buttons run full width, the line centres under them */
+}
+
+@media (max-width: 1023px) {
+  .hx-copy,
+  .hx-van-copy { grid-template-columns: minmax(0, 1fr); row-gap: 26px; }
+  .hx-copy-side,
+  .hx-van-side { width: auto; max-width: 520px; padding-bottom: 0; }
+  .hx-slogan { flex-wrap: wrap; white-space: normal; font-size: calc(clamp(56px, 12.5vw, 120px) * var(--hx-scale)); }
+}
+
+@media (max-width: 699px) {
+  :root { --hx-bottom: clamp(24px, 4.5vh, 40px); }
+  .hx-title { font-size: calc(clamp(36px, 10.4vw, 60px) * var(--hx-scale)); }
+  /* two lines: the g must clear the f and h below it */
+  .hx-slogan { font-size: calc(clamp(52px, 17vw, 96px) * var(--hx-scale)); line-height: .96; }
+  .hx-actions { margin-top: 22px; }
+  .hx-meta { margin-top: 18px; }
+  .hx-tri-grade {
+    background:
+      linear-gradient(180deg, rgba(13, 13, 18, .6) 0%, rgba(13, 13, 18, 0) 20%),
+      linear-gradient(0deg, rgba(13, 13, 18, .96) 0%, rgba(13, 13, 18, .78) 40%, rgba(13, 13, 18, 0) 75%),
+      rgba(13, 13, 18, .14);
+  }
+  /* A 16:9 plate on a tall phone shows about a quarter of its width: frame the bonnet logo. */
+  .hx-van-img img { object-position: 38% 50%; }
+  /* the sheet: less air above the line, a thinner white edge, so the picture keeps the screen */
+  .hx-van {
+    --hx-van-top: clamp(62px, 8vh, 78px);   /* thinner since 2026-09-26 (was clamp(66px, 9vh, 88px)) */
+    --hx-van-edge: 12px;
+    --hx-van-in: clamp(16px, 4.4vw, 24px);
+  }
+  .hx-van-floor {
+    background:
+      linear-gradient(0deg, rgba(13, 13, 18, .95) 0%, rgba(13, 13, 18, .8) 40%, rgba(13, 13, 18, 0) 72%),
+      linear-gradient(180deg, rgba(13, 13, 18, .4) 0%, rgba(13, 13, 18, 0) 18%);
+  }
+  /* "Sorgfalt" / "fährt vor." — never "vor." alone on a line. */
+  .hx-word:first-child { flex-basis: 100%; }
+}
+
+/* ---------------------------------------------------------------- a phone held sideways */
+
+/* 2026-09-24, Manuel: „Fix the sideways phone view of the van." A phone on its side is 667–932 wide and
+   360–430 tall, so it got the tablet or the phone rules above: a slogan of 89–111 px, stacked over the
+   sentence and the button — taller than the 232–297 px picture. „Sorgfalt" ran off the top of the frame
+   (at 667×375 it was not in the frame at all) and the sentence lay across the van. Here the sheet is
+   slimmer and the words go back to the wide screen's arrangement: the slogan bottom left, fitted to its
+   column by hero.js (fitSlogan — 6.6vw is only the start value), the sentence and the button bottom
+   right, a size smaller. The van's crop is the wide screen's too (the phone rule above would put it at
+   50 %). The opening screen is not touched by this block. */
+@media (orientation: landscape) and (max-height: 500px) {
+  .hx-van {
+    --hx-van-top: 66px;                /* the bar is 57 px here */
+    --hx-van-edge: 12px;
+    --hx-van-in: 16px;
+  }
+  .hx-van-head { font-size: 18px; margin-bottom: 8px; }
+  .hx-van-img img {
+    object-position: 50% 58%;
+    object-position: 50% min(0px, max(calc(100cqh - 56.28cqw), calc(12px - 9.27cqw)));
+  }
+  .hx-van-copy {
+    grid-template-columns: minmax(0, 1fr) min(290px, 36vw);
+    column-gap: 20px;
+    row-gap: 0;
+  }
+  .hx-van-side { width: auto; max-width: none; gap: 12px; padding-bottom: 4px; }
+  .hx-van-side .hx-body { font-size: 13px; line-height: 1.4; }
+  .hx-van-side .hx-btn { height: 36px; padding: 0 16px; font-size: 13.5px; }   /* one step under solid.css §9 (2026-09-26) */
+  .hx-slogan { flex-wrap: nowrap; white-space: nowrap; margin-top: 0; line-height: .86; font-size: 6.6vw; }
+  .hx-word:first-child { flex-basis: auto; }
+  /* the picture is short, so the sentence stands halfway up it — on the van's white side, where the wide
+     screen's floor (gone by 52 %) no longer darkens anything. The floor reaches further up here. */
+  .hx-van-floor {
+    background:
+      linear-gradient(0deg, rgba(13, 13, 18, .94) 0%, rgba(13, 13, 18, .74) 42%, rgba(13, 13, 18, 0) 78%),
+      linear-gradient(180deg, rgba(13, 13, 18, .35) 0%, rgba(13, 13, 18, 0) 18%);
+  }
+
+  /* The opening screen, the same day (Manuel: „Yes, fix the opening screen too."). On the smallest phone
+     on its side (667×375) the phone rules above stacked the two buttons full width, one under the other,
+     and the block — standing on the screen's foot — grew up under the 57 px bar: the label sat beside
+     the logo (block top at 9 px). At 740×360 it reached 55 px, two short of the bar. Here the buttons
+     stand side by side again (his rule of 2026-09-19: „next to each other and not below each other"),
+     a size smaller, the sentence breaks at its dash like on a wide screen, and the gaps close up. */
+  .hx-copy { bottom: 16px; row-gap: 14px; }
+  .hx-copy--duo .hx-actions { flex-direction: row; align-items: center; }
+  .hx-copy--duo .hx-copy-side { width: fit-content; }  /* side by side again: shrink to the buttons */
+  .hx-copy .hx-btn { height: 36px; padding: 0 16px; font-size: 14px; }   /* one step under solid.css §9 (2026-09-26) */
+  .hx-lede { margin-top: 10px; font-size: 13.5px; line-height: 1.45; }
+  .hx-lede span { display: block; }
+  .hx-meta { margin-top: 12px; }
+}
+
+/* ================================================================ section 2 · the strip (#philosophy) */
+
+/* Manuel's pick of three (2026-09-17): the page holds, a strip of work photos slides sideways with
+   a giant „Keine …" line between them, and the last photo opens to full screen. hero.js drives it
+   all from one scroll progress. Without script the strip is a plain horizontal scroller.
+
+   Sizes are tied to the stage height, so the strip keeps its proportions on any screen:
+   a photo is 3:4 of the stage height, the type is set in vh and capped by vw for narrow screens. */
+.hl {
+  --hl-photo: min(75vh, 72vw);         /* capped by width: on a portrait tablet 3:4 of the height was wider than the screen */
+  --hl-say: min(13.3vh, 12vw);         /* „Keine …" lines */
+  /* the four-line claim. 2026-09-23: 16.5 → 19 vh when the grey lead above it went (Manuel's
+     option 1) — without it the panel had a black field where the sentence used to stand. */
+  --hl-title: min(19vh, 11.4vw);
+  position: relative;
+  z-index: 2;
+}
+@supports (height: 100lvh) {
+  .hl { --hl-photo: min(75lvh, 72vw); --hl-say: min(13.3lvh, 12vw); --hl-title: min(19lvh, 11.4vw); }
+}
+.hx-js .hl {
+  height: calc(100vh + var(--hl-runway, 400vh));
+  /* starts where the van's hold ends: 100 (the hero's own screen) + --hx-cover up the page */
+  margin-top: calc((100 + var(--hx-cover)) * -1vh);
+  pointer-events: none;                /* see-through while the strip waits off to the right … */
+}
+@supports (height: 100lvh) {
+  .hx-js .hl { height: calc(100lvh + var(--hl-runway, 400lvh)); margin-top: calc((100 + var(--hx-cover)) * -1lvh); }
+}
+.hl-stage {
+  position: relative;
+  height: 100vh;
+  overflow-x: auto;
+  overflow-y: hidden;
+}
+@supports (height: 100lvh) {
+  .hl-stage { height: 100lvh; }
+}
+.hx-js .hl-stage {
+  position: sticky;
+  top: 0;
+  overflow: hidden;
+}
+.hl-track {
+  display: flex;
+  width: max-content;
+  height: 100%;
+}
+.hx-js .hl-track {
+  pointer-events: auto;                /* … and solid once it covers the van: no clicks fall through */
+  transform: translate3d(100vw, 0, 0);
+  will-change: transform;
+}
+
+.hl-panel {
+  position: relative;
+  flex: none;
+  height: 100%;
+  margin: 0;
+  overflow: hidden;
+  background: var(--hx-ink);
+}
+.hl-shot {
+  position: relative;
+  margin: 0;
+  overflow: hidden;
+  background: #111117;
+}
+/* The picture box is 20% wider than its frame, so it can drift sideways and settle from a zoom
+   while the strip moves without ever showing an edge. */
+.hl-img {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: -10%;
+  right: -10%;
+  will-change: transform;
+}
+.hl-img img {
+  width: 100%;
+  height: 100%;
+  max-width: none;
+  object-fit: cover;
+}
+
+/* ---- photo panels: full height, 3:4 */
+.hl-photo { width: var(--hl-photo); }
+.hl-photo .hl-img { top: 0; bottom: 0; }
+
+/* ---- the claim: label and lead on top, four giant lines at the bottom
+   ⚠ Not on the page since 2026-09-24 — Manuel: „remove the text completly - when you scroll the pics
+   start". The markup is in _archive/2026-09-24-section2-claim/; these rules (and --hl-title) stay so it
+   can come back by putting the markup back. */
+.hl-head {
+  display: flex;
+  flex-direction: column;
+  /* 2026-09-23: was space-between, which needed the lead to hold the top of the frame. With the
+     lead gone the label sits straight on the claim and the pair stands at the foot, the way every
+     other panel in the strip does it. */
+  justify-content: flex-end;
+  width: max-content;
+  padding: calc(55px + clamp(24px, 4.5vh, 52px)) var(--hx-gutter) var(--hx-bottom);
+}
+.hl-head-shot { display: none; }
+.hl-head-top { padding-bottom: clamp(18px, 2.6vh, 30px); }
+/* ⚠ Not printed since 2026-09-23 (Manuel's option 1) — the rule stays for the phone layout below
+   and in case the sentence comes back. Their side of the argument, set big enough to hold the top
+   of the frame (a small lead left a black field above the claim — the empty space Manuel ruled out). */
+.hl-lead {
+  max-width: 15em;
+  margin-top: clamp(16px, 2.4vh, 26px);
+  font-size: clamp(26px, min(4.6vh, 3.4vw), 54px);
+  font-weight: 560;
+  line-height: 1.08;
+  letter-spacing: -.024em;
+  color: rgba(250, 248, 245, .5);
+  text-wrap: balance;
+}
+.hl-title {
+  display: flow-root;
+  font-family: var(--hx-font);
+  font-weight: var(--hx-weight);
+  letter-spacing: var(--hx-track);
+  font-size: calc(var(--hl-title) * var(--hx-scale));
+  line-height: var(--hx-lead);
+  color: var(--hx-paper);
+  white-space: nowrap;
+}
+
+/* ---- word panels: a photo slice on top, one giant „Keine …" at the bottom */
+.hl-word {
+  display: grid;
+  grid-template-rows: minmax(0, 1fr) auto;
+  width: max-content;
+  min-width: var(--hl-photo);
+}
+.hl-say {
+  padding: clamp(22px, 3.4vh, 40px) var(--hx-gutter) var(--hx-bottom);
+  font-family: var(--hx-font);
+  font-weight: var(--hx-weight);
+  letter-spacing: var(--hx-track);
+  font-size: calc(var(--hl-say) * var(--hx-scale));
+  line-height: var(--hx-lead);
+  color: var(--hx-paper);
+  white-space: nowrap;
+  will-change: transform;
+}
+.hl-hy,
+.hl-br { display: none; }
+
+/* ---- the last panel: a 3:4 frame whose picture is really full-screen wide, anchored to the frame's
+   right edge; hero.js opens the clip leftwards once the strip has reached its end */
+.hl-last {
+  z-index: 1;
+  width: var(--hl-photo);
+  overflow: visible;
+  background: none;
+}
+.hl-grow {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 100vw;
+  overflow: hidden;
+  background: var(--hx-ink);
+  clip-path: inset(0 0 0 calc(100vw - var(--hl-photo)));
+}
+.hl-grow .hl-shot { position: absolute; inset: 0; }
+.hl-last-floor {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  pointer-events: none;
+  background: linear-gradient(0deg, rgba(13, 13, 18, .86) 0%, rgba(13, 13, 18, .5) 30%, rgba(13, 13, 18, 0) 58%);
+}
+/* 2026-09-23, Manuel: „Maybe split text like this (two lines not four)" — and a message later, three
+   lines. The markup always held its lines — they simply wrapped, because max-width 15.5em is narrower
+   than the sentence. With .is-fit (hero.js fitClose) each line is set nowrap and the block is sized
+   to the widest of the three, so it is exactly three lines on any screen from 700 px. Phones keep the
+   wrap: in one piece, the longest line (40 characters) would be 18.8 px tall on a 390 px screen
+   (measured 2026-09-24; in the two-line version it was 62 characters and 11 px). Until the code
+   review of 2026-09-24 this note still described the two lines. */
+.hx-js .hl-close.is-fit {
+  max-width: none;
+  white-space: nowrap;                 /* alone: text-wrap:wrap here would undo it in this same rule */
+}
+.hl-close {
+  position: absolute;
+  left: var(--hx-gutter);
+  bottom: var(--hx-bottom);
+  max-width: min(15.5em, 86vw);
+  font-family: var(--hx-font);
+  font-weight: var(--hx-weight);
+  letter-spacing: var(--hx-track);
+  font-size: calc(clamp(34px, min(6.6vh, 5vw), 80px) * var(--hx-scale));
+  line-height: .98;
+  color: var(--hx-paper);
+  text-wrap: balance;
+}
+
+/* ---- masked lines, the hero's own reveal */
+.hl-title,
+.hl-say,
+.hl-close { display: flow-root; }
+.hl-line {
+  display: block;
+  overflow: hidden;
+  padding: .22em .06em .18em;
+  margin: -.22em -.06em -.18em;
+}
+.hl-line-in { display: block; }
+/* Not the hero's old 115 %: at line-height .84 the capitals and umlauts stand above the line box,
+   and at 115 % their tops still showed in the mask's bottom padding as small grey dashes (2026-09-17,
+   fixed with 150 % here). 160 since the code review of 2026-09-24 — the same PARK as every other
+   masked line (hero.js); this family alone had kept its own number. */
+.hx-js .hl-line-in { transform: translate3d(0, 160%, 0); } /* 160 = hero.js PARK */
+.hx-js .hl-reveal { opacity: 0; }
+
+.hl-sr {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+/* ---- narrower screens: „Massen-/abfertigung." on two lines */
+@media (max-width: 1179px) {
+  .hl-hy { display: inline; }
+  .hl-br { display: block; }
+}
+
+/* ---- upright screens (phones, tablets held tall): the claim gets a photo on top. Without it the
+   tall panel was half black between the lead and the claim (820×1180 contact sheet). */
+@media (max-aspect-ratio: 1/1) {
+  .hl-head {
+    display: grid;
+    grid-template-rows: minmax(0, 1fr) auto auto;
+    padding: 0 0 var(--hx-bottom);
+  }
+  .hl-head-shot { display: block; }
+  .hl-head-top { padding: 22px var(--hx-gutter) 0; }
+  .hl-head .hl-title { padding: 18px var(--hx-gutter) 0; }
+}
+
+/* ---- phones: one frame nearly fills the screen */
+@media (max-width: 699px) {
+  .hl { --hl-photo: 84vw; --hl-say: 12.4vw; --hl-title: 10.6vw; }
+  @supports (height: 100lvh) {
+    .hl { --hl-photo: 84vw; --hl-say: 12.4vw; --hl-title: 10.6vw; }
+  }
+  .hl-head,
+  .hl-word { width: 100vw; min-width: 0; }
+  .hl-lead { font-size: 19px; }
+  .hl-close { font-size: calc(clamp(28px, 8.2vw, 40px) * var(--hx-scale)); }
+}
+
+.hl-dim {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  background: var(--hx-ink);
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* ================================================================ section 3 · daylight (#prozess) */
+
+/* Manuel's pick of three (2026-09-17): the ground turns warm white and each step is set as giant
+   lines across the width, with a work photo inside the letters. hero.js fits every line to the
+   content width (capped by --hd-cap) and lines the photo up across the lines of one title, so it
+   reads as one picture seen through the words. */
+.hd {
+  --hd-cap: 36vh;
+  --hd-ink: var(--hx-ink);
+  position: relative;
+  z-index: 3;
+  overflow-x: clip;                   /* the lines slide in from beyond the edges: never a sideways scroll */
+  background: var(--hx-paper);
+  color: var(--hd-ink);
+  padding: calc(55px + clamp(30px, 6vh, 72px)) var(--hx-gutter) clamp(56px, 10vh, 120px);
+}
+@supports (height: 100lvh) {
+  .hd { --hd-cap: 36lvh; }
+}
+.hx-js .hd {
+  margin-top: -100vh;                 /* rises over the strip's last photo while that is still pinned */
+  box-shadow: 0 -40px 90px -20px rgba(0, 0, 0, .45);
+}
+@supports (height: 100lvh) {
+  .hx-js .hd { margin-top: -100lvh; }
+}
+.hd-label { color: rgba(13, 13, 18, .62); }
+
+.hd-step { position: relative; }
+.hd-step + .hd-step { margin-top: clamp(44px, 9vh, 110px); }
+
+.hd-title {
+  margin: clamp(18px, 3vh, 36px) 0 0;
+  font-family: var(--hx-font);
+  font-weight: 740;                    /* heavier than the display voice (650): the strokes carry a photo */
+  letter-spacing: var(--hx-track);
+  line-height: .86;
+}
+
+/* Staggered giant words leave two gaps — beside the first line and before the last. hero.js puts
+   the photo, in full colour, into the first gap (cap height of that line) and the step's text into
+   the second (on the last line's baseline). Where a gap is too narrow, both simply follow the title. */
+.hd-window {
+  position: relative;
+  margin: clamp(22px, 3.6vh, 40px) 0 0;
+  aspect-ratio: 16 / 9;
+  overflow: hidden;
+  background: #1a1a20;
+}
+.hd-window img {
+  position: absolute;
+  top: -12%;
+  left: 0;
+  width: 100%;
+  height: 124%;
+  max-width: none;
+  object-fit: cover;
+}
+.hd-step.has-window .hd-window {
+  position: absolute;
+  left: var(--hd-win-x);
+  top: var(--hd-win-y);
+  width: var(--hd-win-w);
+  height: var(--hd-win-h);
+  margin: 0;
+  aspect-ratio: auto;
+}
+.hd-step.has-tuck .hd-text {
+  position: absolute;
+  left: 0;
+  bottom: var(--hd-text-b);
+  width: var(--hd-text-w);
+  max-width: none;
+  margin: 0;
+}
+/* background-clip: text paints the photo only inside the line's own box, and at line-height .86 a
+   descender hangs below it: the g of „langfristigen" came out cut off (Manuel, 2026-09-17). The padding
+   gives descenders, umlauts and overhangs a box to be painted in; the equal negative margins keep
+   the layout exactly where it was. */
+.hd-row {
+  display: block;
+  width: max-content;
+  max-width: calc(100% + .1em);
+  padding: .22em .05em .3em;
+  margin: -.22em -.05em -.3em;
+  font-size: var(--hd-cap);            /* hero.js replaces this with the fitted size */
+  white-space: nowrap;
+  color: var(--hd-ink);
+}
+.hd-row--end { margin-left: auto; }
+.hd-row + .hd-row { margin-top: calc(-.22em + .02em); }
+
+/* The photo inside the letters. Without background-clip: text the letters simply stay ink. */
+@supports ((-webkit-background-clip: text) or (background-clip: text)) {
+  .hd-row {
+    background-color: var(--hd-ink);
+    background-image: var(--hd-photo);
+    background-size: cover;
+    background-position: 50% 50%;
+    background-repeat: no-repeat;
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    color: transparent;
+  }
+}
+
+.hd-text {
+  max-width: 31em;
+  margin-top: clamp(22px, 3.6vh, 44px);
+  font-size: clamp(19px, 2.6vh, 30px);
+  font-weight: 450;
+  line-height: 1.34;
+  letter-spacing: -.014em;
+  color: rgba(13, 13, 18, .8);
+  text-wrap: pretty;
+}
+.hx-js .hd-reveal { opacity: 0; }
+
+@media (max-width: 699px) {
+  .hd { --hd-cap: 30vw; }
+  .hd-text { font-size: 18px; }
+}
+
+/* ================================================================ section 4 · detail view (#gallery) */
+
+/* Manuel's pick of three (2026-09-17): each row is a work photo and, beside it, the spot under a
+   marked frame at twice the scale — the detail view of a technical drawing. Rows run edge to edge
+   with 2 px seams; the halves are equal, so the frame is always half the detail's width and height.
+   hero.js places the frame, the enlarged picture, the leader line and the tag on every scroll frame. */
+.hw {
+  position: relative;
+  z-index: 3;
+  overflow-x: clip;                   /* a tag on the photo's edge must never widen the page */
+  background: var(--hx-ink);
+  color: var(--hx-paper);
+}
+
+.hw-head {
+  padding: calc(55px + clamp(30px, 6vh, 72px)) var(--hx-gutter) clamp(22px, 3.6vh, 44px);
+}
+/* One line across the content width (hero.js fits the size); two lines on phones. */
+.hw-title {
+  width: max-content;
+  margin: clamp(14px, 2.2vh, 26px) 0 0;
+  font-family: var(--hx-font);
+  font-weight: var(--hx-weight);
+  font-size: 6vw;
+  letter-spacing: var(--hx-track);
+  line-height: .9;
+  white-space: nowrap;
+}
+.hw-line {
+  display: inline-block;
+  overflow: hidden;
+  vertical-align: top;
+  padding: .08em 0 .12em;             /* room for the rise inside the mask */
+  margin: -.08em 0 -.12em;
+}
+.hw-line-in { display: block; }
+.hx-js .hw-line-in { transform: translate3d(0, 160%, 0); } /* 160 = hero.js PARK — 115 let letter tops show as dots (2026-09-23) */
+.hx-js .hw-reveal { opacity: 0; }
+
+.hw-rows {
+  display: grid;
+  row-gap: 2px;
+}
+.hw-row {
+  --hw-h: min(80vh, 64vw);
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  column-gap: 2px;
+  height: var(--hw-h);
+  margin: 0;
+  overflow: hidden;
+}
+@supports (height: 100lvh) {
+  .hw-row { --hw-h: min(80lvh, 64vw); }
+}
+.hw-row--flip .hw-photo { order: 2; }
+
+.hw-photo,
+.hw-detail {
+  position: relative;
+  overflow: hidden;
+  background: #15151B;
+}
+.hw-img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  max-width: none;
+  object-fit: cover;
+}
+/* Without the script: a plain 2x crop of the middle, no frame, no label claiming a scale. */
+.hw-zoom {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  max-width: none;
+  object-fit: cover;
+  transform: scale(2);
+}
+.hx-js .hw-zoom {
+  inset: auto;
+  left: 0;
+  top: 0;
+  object-fit: fill;
+  transform: none;
+  transform-origin: 0 0;
+  will-change: transform;
+}
+
+.hw-draw,
+.hw-tag,
+.hw-cap { display: none; }
+/* z-index is needed: grid items paint in `order`, so a flipped row's photo (order 2) covered the drawing */
+.hx-js .hw-draw {
+  display: block;
+  position: absolute;
+  z-index: 1;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  pointer-events: none;
+}
+/* 2026-09-23 — the premium pass (Manuel). Rounded frame, dimmed photo outside it, one S-curve
+   leader with a node where it leaves the frame. Geometry and gradient: hero.js (buildDrawing). */
+.hw-frame,
+.hw-lead,
+.hw-lead-halo,
+.hw-halo { fill: none; }
+.hw-frame {
+  stroke: var(--hx-paper);
+  stroke-width: 1.5;
+}
+.hw-lead {
+  stroke-width: 1.5;                   /* colour: a gradient, full at the frame, softer at the label */
+  stroke-linecap: round;
+}
+/* the gradient's colour is the frame's own paper; hero.js (buildDrawing) sets only the stops' opacities */
+.hw-lead-stop { stop-color: var(--hx-paper); }
+.hw-lead-halo {
+  stroke: rgba(13, 13, 18, .28);
+  stroke-width: 4.5;
+  stroke-linecap: round;
+}
+.hw-node {
+  fill: var(--hx-paper);
+  stroke: rgba(13, 13, 18, .35);
+  stroke-width: 2;
+  opacity: 0;
+}
+/* a soft dark edge under the frame, so it holds on the white van as well as on black leather */
+.hw-halo {
+  stroke: rgba(13, 13, 18, .3);
+  stroke-width: 5;
+}
+/* „slight darkening", his word: enough to light the spot, not enough to hide the photo */
+.hw-dim {
+  fill: rgba(13, 13, 18, .46);
+  opacity: 0;
+}
+
+
+/* the letter: a round badge on the frame's far corner (was a square on the near one) */
+.hx-js .hw-tag {
+  position: absolute;
+  z-index: 2;
+  left: 0;
+  top: 0;
+  display: grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  margin: -13px 0 0 -13px;            /* centred on the frame's corner */
+  border-radius: 50%;
+  background: var(--hx-paper);
+  color: var(--hx-ink);
+  font-size: 12px;
+  font-weight: 650;
+  line-height: 1;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, .35);
+  will-change: transform;
+}
+/* the label: frosted glass, not a black box — the detail shows through it */
+.hx-js .hw-cap {
+  display: block;
+  position: absolute;
+  top: clamp(14px, 1.6vw, 24px);
+  left: clamp(14px, 1.6vw, 24px);
+  padding: 9px 15px 10px;
+  border-radius: 999px;
+  /* .58, not .42: over the white van (phone, row B) .42 gave white text on #999 — 2.8 : 1 */
+  background: rgba(13, 13, 18, .58);
+  -webkit-backdrop-filter: blur(14px) saturate(1.4);
+  backdrop-filter: blur(14px) saturate(1.4);
+  box-shadow: 0 6px 24px rgba(0, 0, 0, .28);
+  font-size: 13px;
+  font-weight: 550;
+  line-height: 1;
+  letter-spacing: .02em;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  color: var(--hx-paper);
+}
+.hx-js .hw-row--flip .hw-cap { left: auto; right: clamp(14px, 1.6vw, 24px); }
+
+.hw-more {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 14px 40px;
+  padding: clamp(30px, 6vh, 72px) var(--hx-gutter) clamp(44px, 9vh, 110px);
+  font-size: clamp(22px, 2.5vw, 40px);
+  font-weight: 560;
+  line-height: 1.15;
+  letter-spacing: -.02em;
+}
+.hw-more-text { color: rgba(250, 248, 245, .62); }
+.hw-more-links {
+  display: flex;
+  gap: clamp(22px, 3vw, 48px);
+}
+.hw-more-link {
+  color: var(--hx-paper);
+  text-decoration: underline;
+  text-decoration-thickness: 2px;
+  text-underline-offset: .18em;
+  text-decoration-color: rgba(250, 248, 245, .35);
+  transition: text-decoration-color .35s ease;
+}
+.hw-more-link:hover { text-decoration-color: currentColor; }
+.hw-more-link:focus-visible {
+  outline: 2px solid var(--hx-paper);
+  outline-offset: 4px;
+}
+
+/* Upright screens: the photo on top, its detail underneath. */
+@media (max-aspect-ratio: 1/1) {
+  .hw-row {
+    --hw-h: min(88vh, 190vw);
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: minmax(0, 56fr) minmax(0, 44fr);
+    row-gap: 2px;
+  }
+  @supports (height: 100lvh) {
+    .hw-row { --hw-h: min(88lvh, 190vw); }
+  }
+  .hw-row--flip .hw-photo { order: 0; }
+  .hx-js .hw-row--flip .hw-cap { left: clamp(14px, 1.6vw, 24px); right: auto; }
+}
+@media (max-width: 699px) {
+  .hw-line { display: block; }
+  .hw-more { font-size: 22px; }
+}
+
+/* ================================================================ section 5a · before / after (#vorher-nachher) */
+
+/* Manuel's pick (2026-09-17), with his own photos: tall frames edge to edge, then one wide frame. Each row
+   has ONE line that sweeps across it while the row passes through the screen — left of the line every
+   frame shows „Nachher", right of it „Vorher". The pairs were lined up and cropped to the same frame in
+   _build/before_after.py, so both photos share one object-fit and stay aligned at any size. */
+.hb {
+  position: relative;
+  z-index: 3;
+  overflow-x: clip;
+  background: var(--hx-ink);
+  color: var(--hx-paper);
+}
+.hb-head {
+  padding: calc(55px + clamp(30px, 6vh, 72px)) var(--hx-gutter) clamp(22px, 3.6vh, 44px);
+}
+/* the fitted one-line heading of sections 4, 5 and 6 (hero.js fits it; two lines on phones) */
+.hb-title,
+.hr-title,
+.hk-title,
+.hm-title,
+.hq-title {
+  width: max-content;
+  margin: clamp(14px, 2.2vh, 26px) 0 0;
+  font-family: var(--hx-font);
+  font-weight: var(--hx-weight);
+  font-size: 6vw;
+  letter-spacing: var(--hx-track);
+  line-height: .9;
+  white-space: nowrap;
+}
+.hb-line {
+  display: inline-block;
+  overflow: hidden;
+  vertical-align: top;
+  padding: .08em 0 .12em;
+  margin: -.08em 0 -.12em;
+}
+.hb-line-in { display: block; }
+.hx-js .hb-line-in { transform: translate3d(0, 160%, 0); } /* 160 = hero.js PARK — 115 let letter tops show as dots (2026-09-23) */
+.hx-js .hb-reveal,
+.hx-js .hr-reveal { opacity: 0; }
+
+.hb-row {
+  position: relative;
+  overflow: hidden;
+}
+.hb-row--grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 2px;
+}
+.hb-row--grid .hb-pair { aspect-ratio: 9 / 16; }
+/* 2026-09-23: for part of an afternoon this row was capped to 86 % of the screen and its sweep played by
+   itself once the row stood whole on screen. Manuel: „no go back to how it was, just speed up the scroll
+   effect". Back to 9 : 16 and the scroll-driven sweep — the sweep now takes half the scroll (hero.js). */
+.hb-row--wide {
+  margin-top: 2px;
+  aspect-ratio: 1497 / 397;            /* the exported wide pair, uncropped */
+}
+.hb-pair {
+  position: relative;
+  margin: 0;
+  overflow: hidden;
+  background: #15151B;
+}
+.hb-row--wide .hb-pair { position: absolute; inset: 0; }
+.hb-img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  max-width: none;
+  object-fit: cover;
+}
+.hb-after {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  clip-path: inset(0 50% 0 0);         /* without the script: half before, half after */
+}
+.hx-js .hb-after { clip-path: none; will-change: transform; }
+.hx-js .hb-after .hb-img { will-change: transform; }
+
+/* 2026-09-26, Manuel: the black place labels on the photos („Rückbank", „Mittelarmlehne" …) are gone —
+   „remove these black cards". The Vorher/Nachher tags on the sweep line stay: they say which side is which. */
+.hb-tag {
+  padding: 8px 11px 9px;
+  background: var(--hx-ink);
+  font-size: 13px;
+  font-weight: 550;
+  line-height: 1;
+  letter-spacing: .02em;
+  white-space: nowrap;
+  color: var(--hx-paper);
+}
+.hb-rule {
+  position: absolute;
+  z-index: 2;
+  top: 0;
+  bottom: 0;
+  left: 50%;
+  width: 2px;
+  margin-left: -1px;
+  background: var(--hx-paper);
+  box-shadow: 0 0 0 1px rgba(13, 13, 18, .35);
+  pointer-events: none;
+}
+.hx-js .hb-rule { left: 0; will-change: transform; }
+.hb-tag {
+  position: absolute;
+  bottom: clamp(14px, 1.6vw, 24px);
+  transition: opacity .25s ease;
+}
+.hb-tag--after { right: calc(100% + 10px); }
+.hb-tag--before { left: calc(100% + 10px); }
+
+/* ================================================================ section 5b · reviews (#reviews) */
+
+/* Warm white. 2026-09-20, Manuel with a screenshot: „such floating cards that go from right to left
+   and a second row from left to right below it — use the layout and design from the screenshot but
+   keep your colors." So: two rows that never stop, running against each other, equal cards, the name
+   top left, the stars under it, the review clamped to four lines.
+
+   ⚠ The screenshot carries Google’s „G" in every card corner. A foreign logo on a client site is out
+   (root rule 12), so that corner holds **the car the review names** instead — the customer’s own word.
+   The section’s label still says „Google Bewertungen", which is where they are from.
+
+   Superseded and kept as a note, so they are not rebuilt: the reviews stood first as plain text under
+   hairlines in three balanced columns, then (earlier today) as a mosaic of cards in those same columns
+   with the columns drifting on scroll. Both are gone — with two marquee rows there are no columns to
+   balance, no ragged bottom and no „Weitere Bewertungen" fold on the phone. */
+/* 2026-09-24, Manuel: „I am still not happy how these cards look - can you find a solution so the do
+   not look as AI as this." Two looks were painted onto the real page (A flat cards, the words big ·
+   B printed, no cards) → „B, make the stars google golden not green". So the cards are gone: every
+   review is a column between hairlines, like a strip cut from a newspaper — byline on top, one or two
+   of the review's own sentences large (_build/reviews.mjs picks them and asserts them word for word),
+   five stars last in Google's star yellow. The rows still run against each other and still stop
+   under the pointer. What went: the white-to-cream gradient, the shadow, the green caps in the corner
+   and the text cut off after four lines with „…" — fifteen copies of one template, the look of a
+   generated page. Kept whole in _archive/2026-09-24-section5b-cards/. */
+.hr {
+  --hr-rule: rgba(13, 13, 18, .16);
+  --hr-star: #FBBC04;                        /* Google's star yellow — his word: „google golden" */
+  position: relative;
+  z-index: 3;
+  background: var(--hx-paper);
+  color: var(--hx-ink);
+  padding: calc(55px + clamp(30px, 6vh, 72px)) var(--hx-gutter) clamp(56px, 10vh, 120px);
+}
+.hr-label { color: rgba(13, 13, 18, .62); }
+
+/* the two rows run to the screen edges and fade out there; a rule above, one between, one below —
+   the strip reads as print, not as a stack of boxes */
+.hr-rows {
+  display: flex;
+  flex-direction: column;
+  margin: clamp(40px, 6.5vh, 78px) calc(var(--hx-gutter) * -1) 0;
+  border-top: 1px solid var(--hr-rule);
+  border-bottom: 1px solid var(--hr-rule);
+}
+.hr-row {
+  overflow: hidden;
+  -webkit-mask-image: linear-gradient(90deg, transparent 0, #000 7%, #000 93%, transparent 100%);
+  mask-image: linear-gradient(90deg, transparent 0, #000 7%, #000 93%, transparent 100%);
+}
+.hr-row + .hr-row { border-top: 1px solid var(--hr-rule); }
+/* Every column carries its own rule and padding instead of the track carrying `gap`: with a gap, half
+   the track is one set PLUS HALF A GAP, and the loop jumps by that much every time it restarts. */
+.hr-track {
+  display: flex;
+  width: max-content;
+  will-change: transform;
+}
+.hr-row--a .hr-track { animation: hr-run-left 74s linear infinite; }
+.hr-row--b .hr-track { animation: hr-run-right 88s linear infinite; }
+@keyframes hr-run-left {
+  from { transform: translate3d(0, 0, 0); }
+  to { transform: translate3d(-50%, 0, 0); }
+}
+@keyframes hr-run-right {
+  from { transform: translate3d(-50%, 0, 0); }
+  to { transform: translate3d(0, 0, 0); }
+}
+/* stop where the eye stopped, so a review can actually be read */
+.hr-row:hover .hr-track,
+.hr-row:focus-within .hr-track { animation-play-state: paused; }
+
+/* One review = one column. Its width follows the length of what it quotes (s / m / l, set by the
+   generator), so the strip has the rhythm of real clippings; the columns of a row share its height. */
+.hr-card {
+  flex: none;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  width: 360px;
+  margin: 0;
+  padding: 22px 30px 24px 32px;
+  border-right: 1px solid var(--hr-rule);
+}
+.hr-card--s { width: 290px; }
+.hr-card--l { width: 440px; }
+/* the byline: who wrote it, and the car or the service they name — their own noun, never a summary */
+.hr-cap {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 2px 9px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid rgba(13, 13, 18, .1);
+  font-size: 13px;
+  line-height: 1.25;
+  color: rgba(13, 13, 18, .56);
+}
+.hr-who { font-weight: 650; color: var(--hx-ink); }
+.hr-card blockquote { margin: 0; }
+.hr-card blockquote p {
+  margin: 0;
+  font-size: clamp(19px, 1.5vw, 22px);
+  font-weight: 560;
+  line-height: 1.24;
+  letter-spacing: -.02em;
+  color: var(--hx-ink);
+  text-wrap: pretty;
+}
+/* German quotation marks; the opening one hangs in the margin, so the words keep the column's edge */
+.hr-card blockquote p::before { content: '\201E'; margin-left: -.44em; }
+.hr-card blockquote p::after { content: '\201C'; }
+.hr-stars {
+  display: flex;
+  gap: 2px;
+  margin: auto 0 0;
+}
+.hr-stars svg { width: 12px; height: 12px; fill: var(--hr-star); flex: none; }
+.hx-js .hr-row { opacity: 0; }
+
+/* Standing still (reduced motion), the strip becomes a printed page: each row a grid of equal columns,
+   ruled like the running strip, and the duplicate set is not printed at all.
+   ⚠ Two classes on purpose (2026-09-24): the animation is set with two (`.hr-row--a .hr-track`), so
+   the one-class `.hr-track { animation: none }` that stood here lost to it — since 2026-09-20 the
+   rows kept running under reduced motion, wrapped into lines and cut off at the edges. */
+@media (prefers-reduced-motion: reduce) {
+  .hr-rows { margin-inline: 0; border-bottom: 0; }
+  .hr-row { -webkit-mask-image: none; mask-image: none; }
+  .hr-row + .hr-row { border-top: 0; }
+  .hr-row .hr-track {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(min(290px, 100%), 1fr));
+    width: auto;
+    animation: none;
+    border-left: 1px solid var(--hr-rule);
+  }
+  .hr-row .hr-card { width: auto; border-bottom: 1px solid var(--hr-rule); }
+  .hr-card[aria-hidden="true"] { display: none; }
+}
+
+
+@media (max-width: 1023px) {
+  .hb-row--wide { aspect-ratio: 12 / 5; }
+}
+@media (max-width: 699px) {
+  .hb-row--grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .hb-row--wide { aspect-ratio: 3 / 2; }
+  .hb-line { display: block; }
+  .hr-card { width: 272px; padding: 20px 24px 22px 26px; }
+  .hr-card--s { width: 236px; }
+  .hr-card--l { width: 304px; }
+  .hr-card blockquote p { font-size: 18px; }
+}
+
+/* ================================================================ section 6 · Leistungen & Preise (#preise) */
+
+/* Third build (2026-09-17). Manuel, looking at the live site's own pricing block: "lets keep this space
+   between the cards and rounded edges and a selection tool above the main cards and when you select them
+   you get to the other cards in darker style. But we implement our design and please find beautiful
+   animations so its not boring."
+   So: the live site's SHAPE — tabs on top, four package cards, every other tab a grid of service cards,
+   air between them, rounded corners — in this prototype's MATERIAL: Inter only, flat colour instead of
+   gradients, no glow and no drop shadow, one accent. Packages are ivory cards on the dark ground, the
+   single services are dark cards, exactly the two weights he asked for.
+   Generated by `node _build/packages.mjs` — no price, feature, colour or note is typed here. */
+.hk {
+  --hk-r: clamp(14px, 1.25vw, 22px);      /* the rounded edge he asked to keep */
+  --hk-gap: clamp(12px, 1.15vw, 22px);
+  --hk-acc: #4DB292;                       /* the site's own accent (its logo green) */
+  position: relative;
+  z-index: 3;
+  background: var(--hx-ink);
+  color: var(--hx-paper);
+  border-top: 1px solid rgba(250, 248, 245, .09);
+  padding: calc(55px + clamp(26px, 5vh, 64px)) var(--hx-gutter) clamp(40px, 7vh, 84px);
+}
+.hk-head { padding-bottom: clamp(20px, 3.4vh, 40px); }
+
+/* ⚠ 2026-09-20: the heading and the tab strip were briefly HELD here, the way the register's head is
+   („Now the pricing section." — the same move). He looked at it and said: *"that was my mistake. Go back
+   to how it was. This does not look good."* Taken out again, whole: no `position: sticky`, no `.hk-bar`
+   wrapper, the section's own padding back on the section. Kept as a note so nobody rebuilds it. */
+
+/* ---- the selection tool */
+.hk-tabs {
+  position: relative;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;          /* Manuel, 2026-09-20: the row sits in the middle, not against the edge */
+  gap: 8px;
+  margin-bottom: clamp(14px, 2vh, 20px);
+}
+/* one pill that slides from the old tab to the new one — hero.js measures and moves it */
+.hk-ind {
+  position: absolute;
+  z-index: 0;
+  top: 0;
+  left: 0;
+  height: 100%;
+  border-radius: 999px;
+  background: var(--hx-paper);
+  pointer-events: none;
+}
+.hk-tab {
+  position: relative;
+  z-index: 1;
+  padding: 11px clamp(14px, 1.25vw, 22px) 12px;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  box-shadow: inset 0 0 0 1px rgba(250, 248, 245, .16);
+  color: rgba(250, 248, 245, .62);
+  font: inherit;
+  font-size: clamp(12.5px, .95vw, 14px);
+  font-weight: 600;
+  letter-spacing: .01em;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: color .3s var(--hx-ease-out), box-shadow .3s var(--hx-ease-out), background .3s var(--hx-ease-out);
+}
+.hk-tab:hover { color: var(--hx-paper); box-shadow: inset 0 0 0 1px rgba(250, 248, 245, .4); }
+.hk-tab.is-on { color: var(--hx-ink); box-shadow: inset 0 0 0 1px transparent; }
+/* without JS the indicator never moves, so the active tab carries its own fill */
+.hk-tab.is-on { background: var(--hx-paper); }
+.hx-js .hk-tab.is-on { background: transparent; }
+.hk-tab:focus-visible { outline: 2px solid var(--hk-acc); outline-offset: 3px; }
+
+.hk-leads { min-height: 1.6em; margin-bottom: clamp(18px, 2.8vh, 32px); }
+.hk-lead {
+  max-width: 78ch;
+  margin: 0 auto;                   /* centred with the pill row above it */
+  text-align: center;
+  font-size: clamp(14px, 1.05vw, 16.5px);
+  line-height: 1.5;
+  color: rgba(250, 248, 245, .58);
+}
+.hk-lead:empty { display: none; }
+
+/* ---- the card grids */
+.hk-panels { position: relative; }
+.hk-panel[hidden] { display: none; }
+.hk-grid { display: grid; gap: var(--hk-gap); align-items: stretch; }
+.hk-grid--4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+.hk-grid--3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.hk-grid--2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.hk-grid--solo { grid-template-columns: minmax(0, 1fr); }
+/* A lone card would leave two empty columns beside it (Verkauf & Leasing, Lenkrad). It takes the
+   whole width instead and turns sideways: the name, the price and the button on the left, what is
+   included on the right. */
+@media (min-width: 900px) {
+  .hk-grid--solo .hk-body {
+    display: grid;
+    grid-template-columns: minmax(0, .85fr) minmax(0, 1.35fr);
+    /* name, price, then one flexible row so the button lands at the foot instead of the middle */
+    grid-template-rows: auto auto 1fr;
+    column-gap: clamp(26px, 3.4vw, 64px);
+  }
+  .hk-grid--solo .hk-feats { grid-column: 2; grid-row: 1 / -1; flex: 0 0 auto; align-self: start; }
+  .hk-grid--solo .hk-body > *:not(.hk-feats) { grid-column: 1; }
+  .hk-grid--solo .hk-cta { align-self: end; }
+  /* the lines share the card's height on this side too, so the wide half does not end half full */
+  .hk-grid--solo .hk-feats { align-self: stretch; }
+  .hk-grid--solo .hk-feat > span { max-width: none; }
+  /* option B centres the card — but a card turned sideways has two columns, and centred type in a
+     two-column card reads as a mistake. This one keeps its left edge. */
+  .hk-grid--solo .hk-body,
+  .hk-grid--solo .hk-feat { text-align: left; }
+  .hk-grid--solo .hk-feat { justify-items: start; }
+  .hk-grid--solo .hk-price { justify-content: flex-start; }
+  .hk-grid--solo .hk-gift { align-items: flex-start; }
+  .hk-grid--solo .hk-flag { align-self: flex-start; }
+}
+.hk-grid + .hk-kind { margin-top: clamp(24px, 3.6vh, 40px); }
+
+/* the Zusatzpakete folders keep their four names */
+.hk-kind {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0 0 clamp(12px, 1.8vh, 18px);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: .18em;
+  text-transform: uppercase;
+  color: rgba(250, 248, 245, .5);
+}
+.hk-kind span {
+  display: grid;
+  place-items: center;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 5px;
+  border-radius: 999px;
+  background: rgba(250, 248, 245, .1);
+  font-size: 10.5px;
+  letter-spacing: 0;
+  color: rgba(250, 248, 245, .7);
+}
+
+/* ---- one card */
+.hk-card { display: flex; }
+.hk-in {
+  position: relative;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  border-radius: var(--hk-r);
+  transition: transform .55s var(--hx-ease-out), box-shadow .45s var(--hx-ease-out);
+}
+@media (hover: hover) {
+  .hk-card:hover .hk-in { transform: translateY(-7px); }
+}
+
+/* the package card — option B „Die Mitte", Manuel 2026-09-20 („premium up these cards").
+   Everything is centred, the ticks are gone, and the ivory is no longer flat: a soft light sits behind
+   the top of the card and falls away to a warmer paper at the foot, with a lifted shadow under it.
+   Superseded, kept so it is not rebuilt: `background: var(--hx-paper)` and a hover ring on its own. */
+.hk-card--tier .hk-in {
+  background: radial-gradient(130% 62% at 50% 0%, #FFFFFF 0%, #F7F3ED 58%, #EDE7DE 100%);
+  color: var(--hx-ink);
+  box-shadow: 0 26px 60px -34px rgba(0, 0, 0, .7), inset 0 0 0 1px rgba(13, 13, 18, .07);
+}
+.hk-card--tier:hover .hk-in {
+  box-shadow: 0 32px 68px -32px rgba(0, 0, 0, .78), inset 0 0 0 1px var(--hk-accent);
+}
+.hk-band {
+  display: flex;
+  align-items: center;
+  justify-content: center;      /* option B: the tier name sits in the middle of its band */
+  gap: 9px;
+  padding: clamp(13px, 1.4vw, 18px) clamp(16px, 1.4vw, 24px);
+  background: var(--hk-accent);
+  transform-origin: 50% 0;
+}
+.hk-dots { display: flex; gap: 5px; }
+.hk-dots i { width: 6px; height: 6px; border-radius: 50%; background: rgba(255, 255, 255, .88); }
+.hk-bolt { width: 15px; height: 15px; fill: #FDE047; flex: none; }
+.hk-tier {
+  font-size: 10.5px;
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: .18em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, .95);
+}
+
+/* the service card: the same card, darker — his words */
+/* option B on the dark card too, so switching tab does not switch design language: the same light
+   from above, only in the dark. Superseded: the flat `background: #15151C`. */
+.hk-card--svc .hk-in {
+  background: radial-gradient(130% 62% at 50% 0%, #1E1E27 0%, #17171E 58%, #121218 100%);
+  color: var(--hx-paper);
+  box-shadow: 0 26px 60px -38px rgba(0, 0, 0, .9), inset 0 0 0 1px rgba(250, 248, 245, .1);
+}
+.hk-card--svc:hover .hk-in { box-shadow: inset 0 0 0 1px rgba(250, 248, 245, .3); }
+.hk-card--svc.is-hot .hk-in { box-shadow: inset 0 0 0 1px rgba(77, 178, 146, .45); }
+.hk-card--svc.is-hot:hover .hk-in { box-shadow: inset 0 0 0 1px var(--hk-acc); }
+.hk-flag {
+  align-self: center;           /* option B */
+  margin: clamp(16px, 1.5vw, 24px) clamp(16px, 1.4vw, 24px) 0;
+  padding: 5px 11px 6px;
+  border-radius: 999px;
+  background: rgba(77, 178, 146, .14);
+  box-shadow: inset 0 0 0 1px rgba(77, 178, 146, .45);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: .16em;
+  text-transform: uppercase;
+  color: var(--hk-acc);
+}
+
+/* ---- the body of both */
+.hk-body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  text-align: center;           /* option B — name, price, every line */
+  padding: clamp(18px, 1.7vw, 28px) clamp(16px, 1.4vw, 24px) clamp(16px, 1.4vw, 22px);
+}
+.hk-flag + .hk-body { padding-top: clamp(12px, 1.1vw, 16px); }
+.hk-name {
+  margin: 0;
+  font-family: var(--hx-font);
+  font-weight: var(--hx-weight);
+  font-size: clamp(25px, 2vw, 38px);
+  letter-spacing: var(--hx-track);
+  line-height: .95;
+}
+.hk-name--svc { font-size: clamp(19px, 1.35vw, 24px); line-height: 1.05; }
+.hk-sub {
+  margin: 9px 0 0;
+  font-size: clamp(12.5px, .92vw, 14px);
+  line-height: 1.4;
+  color: rgba(13, 13, 18, .58);
+}
+.hk-price {
+  display: flex;
+  align-items: baseline;
+  justify-content: center;      /* option B */
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: clamp(14px, 1.8vh, 20px) 0 clamp(14px, 1.8vh, 18px);
+  padding-bottom: clamp(13px, 1.7vh, 18px);
+  border-bottom: 1px solid rgba(13, 13, 18, .14);
+}
+.hk-card--svc .hk-price { border-bottom-color: rgba(250, 248, 245, .12); }
+.hk-num {
+  font-family: var(--hx-font);
+  font-weight: var(--hx-weight);
+  font-size: clamp(26px, 1.9vw, 36px);   /* option B: the price is the card's second-loudest thing */
+  letter-spacing: -.02em;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+  color: var(--hk-accent);
+}
+.hk-card--svc .hk-num { color: var(--hk-acc); }
+.hk-unit {
+  font-size: 10.5px;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  color: rgba(13, 13, 18, .4);
+}
+
+/* What is in it. The rows SHARE the card's free height instead of leaving a hole above the button —
+   five lines and eight lines both read as one full card. (Manuel: no empty space, at all cost.) */
+.hk-feats { flex: 1; display: flex; flex-direction: column; margin: 0; padding: 0; list-style: none; }
+.hk-feat {
+  flex: 1;
+  display: grid;
+  /* option B: one column, no tick, the line centred under the one above it */
+  grid-template-columns: minmax(0, 1fr);
+  align-content: center;
+  justify-items: center;
+  gap: 0;
+  padding: 9px 6px;
+  font-size: clamp(12.5px, .9vw, 13.5px);
+  line-height: 1.42;
+  color: rgba(13, 13, 18, .76);
+}
+.hk-feat > span { max-width: 30ch; }
+.hk-card--svc .hk-feat { color: rgba(250, 248, 245, .66); }
+.hk-feat.is-bold { font-weight: 650; color: var(--hx-ink); }
+.hk-card--svc .hk-feat.is-bold { color: var(--hx-paper); }
+.hk-feat.is-muted { opacity: .45; }
+/* 2026-09-20, Manuel, option B: the green ticks are gone — „no ticks, no lines, just air". The svg is
+   no longer generated (`_build/packages.mjs`) and hero.js no longer draws it. The rule that styled it
+   (16×16, stroke in the tier colour, drawn with stroke-dasharray: 22) stood here. */
+.hk-sect {
+  padding: 14px 0 4px;
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: .16em;
+  text-transform: uppercase;
+  color: rgba(13, 13, 18, .45);
+}
+.hk-badge {
+  display: inline-block;
+  margin-left: 7px;
+  padding: 1px 7px 2px;
+  border-radius: 999px;
+  box-shadow: inset 0 0 0 1px rgba(77, 178, 146, .5);
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: .02em;
+  white-space: nowrap;
+  color: #0a6a52;
+  vertical-align: 1px;
+}
+.hk-card--svc .hk-badge { color: var(--hk-acc); }
+.hk-fsub { display: block; margin-top: 2px; font-size: 11.5px; color: rgba(13, 13, 18, .45); }
+
+.hk-gift {
+  display: flex;
+  flex-direction: column;
+  align-items: center;          /* option B */
+  gap: 2px;
+  margin: 14px 0 0;
+  padding: 12px 14px;
+  border-radius: calc(var(--hk-r) * .6);
+  background: color-mix(in srgb, var(--hk-accent) 11%, transparent);
+}
+.hk-gift-t { font-size: 12.5px; font-weight: 650; color: var(--hk-accent); }
+.hk-gift-d { font-size: 11.5px; color: rgba(13, 13, 18, .5); }
+
+/* ---- the one button the card is for */
+.hk-cta {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-top: clamp(16px, 2.2vh, 24px);
+  padding: 14px 16px;
+  border-radius: 999px;
+  background: var(--hx-ink);
+  color: var(--hx-paper);
+  font-size: 14px;
+  font-weight: 650;
+  letter-spacing: .01em;
+  text-decoration: none;
+  transition: background .3s var(--hx-ease-out), color .3s var(--hx-ease-out), box-shadow .3s var(--hx-ease-out);
+}
+.hk-cta:hover { background: var(--hk-accent); color: #fff; }
+.hk-cta--ghost {
+  background: transparent;
+  color: var(--hx-ink);
+  box-shadow: inset 0 0 0 1px rgba(13, 13, 18, .26);
+}
+.hk-card--svc .hk-cta {
+  background: transparent;
+  color: var(--hx-paper);
+  box-shadow: inset 0 0 0 1px rgba(250, 248, 245, .26);
+}
+.hk-card--svc .hk-cta:hover { background: var(--hk-acc); color: var(--hx-ink); box-shadow: inset 0 0 0 1px var(--hk-acc); }
+.hk-cta:focus-visible { outline: 2px solid var(--hk-acc); outline-offset: 3px; }
+
+/* ---- the price note: one line until it is asked for (the long version is the site's own text) */
+.hk-note {
+  margin: clamp(26px, 4.4vh, 52px) 0 0;
+  border-top: 1px solid rgba(250, 248, 245, .14);
+  font-size: 13px;
+  line-height: 1.6;
+  color: rgba(250, 248, 245, .5);
+}
+.hk-note summary {
+  padding: 15px 0 0;
+  font-size: 11.5px;
+  font-weight: 600;
+  letter-spacing: .16em;
+  text-transform: uppercase;
+  color: rgba(250, 248, 245, .62);
+  cursor: pointer;
+}
+.hk-note summary:hover { color: var(--hx-paper); }
+.hk-note p { margin: 12px 0 0; max-width: 100ch; }
+
+/* ---- reveals (hero.js plays them; without JS everything is simply visible) */
+.hx-js .hk-reveal { opacity: 0; }
+.hx-js .hk-band { transform: scaleY(0); }
+.hx-js .hk-body > *,
+.hx-js .hk-flag { opacity: 0; }
+/* (the tick's start state stood here — option B, 2026-09-20) */
+
+@media (max-width: 1279px) {
+  .hk-grid--4 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 1023px) {
+  .hk-grid--3 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 699px) {
+  .hk-grid--4,
+  .hk-grid--3 { grid-template-columns: minmax(0, 1fr); }
+  /* a wrapping pill row turns into one sideways strip, so the tabs stay one line */
+  .hk-tabs {
+    flex-wrap: nowrap;
+    justify-content: flex-start;    /* centring an overflowing scroller hides its start */
+    overflow-x: auto;
+    scrollbar-width: none;
+    margin: 0 calc(var(--hx-gutter) * -1) clamp(14px, 2vh, 20px);
+    padding: 0 var(--hx-gutter);
+  }
+  .hk-tabs::-webkit-scrollbar { display: none; }
+  .hk-tab { flex: 0 0 auto; }
+  .hk-name { font-size: clamp(26px, 8vw, 34px); }
+  .hk-feat { font-size: 13.5px; }
+}
+
+/* ================================================================ section 7 · Die Route (#mobil) */
+
+/* Manuel's pick (2026-09-19): one line that draws itself down the section as you scroll — from the studio
+   in Feldkirch, through the three steps, forking at the foot into the two ways to book. hero.js (§11) builds
+   the path from where the stops really sit, keeps its tip a little below the middle of the screen, and opens
+   each row as the tip reaches its stop. Ivory, like section 3 — after the dark price cards. Generated by
+   `node _build/route.mjs`. */
+.hm {
+  --hm-acc: #4DB292;                     /* the site's own accent */
+  --hm-r: clamp(14px, 1.25vw, 22px);
+  position: relative;
+  z-index: 3;
+  background: var(--hx-paper);
+  color: var(--hx-ink);
+  padding: calc(55px + clamp(26px, 5vh, 64px)) var(--hx-gutter) clamp(48px, 9vh, 110px);
+}
+.hm-label {
+  font-size: 15px;              /* „a little bit bigger" than the 12 px label the other sections use */
+  letter-spacing: .17em;
+  color: var(--hm-acc);
+}
+.hm-lead {
+  max-width: 62ch;
+  margin: clamp(16px, 2.4vh, 26px) 0 0;
+  font-size: clamp(15px, 1.15vw, 19px);
+  line-height: 1.5;
+  color: rgba(13, 13, 18, .72);
+}
+
+.hm-route { position: relative; margin-top: clamp(30px, 5.6vh, 70px); }
+.hm-svg {
+  position: absolute;
+  z-index: 1;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  pointer-events: none;
+}
+/* the planned route, dotted like a map, under the line that is driven */
+.hm-plan {
+  fill: none;
+  stroke: rgba(13, 13, 18, .26);
+  stroke-width: 2;
+  stroke-dasharray: 1 10;
+  stroke-linecap: round;
+}
+.hm-line {
+  fill: none;
+  stroke: var(--hx-ink);
+  stroke-width: 6;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.hm-tip {
+  position: absolute;
+  z-index: 3;
+  top: 0;
+  left: 0;
+  width: 20px;
+  height: 20px;
+  margin: -10px 0 0 -10px;
+  border-radius: 50%;
+  background: var(--hm-acc);
+  box-shadow: 0 0 0 5px var(--hx-paper), 0 0 0 6px rgba(13, 13, 18, .18);
+  will-change: transform;
+  pointer-events: none;
+  transition: opacity .3s ease;
+}
+
+/* ---- the start */
+/* pin on the road, its words beside it — the line leaves the pin straight down and never crosses them */
+/* same columns as the first row, so the pin sits exactly above the first stop and the road leaves it
+   straight down — a pin placed anywhere else sends the first bend behind the first picture */
+.hm-start {
+  position: relative;
+  z-index: 2;
+  display: grid;
+  grid-template-columns: minmax(0, 5.2fr) minmax(84px, 1.3fr) minmax(0, 4.5fr);
+  grid-template-rows: auto auto;
+  row-gap: 3px;
+  align-items: center;
+  padding-bottom: clamp(40px, 7vh, 84px);
+}
+.hm-start-t,
+.hm-start-a { grid-column: 3; }
+.hm-pin {
+  grid-column: 2;
+  grid-row: 1 / span 2;
+  justify-self: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: var(--hx-ink);
+  box-shadow: 0 0 0 6px var(--hx-paper), 0 0 0 7px var(--hx-ink);
+}
+.hm-start-t { align-self: end; font-size: 12px; font-weight: 650; letter-spacing: .16em; text-transform: uppercase; }
+.hm-start-a { align-self: start; font-size: 13px; color: rgba(13, 13, 18, .58); }
+
+/* ---- the three stops: picture | stop | words, alternating sides so the road swings */
+.hm-steps {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  gap: clamp(56px, 10vh, 130px);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.hm-row { display: grid; align-items: center; }
+.hm-row--a { grid-template-columns: minmax(0, 5.2fr) minmax(84px, 1.3fr) minmax(0, 4.5fr); grid-template-areas: "m s t"; }
+.hm-row--b { grid-template-columns: minmax(0, 6fr) minmax(84px, 1.3fr) minmax(0, 3.3fr); grid-template-areas: "t s m"; }
+.hm-row--c { grid-template-columns: minmax(0, 4.6fr) minmax(84px, 1.3fr) minmax(0, 5.1fr); grid-template-areas: "m s t"; }
+.hm-media { grid-area: m; }
+.hm-stop { grid-area: s; }
+.hm-text { grid-area: t; }
+
+.hm-stop {
+  justify-self: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: var(--hx-paper);
+  box-shadow: inset 0 0 0 5px var(--hx-ink);
+  transition: background-color .45s ease, transform .6s var(--hx-ease-out);
+}
+.hm-row.is-hit .hm-stop { background: var(--hm-acc); transform: scale(1.18); }
+
+.hm-media {
+  position: relative;
+  margin: 0;
+  overflow: hidden;
+  border-radius: var(--hm-r);
+  background: #e7e3dc;
+}
+.hm-media img { display: block; width: 100%; height: 100%; object-fit: cover; }
+.hm-media--screen { aspect-ratio: 1600 / 875; box-shadow: 0 0 0 1px rgba(13, 13, 18, .14); }
+.hm-media--port { aspect-ratio: 4 / 5; }
+.hm-media--card { aspect-ratio: 1400 / 1121; }
+
+.hm-text { min-width: 0; }
+/* left of the road, the words sit against it (the page margin takes the slack, not the gap to the line) */
+.hm-row--b .hm-text { justify-self: end; width: min(100%, 540px); }
+.hm-num {
+  display: block;
+  font-family: var(--hx-font);
+  font-weight: var(--hx-weight);
+  font-size: clamp(56px, 6.2vw, 112px);
+  letter-spacing: -.045em;
+  line-height: .78;
+  font-variant-numeric: tabular-nums;
+  color: rgba(13, 13, 18, .14);
+  transition: color .6s ease;
+}
+.hm-row.is-hit .hm-num { color: var(--hm-acc); }
+.hm-step {
+  margin: clamp(12px, 1.8vh, 20px) 0 0;
+  font-family: var(--hx-font);
+  font-weight: var(--hx-weight);
+  font-size: clamp(30px, 3.1vw, 56px);
+  letter-spacing: var(--hx-track);
+  line-height: .95;
+}
+.hm-desc {
+  max-width: 44ch;
+  margin: clamp(12px, 1.8vh, 18px) 0 0;
+  font-size: clamp(15px, 1.05vw, 18px);
+  line-height: 1.55;
+  color: rgba(13, 13, 18, .72);
+}
+
+/* ---- the fork: the road splits into the two ways to book */
+.hm-fork {
+  position: relative;
+  z-index: 2;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: clamp(12px, 1.2vw, 22px);
+  margin-top: clamp(110px, 17vh, 190px);   /* room for the two branches to swing out */
+}
+.hm-dest {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-height: clamp(170px, 22vh, 230px);
+  padding: clamp(20px, 2vw, 32px);
+  border-radius: var(--hm-r);
+  background: var(--hx-ink);
+  color: var(--hx-paper);
+  text-decoration: none;
+  transition: transform .55s var(--hx-ease-out), background-color .3s ease;
+}
+.hm-dest--mobil { background: var(--hm-acc); color: var(--hx-ink); }
+@media (hover: hover) {
+  .hm-dest:hover { transform: translateY(-6px); }
+}
+.hm-dest:focus-visible { outline: 2px solid var(--hm-acc); outline-offset: 4px; }
+.hm-dest-k {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-family: var(--hx-font);
+  font-weight: var(--hx-weight);
+  font-size: clamp(30px, 3vw, 52px);
+  letter-spacing: var(--hx-track);
+  line-height: 1;
+}
+.hm-new {
+  padding: 4px 9px 5px;
+  border-radius: 999px;
+  background: var(--hx-ink);
+  color: var(--hm-acc);
+  font-family: var(--hx-font);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+}
+.hm-dest-t { font-size: clamp(13.5px, .95vw, 15px); line-height: 1.45; opacity: .78; }
+.hm-dest-b {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: auto;
+  padding-top: 18px;
+  border-top: 1px solid currentColor;
+  border-top-color: color-mix(in srgb, currentColor 22%, transparent);
+  font-size: 15px;
+  font-weight: 650;
+}
+
+/* ---- reveals: hero.js sets .is-on as the line's tip passes; CSS does the motion, so scrolling back up
+   simply plays it backwards. Without JS everything is just there. */
+.hx-js .hm-reveal { opacity: 0; }
+.hx-js .hm-start { opacity: 0; transform: translate3d(0, -16px, 0); transition: opacity .7s ease, transform .9s var(--hx-ease-out); }
+.hx-js .hm-start.is-on { opacity: 1; transform: none; }
+/* the picture opens from the line's side outwards */
+.hx-js .hm-row .hm-media { transition: clip-path 1.05s var(--hx-ease-out); }
+.hx-js .hm-row--a .hm-media,
+.hx-js .hm-row--c .hm-media { clip-path: inset(0 0 0 100% round var(--hm-r)); }
+.hx-js .hm-row--b .hm-media { clip-path: inset(0 100% 0 0 round var(--hm-r)); }
+.hx-js .hm-row.is-on .hm-media { clip-path: inset(0 0 0 0 round var(--hm-r)); }
+.hx-js .hm-row .hm-media img { transform: scale(1.14); transition: transform 1.4s var(--hx-ease-out); }
+.hx-js .hm-row.is-on .hm-media img { transform: none; }
+.hx-js .hm-row .hm-text > * {
+  opacity: 0;
+  transform: translate3d(0, 26px, 0);
+  transition: opacity .7s ease, transform .9s var(--hx-ease-out);
+}
+.hx-js .hm-row.is-on .hm-text > * { opacity: 1; transform: none; }
+.hx-js .hm-row.is-on .hm-text > :nth-child(2) { transition-delay: .07s; }
+.hx-js .hm-row.is-on .hm-text > :nth-child(3) { transition-delay: .14s; }
+.hx-js .hm-row.is-on .hm-text > :nth-child(4) { transition-delay: .24s; }
+.hx-js .hm-dest {
+  opacity: 0;
+  transform: translate3d(0, 34px, 0);
+  transition: opacity .7s ease, transform .9s var(--hx-ease-out), background-color .3s ease;
+}
+.hx-js .hm-fork.is-on .hm-dest { opacity: 1; transform: none; }
+.hx-js .hm-fork.is-on .hm-dest + .hm-dest { transition-delay: .1s; }
+@media (hover: hover) {
+  .hx-js .hm-fork.is-on .hm-dest:hover { transform: translateY(-6px); transition-delay: 0s; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .hx-js .hm-start,
+  .hx-js .hm-row .hm-media,
+  .hx-js .hm-row .hm-media img,
+  .hx-js .hm-row .hm-text > *,
+  .hx-js .hm-dest { transition: none; }
+}
+
+/* ---- narrower screens: the road runs down the left edge, every stop's picture and words beside it */
+@media (max-width: 899px) {
+  .hm-row--a,
+  .hm-row--b,
+  .hm-row--c {
+    grid-template-columns: 44px minmax(0, 1fr);
+    grid-template-areas: "s m" "s t";
+    row-gap: 22px;
+    align-items: start;
+  }
+  .hm-stop { align-self: start; justify-self: start; margin-top: 2px; }
+  .hm-row--b .hm-text { justify-self: stretch; width: auto; }
+  .hm-start { grid-template-columns: 44px minmax(0, 1fr); column-gap: 0; }
+  .hm-pin { grid-column: 1; justify-self: start; }
+  .hm-start-t,
+  .hm-start-a { grid-column: 2; }
+  .hx-js .hm-row--b .hm-media { clip-path: inset(0 100% 0 0 round var(--hm-r)); }
+  .hx-js .hm-row--a .hm-media,
+  .hx-js .hm-row--c .hm-media { clip-path: inset(0 100% 0 0 round var(--hm-r)); }
+  .hm-fork { grid-template-columns: minmax(0, 1fr); margin-top: clamp(70px, 11vh, 110px); margin-left: 44px; }
+}
+
+/* ================================================================ section 8 · Der Film (#statement) */
+
+/* Manuel's pick (2026-09-20): the film IS the close. Rebuilt the same evening on his word: the frame no
+   longer runs to the edges of the screen — it settles as an ALMOST full-screen window with Apple-sized
+   rounded corners, floating on a near-black graded ground, and the press is YouTube's own play button.
+   hero.js §12 scrubs the mask open (no pinning), the two sentences lie on the glass, and under it — on
+   exactly the frame's width — stand the line, the one booking button and the phone number.
+   The two-click rule of the live site is kept: the poster stands in and YouTube is only contacted after
+   a press. Generated by `node _build/statement.mjs`.
+   ⚠ Local preview only: YouTube refuses to play an embed whose page is served from a bare IP address.
+   `http://localhost:4624` plays, `http://127.0.0.1:4624` shows „Dieses Video ist nicht verfügbar".
+   Measured 2026-09-20 in a real browser; `.hs-dev` says so on screen when the host is an IP. */
+.hs {
+  --hs-acc: #4DB292;
+  --hs-r: clamp(18px, 2.1vw, 34px);       /* the Apple corner — hero.js eases down to exactly this */
+  /* the frame: almost the whole screen, never all of it, and always 16:9 */
+  --hs-w: min(92vw, 1640px);
+  --hs-h: min(calc(var(--hs-w) * 9 / 16), 80svh);
+  --hs-fw: calc(var(--hs-h) * 16 / 9);
+  position: relative;
+  z-index: 3;
+  padding: clamp(40px, 7.5vh, 96px) 0 clamp(44px, 8vh, 100px);
+  background: #06070A;                     /* deeper than the page ink, so the film is the brightest thing */
+  color: var(--hx-paper);
+  overflow: hidden;
+  isolation: isolate;
+}
+@supports not (height: 1svh) {
+  .hs { --hs-h: min(calc(var(--hs-w) * 9 / 16), 80vh); }
+}
+
+/* the colour grade: three very low washes — our green above, a cold blue in the corner, one warm ember.
+   None of them is bright enough to read as a colour; together they stop the black from being flat. */
+.hs::before {
+  content: '';
+  position: absolute;
+  inset: -12%;
+  z-index: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(58% 46% at 50% 4%, rgba(77, 178, 146, .17), transparent 70%),
+    radial-gradient(52% 44% at 6% 84%, rgba(44, 76, 132, .15), transparent 72%),
+    radial-gradient(44% 38% at 94% 96%, rgba(190, 116, 58, .11), transparent 74%);
+}
+/* film grain — the one thing that keeps a big black area from looking printed */
+.hs::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 4;
+  pointer-events: none;
+  opacity: .05;
+  mix-blend-mode: overlay;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='180' height='180'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/></filter><rect width='180' height='180' filter='url(%23n)'/></svg>");
+}
+
+.hs-stage {
+  position: relative;
+  z-index: 1;
+  width: var(--hs-fw);
+  height: var(--hs-h);
+  margin-inline: auto;
+}
+
+/* ---- the ambient backlight: the poster again, blurred out of all recognition and blown up behind the
+   frame. The glow around the window is therefore always the colour of the picture in it. */
+.hs-amb {
+  position: absolute;
+  left: -8%;
+  top: -9%;
+  width: 116%;
+  height: 118%;
+  object-fit: cover;
+  z-index: 0;
+  opacity: 0;
+  filter: blur(74px) saturate(1.75) brightness(.72);
+  pointer-events: none;
+}
+
+.hs-film {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  margin: 0;
+  overflow: hidden;
+  background: #0B0B10;
+  border-radius: var(--hs-r);
+  /* hero.js writes the mask while you scroll; this is where it ends up */
+  clip-path: inset(0 0 0 0 round var(--hs-r));
+  will-change: clip-path;
+}
+/* the hairline that makes the glass an object. Inside the mask, so it follows every corner. */
+.hs-film::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 6;
+  border-radius: inherit;
+  box-shadow: inset 0 0 0 1px rgba(250, 248, 245, .10);
+  pointer-events: none;
+}
+.hs-poster {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  will-change: transform;
+}
+.hs-grade {
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(0deg, rgba(6, 7, 10, .92) 0%, rgba(6, 7, 10, .34) 44%, rgba(6, 7, 10, .08) 72%),
+    linear-gradient(180deg, rgba(6, 7, 10, .52) 0%, rgba(6, 7, 10, 0) 34%);
+}
+/* one light streak crosses the glass while the window opens, then it is gone */
+.hs-sheen {
+  position: absolute;
+  inset: -20% -40%;
+  z-index: 2;
+  pointer-events: none;
+  background: linear-gradient(104deg, transparent 43%, rgba(255, 255, 255, .13) 50%, transparent 57%);
+  transform: translate3d(-130%, 0, 0);
+  will-change: transform;
+}
+/* 2026-09-24, Manuel: „the video is not working, when i click on it i can here the sound but the image
+   does not change". The player was `position: relative`, appended after the poster in the flow — and the
+   poster fills the window, so the player sat exactly one window-height BELOW it, outside the mask:
+   sound, no picture (measured: frame top 175 px, player top 895 px at 1440). It lies over everything
+   in the window now; only the glass hairline (::after, z 6) stays above it. */
+.hs-film iframe { position: absolute; inset: 0; z-index: 4; width: 100%; height: 100%; border: 0; display: block; }
+
+/* ---- the press. Manuel, 2026-09-20: „use the YouTube button … not a different design button" —
+   so this is YouTube's own play shape, red, over our poster. Nothing is fetched until it is pressed. */
+.hs-play {
+  position: absolute;
+  z-index: 3;
+  top: 50%;
+  left: 50%;
+  width: clamp(72px, 7vw, 112px);
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: pointer;
+  transform: translate(-50%, -50%);
+  filter: drop-shadow(0 16px 34px rgba(0, 0, 0, .6));
+  transition: transform .5s var(--hx-ease-out), opacity .8s ease;
+}
+.hs-play svg { display: block; width: 100%; height: auto; }
+.hs-yt-b { fill: #FF0000; transition: fill .25s ease; }
+.hs-yt-t { fill: #FFFFFF; }
+@media (hover: hover) {
+  .hs-play:hover { transform: translate(-50%, -50%) scale(1.07); }
+  .hs-play:hover .hs-yt-b { fill: #FF2222; }
+}
+.hs-play:focus-visible { outline: 2px solid var(--hs-acc); outline-offset: 8px; border-radius: 14px; }
+
+/* the words lie on the glass — outside the mask, so they stay whole while the window opens */
+.hs-words {
+  position: absolute;
+  z-index: 2;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  /* (.hs-a below is unused since 2026-09-24 — „Manche sehen ein Auto." is off the page.) */
+  padding: clamp(20px, 3.1vw, 52px);
+  pointer-events: none;
+  /* 2026-09-26, Manuel: „make the text … smaller and centred in the middle". The middle of the picture
+     is the play button's, so the sentence is centred under it, like a title card: centred across,
+     starting just below the button. --hs-fit is the share of the frame's width the widest line may
+     take (hero.js, fitFilm) — it was the full width. */
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  --hs-fit: .56;
+}
+.hs-a {
+  margin: 0;
+  max-width: 24ch;
+  font-size: clamp(15px, 1.4vw, 24px);
+  line-height: 1.3;
+  letter-spacing: -.01em;
+  color: rgba(250, 248, 245, .62);
+}
+.hs-b {
+  width: max-content;
+  max-width: 100%;
+  margin: 0;
+  font-family: var(--hx-font);
+  font-weight: var(--hx-weight);
+  font-size: 5vw;              /* hero.js fits it to the frame */
+  letter-spacing: var(--hx-track);
+  line-height: .9;
+  white-space: nowrap;
+  color: var(--hx-paper);
+  /* its top sits under the play button: from the frame's centre, half the button's height
+     (width × 48/68 ÷ 2) plus a gap */
+  transform: translateY(calc(50% + clamp(25px, 2.47vw, 40px) + clamp(14px, 1.6vw, 26px)));
+}
+/* 2026-09-24 (Manuel's pick B): the line is „Ihr Fahrzeug erstrahlt in neuem Glanz." in three masked
+   lines. On a wide screen the last one starts its own line — „Ihr Fahrzeug erstrahlt / in neuem Glanz."
+   — so the sentence is two lines big instead of one line small; on a phone every .hb-line is a block
+   (the rule under @media 699px), so it is three: „Ihr Fahrzeug / erstrahlt / in neuem Glanz." */
+.hs-b .hb-line:last-child { display: block; }
+
+/* ---- under the film, on exactly the film's width: the line, the one button, the number
+   (the line — „Deshalb behandeln wir …" — is off the page since 2026-09-24: its „Deshalb" pointed at the
+   old sentence pair. .hs-under below is unused since then; the button and the number stay.) */
+.hs-foot {
+  position: relative;
+  z-index: 1;
+  width: var(--hs-fw);
+  margin-inline: auto;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: clamp(16px, 2.6vh, 30px) clamp(24px, 3vw, 60px);
+  padding: clamp(24px, 4.2vh, 52px) 0 0;
+}
+.hs-under {
+  max-width: 44ch;
+  margin: 0;
+  font-size: clamp(16px, 1.3vw, 22px);
+  line-height: 1.45;
+  color: rgba(250, 248, 245, .8);
+}
+.hs-cta { display: flex; flex-wrap: wrap; align-items: center; gap: 14px 26px; }
+.hs-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  height: 56px;
+  padding: 0 26px;
+  border-radius: 999px;
+  background: var(--hs-acc);
+  color: #06070A;
+  font-size: 15.5px;
+  font-weight: 650;
+  text-decoration: none;
+  transition: background-color .3s ease;
+}
+.hs-btn:hover { background: #62c3a3; }
+.hs-tel { font-size: 15px; color: rgba(250, 248, 245, .62); text-decoration: none; }
+.hs-tel:hover { color: var(--hx-paper); }
+.hs-btn:focus-visible,
+.hs-tel:focus-visible { outline: 2px solid var(--hs-acc); outline-offset: 4px; }
+
+/* prototype only: hero.js shows this when the page is served from a bare IP, because YouTube will not
+   play an embed on one. It never appears on a real domain. */
+.hs-dev {
+  position: relative;
+  z-index: 1;
+  width: var(--hs-fw);
+  margin: 14px auto 0;
+  font-size: 12.5px;
+  letter-spacing: .02em;
+  color: rgba(250, 248, 245, .4);
+}
+.hs-dev b { color: var(--hs-acc); font-weight: 600; }
+
+/* ---- reveals (hero.js sets the classes; without JS everything is simply there) */
+.hx-js .hs-a,
+.hx-js .hs-play { opacity: 0; transition: opacity .8s ease, transform .5s var(--hx-ease-out); }
+.hx-js .hs.is-open .hs-a,
+.hx-js .hs.is-open .hs-play { opacity: 1; }
+.hx-js .hs-foot > * { opacity: 0; transform: translate3d(0, 26px, 0); transition: opacity .8s ease, transform .9s var(--hx-ease-out); }
+.hx-js .hs-foot.is-on > * { opacity: 1; transform: none; }
+.hx-js .hs-foot.is-on > :nth-child(2) { transition-delay: .1s; }
+@media (prefers-reduced-motion: reduce) {
+  .hx-js .hs-a,
+  .hx-js .hs-play,
+  .hx-js .hs-foot > * { transition: none; }
+}
+
+/* once the player is in, the window is the player: the words go and the frame stays 16:9 everywhere */
+.hs.is-playing .hs-words,
+.hs.is-playing .hs-play { display: none; }
+
+@media (max-width: 899px) {
+  /* a phone holds a portrait frame far better than a letterbox one */
+  .hs {
+    --hs-w: min(94vw, 680px);
+    --hs-h: min(calc(var(--hs-w) * 4 / 3), 72svh);
+    --hs-fw: calc(var(--hs-h) * 3 / 4);
+    --hs-r: clamp(16px, 4.5vw, 26px);
+  }
+  @supports not (height: 1svh) {
+    .hs { --hs-h: min(calc(var(--hs-w) * 4 / 3), 72vh); }
+  }
+  .hs.is-playing {
+    --hs-h: calc(var(--hs-w) * 9 / 16);
+    --hs-fw: var(--hs-w);
+  }
+  .hs-words { gap: clamp(14px, 3vh, 26px); --hs-fit: .74; }   /* three short lines on a phone: a larger share */
+  .hs-foot { flex-direction: column; align-items: flex-start; }
+  .hs-amb { filter: blur(48px) saturate(1.7) brightness(.72); }
+}
+
+/* ================================================================ section 9 · Das Register (#faq) */
+
+/* Manuel's pick (2026-09-20): the FAQ set like the back pages of a printed manual. A thin category
+   strip on the left, nine wide ruled rows numbered 01–09, and the answer written into the space beside
+   its number. Every rule draws itself left to right as its row arrives, the number sets in the accent,
+   and one hairline spine runs down between the numbers and the text as you read. No pinning.
+   The ruling does not stop with the questions — `.hf` below carries it on, so the footer is the same
+   page rather than a box stuck under it.
+   Generated by `node _build/faq.mjs`; the „Sie" question is answered in that script's header. */
+.hq {
+  --hq-acc: #4DB292;
+  --hq-gut: clamp(38px, 5vw, 92px);       /* the number gutter */
+  --hq-gap: clamp(12px, 1.6vw, 28px);
+  position: relative;
+  z-index: 3;
+  background: var(--hx-paper);
+  color: var(--hx-ink);
+  /* the held head can only finish leaving while the page still has somewhere to scroll — that is what
+     the screen-tall footer below is for. `.hq-hold` ends with the last answer, so this is just the
+     register's own bottom margin. Measured at 1440 x 900: the head is 417 px above the screen by the
+     time the footer fills it. */
+  padding: 0 0 clamp(44px, 7vh, 96px);
+}
+/* the head's own block: it ends with the register, not with the section */
+.hq-hold { position: relative; }
+
+/* ---- head: the label and the fitted title on the left, the way out on the right */
+/* Manuel, 2026-09-20: the head stays where his first screenshot caught it and the questions run past
+   underneath it, until the section ends and everything leaves together. `sticky`, not a pin — the page
+   never stops scrolling and the section costs no extra scroll length. `top: 0` because the padding
+   already carries the 55 px the fixed bar needs, so the held frame is the natural one, to the pixel.
+   The z-index matters: the rows carry `position: relative` for their rules and would otherwise paint
+   over the held head. */
+.hq-head {
+  position: sticky;
+  top: 0;
+  z-index: 4;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: end;
+  gap: clamp(18px, 3vw, 60px);
+  padding: calc(55px + clamp(26px, 5vh, 64px)) var(--hx-gutter) clamp(20px, 3.2vh, 38px);
+  background: var(--hx-paper);
+  box-shadow: 0 1px 0 rgba(13, 13, 18, .10);
+}
+.hq-head-l { min-width: 0; }            /* so the nowrap title cannot widen the column while it is fitted */
+.hq-label { color: rgba(13, 13, 18, .5); }
+.hq-title em { font-style: normal; color: var(--hq-acc); }
+.hq-head-r {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 10px;
+  max-width: 42ch;
+  text-align: right;
+}
+.hq-ask { margin: 0; font-size: clamp(14px, 1.1vw, 16.5px); line-height: 1.5; color: rgba(13, 13, 18, .62); }
+.hq-reach { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 4px 22px; margin: 0; padding: 0; list-style: none; }
+.hq-reach a { font-size: clamp(13.5px, 1.05vw, 16px); color: rgba(13, 13, 18, .8); text-decoration: none; }
+.hq-book {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  height: 46px;
+  padding: 0 22px;
+  margin-top: 2px;
+  border-radius: 999px;
+  background: var(--hq-acc);
+  color: var(--hx-ink);
+  font-size: 14.5px;
+  font-weight: 650;
+  text-decoration: none;
+  transition: background-color .3s ease;
+}
+.hq-book:hover { background: var(--hx-brand-hi); }
+
+/* the ruled underline every link in this section and in the footer wears */
+.hq-reach a,
+.hq-rail a,
+.hq-link,
+.hf-v a,
+.hf-by a {
+  background-image: linear-gradient(currentColor, currentColor);
+  background-size: 0 1px;
+  background-position: 0 100%;
+  background-repeat: no-repeat;
+  transition: background-size .5s var(--hx-ease-out), color .3s ease;
+}
+.hq-reach a:hover,
+.hq-rail a:hover,
+.hq-link:hover,
+.hf-v a:hover,
+.hf-by a:hover { background-size: 100% 1px; color: var(--hx-ink); }
+
+/* ---- the register */
+.hq-body {
+  display: grid;
+  grid-template-columns: clamp(140px, 14vw, 220px) 1fr;
+  gap: clamp(20px, 3vw, 64px);
+  padding: 0 var(--hx-gutter);
+}
+.hq-cats { align-self: start; min-width: 0; position: sticky; z-index: 2; top: calc(var(--hq-head-h, 240px) + 16px); }  /* min-width:0: as a grid item it would otherwise be as wide as the strip's content */
+.hq-cats ol {
+  display: grid;
+  margin: 0;
+  padding: 0 0 0 16px;
+  list-style: none;
+  border-left: 1px solid rgba(13, 13, 18, .14);
+}
+.hq-cat {
+  position: relative;
+  display: grid;
+  gap: 1px;
+  padding: 9px 0;
+  text-decoration: none;
+  color: inherit;
+}
+.hq-cat::before {              /* the mark that says where you are */
+  content: '';
+  position: absolute;
+  left: -17px;
+  top: 50%;
+  width: 9px;
+  height: 1px;
+  background: var(--hq-acc);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform .5s var(--hx-ease-out);
+}
+.hq-cat.is-now::before { transform: scaleX(1); }
+.hq-cat-r { font-size: 11px; font-weight: 600; letter-spacing: .13em; font-variant-numeric: tabular-nums; color: rgba(13, 13, 18, .34); transition: color .4s ease; }
+.hq-cat-t { font-size: clamp(13.5px, 1.05vw, 15.5px); font-weight: 560; color: rgba(13, 13, 18, .56); transition: color .4s ease; }
+.hq-cat.is-now .hq-cat-r { color: var(--hq-acc); }
+.hq-cat.is-now .hq-cat-t { color: var(--hx-ink); }
+
+/* the rail's foot: the way to a person follows you down the register */
+.hq-rail {
+  display: grid;
+  gap: 5px;
+  margin-top: clamp(18px, 2.6vh, 30px);
+  padding-top: 13px;
+  border-top: 1px solid rgba(13, 13, 18, .14);
+}
+.hq-rail-k { margin: 0; font-size: 11px; font-weight: 650; letter-spacing: .2em; text-transform: uppercase; color: rgba(13, 13, 18, .4); }
+.hq-rail a { font-size: clamp(12.5px, .95vw, 14px); line-height: 1.4; color: rgba(13, 13, 18, .7); text-decoration: none; }
+
+.hq-reg { position: relative; min-width: 0; }
+/* the hairline spine between the numbers and the text — hero.js draws it as you read */
+.hq-spine {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: calc(var(--hq-gut) + var(--hq-gap) * .5);
+  width: 1px;
+  background: rgba(13, 13, 18, .13);
+  transform-origin: top;
+  pointer-events: none;
+}
+
+.hq-grp {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 16px;
+  padding: clamp(24px, 3.8vh, 44px) 0 clamp(7px, 1.1vh, 13px);
+  font-size: 11.5px;
+  font-weight: 650;
+  letter-spacing: .2em;
+  text-transform: uppercase;
+  color: rgba(13, 13, 18, .46);
+}
+.hq-grp:first-of-type { padding-top: clamp(8px, 1.4vh, 18px); }
+.hq-grp-r { font-variant-numeric: tabular-nums; letter-spacing: .1em; color: rgba(13, 13, 18, .3); }
+
+.hq-row { position: relative; }
+/* the rule of every row, drawn left to right when the row arrives */
+.hq-row::before,
+.hq-grp::before,
+.hf-row::before,
+.hf-end::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  height: 1px;
+  background: currentColor;
+  opacity: .15;
+  transform-origin: left;
+}
+.hq-grp, .hf-row, .hf-end { position: relative; }
+.hx-js .hq-row::before,
+.hx-js .hq-grp::before,
+.hx-js .hf-row::before,
+.hx-js .hf-end::before { transform: scaleX(0); transition: transform 1s var(--hx-ease-out); }
+.hx-js .hq-row.is-in::before,
+.hx-js .hq-grp.is-in::before,
+.hx-js .hf-row.is-in::before,
+.hx-js .hf-end.is-in::before { transform: scaleX(1); }
+
+.hq-qh { margin: 0; font-size: inherit; font-weight: inherit; }
+.hq-btn {
+  display: grid;
+  grid-template-columns: var(--hq-gut) minmax(0, auto) 1fr auto;
+  align-items: baseline;
+  gap: var(--hq-gap);
+  width: 100%;
+  padding: clamp(15px, 2.1vh, 25px) 0;
+  border: 0;
+  background: none;
+  font: inherit;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.hq-n {
+  font-size: clamp(12px, .95vw, 15px);
+  font-weight: 650;
+  letter-spacing: .06em;
+  font-variant-numeric: tabular-nums;
+  color: rgba(13, 13, 18, .3);
+  transition: color .6s ease;
+}
+.hq-row.is-in .hq-n { color: var(--hq-acc); }
+.hq-q {
+  font-size: clamp(16.5px, 1.6vw, 27px);
+  font-weight: 560;
+  letter-spacing: -.016em;
+  line-height: 1.24;
+  transition: color .3s ease;
+}
+.hq-btn:hover .hq-q { color: rgba(13, 13, 18, .62); }
+.hq-row.is-open .hq-btn:hover .hq-q { color: inherit; }
+/* the leader dots of a printed index: they run from the question to the mark, so a short question
+   never leaves a hole. An empty box aligned to the baseline puts its bottom border exactly on it. */
+.hq-dots {
+  height: 0;
+  margin: 0 4px;
+  border-bottom: 1.5px dotted rgba(13, 13, 18, .26);
+}
+.hq-mark {
+  position: relative;
+  align-self: center;
+  width: 15px;
+  height: 15px;
+  color: rgba(13, 13, 18, .42);
+}
+.hq-mark::before,
+.hq-mark::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 50%;
+  height: 1.5px;
+  background: currentColor;
+  transform: translateY(-50%);
+  transition: transform .55s var(--hx-ease-out);
+}
+.hq-mark::after { transform: translateY(-50%) rotate(90deg); }
+.hq-row.is-open .hq-mark { color: var(--hq-acc); }
+.hq-row.is-open .hq-mark::after { transform: translateY(-50%) rotate(0deg); }
+.hq-btn:focus-visible { outline: 2px solid var(--hq-acc); outline-offset: 3px; }
+
+.hq-a { overflow: hidden; }
+.hx-js .hq-a { height: 0; }
+.hq-a-in {
+  max-width: 82ch;
+  padding: 0 0 clamp(18px, 2.8vh, 32px) calc(var(--hq-gut) + var(--hq-gap));
+}
+.hq-a-in p {
+  margin: 0;
+  font-size: clamp(14.5px, 1.12vw, 17px);
+  line-height: 1.62;
+  color: rgba(13, 13, 18, .72);
+}
+.hq-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 14px;
+  font-size: 14px;
+  font-weight: 620;
+  color: var(--hq-acc);
+  text-decoration: none;
+}
+/* the answer is written across: a left-to-right wipe, not a fade */
+.hx-js .hq-a-in > * { clip-path: inset(0 100% 0 0); }
+.hx-js .hq-row.is-open .hq-a-in > * { clip-path: inset(0 0 0 0); transition: clip-path .9s var(--hx-ease-out) .06s; }
+
+@media (prefers-reduced-motion: reduce) {
+  .hx-js .hq-row::before,
+  .hx-js .hq-grp::before,
+  .hx-js .hf-row::before,
+  .hx-js .hf-end::before { transform: scaleX(1); transition: none; }
+  .hx-js .hq-a-in > * { clip-path: none; transition: none; }
+  .hq-cat::before, .hq-mark::before, .hq-mark::after { transition: none; }
+}
+
+/* ================================================================ the footer (#kontakt) */
+
+/* The same page, printed a shade darker — same rules, same gutters, same drawn hairlines, so the
+   register simply runs out into the contact rows instead of handing over to a separate block. */
+/* The last page. It is one screen tall on a desktop for a reason that is mechanical, not decorative:
+   the held head above can only finish leaving while the page still has somewhere to scroll, and what
+   follows the register is this. A screen-tall colophon also gives the ruling room to breathe, so the
+   rows spread instead of stacking. */
+.hf {
+  position: relative;
+  z-index: 3;
+  background: #EFEAE2;
+  color: var(--hx-ink);
+  padding: clamp(28px, 5vh, 66px) var(--hx-gutter) clamp(20px, 3vh, 34px);
+}
+@media (min-width: 900px) {
+  .hf {
+    min-height: 100svh;
+    display: flex;
+    flex-direction: column;
+  }
+  @supports not (height: 1svh) { .hf { min-height: 100vh; } }
+  /* the bands share the height and hold their content in the middle of it — spacing the gaps apart
+     instead would leave a hole under every row */
+  .hf-top, .hf-row { flex: 1 1 0; }
+  .hf-row { align-items: center; }
+}
+.hf-top {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  align-items: center;
+  gap: clamp(16px, 3vw, 56px);
+  padding-bottom: clamp(20px, 3.4vh, 40px);
+}
+.hf-logo { display: block; }
+.hf-logo img { height: clamp(78px, 13.5vw, 236px); width: auto; display: block; margin-left: -10px; }
+.hf-say { display: grid; gap: 7px; min-width: 0; }
+.hf-claim { margin: 0; font-size: clamp(18px, 2vw, 34px); font-weight: 580; letter-spacing: -.016em; line-height: 1.22; }
+.hf-area { margin: 0; max-width: 70ch; font-size: clamp(13px, 1.1vw, 17px); line-height: 1.5; color: rgba(13, 13, 18, .55); }
+
+.hf-row {
+  display: grid;
+  grid-template-columns: clamp(96px, 11vw, 180px) 1fr;
+  gap: clamp(10px, 1.6vw, 28px);
+  padding: clamp(16px, 2.9vh, 32px) 0;
+}
+.hf-k { margin: 0; font-size: 12px; font-weight: 650; letter-spacing: .2em; text-transform: uppercase; color: rgba(13, 13, 18, .46); }
+.hf-v {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 7px clamp(16px, 2.2vw, 36px);
+  min-width: 0;
+  font-size: clamp(14.5px, 1.2vw, 18px);
+  color: rgba(13, 13, 18, .72);
+}
+.hf-v a { color: inherit; text-decoration: none; overflow-wrap: anywhere; }
+.hf-adr { font-style: normal; line-height: 1.45; }
+.hf-v .hf-adr + .hf-adr { margin-left: clamp(4px, 1vw, 20px); }
+.hf-new { display: inline-flex; align-items: center; gap: 9px; }
+.hf-new b {
+  padding: 3px 9px;
+  border-radius: 999px;
+  background: rgba(77, 178, 146, .2);
+  color: #2b7d64;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: .13em;
+  text-transform: uppercase;
+}
+.hf-live { display: inline-flex; align-items: center; gap: 9px; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 11px; letter-spacing: .16em; text-transform: uppercase; color: rgba(13, 13, 18, .6); }
+.hf-live i {
+  position: relative;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--hx-brand);
+}
+.hf-live i::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: var(--hx-brand);
+  animation: hf-ping 1.9s cubic-bezier(0, 0, .2, 1) infinite;
+}
+@keyframes hf-ping { 75%, 100% { transform: scale(2.1); opacity: 0; } }
+@media (prefers-reduced-motion: reduce) { .hf-live i::after { animation: none; } }
+
+.hf-end {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px clamp(18px, 2.4vw, 40px);
+  margin-top: clamp(10px, 1.6vh, 18px);
+  padding-top: clamp(14px, 2.2vh, 24px);
+  font-size: 12.5px;
+  color: rgba(13, 13, 18, .46);
+}
+.hf-end p { margin: 0; }
+.hf-legal { display: flex; flex-wrap: wrap; gap: 6px 20px; }
+/* 2026-09-21: these four were <span>s until their pages existed. Same weight as before —
+   a footer line that suddenly shouts in brand colour reads as an advert, not as law. */
+.hf-legal a {
+  white-space: nowrap;
+  color: inherit;
+  text-decoration: none;
+  border-bottom: 1px solid rgba(13, 13, 18, .18);
+  transition: color .3s ease, border-color .3s ease;
+}
+.hf-legal a:hover { color: rgba(13, 13, 18, .82); border-bottom-color: rgba(13, 13, 18, .5); }
+.hf-dev { margin: 14px 0 0; font-size: 11.5px; letter-spacing: .01em; color: rgba(13, 13, 18, .34); }
+
+@media (max-width: 899px) {
+  /* the register strip lies down above the rows instead of standing beside them */
+  .hq { padding-bottom: clamp(30px, 5vh, 56px); }   /* nothing is held here, so no tail is needed */
+  .hq-head { position: static; grid-template-columns: 1fr; align-items: start; box-shadow: none; }
+  .hq-head-r { align-items: flex-start; text-align: left; max-width: none; }
+  .hq-reach { justify-content: flex-start; }
+  .hq-body { grid-template-columns: 1fr; gap: clamp(14px, 2.4vh, 24px); }
+  .hq-cats { position: static; }
+  /* the strip wraps rather than scrolls sideways — a cut-off last entry reads as broken */
+  .hq-cats ol {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 9px 20px;
+    max-width: 100%;
+    padding: 0 0 11px;
+    border-left: 0;
+    border-bottom: 1px solid rgba(13, 13, 18, .14);
+  }
+  .hq-cat { display: flex; align-items: baseline; gap: 7px; padding: 1px 0; }
+  .hq-rail { display: none; }        /* the head already carries the number and the address */
+  .hq-cat::before { left: 0; top: auto; bottom: -3px; width: 100%; }
+  .hq-cat-r, .hq-cat-t { white-space: nowrap; }
+  .hq-dots { display: none; }        /* a wrapped question has no room for a leader */
+  .hq-btn { grid-template-columns: var(--hq-gut) 1fr auto; }
+
+  .hf-top { grid-template-columns: 1fr; align-items: start; gap: 14px; }
+  .hf-row { grid-template-columns: 1fr; gap: 6px; }
+  .hf-v { flex-direction: column; align-items: flex-start; gap: 8px; }
+  /* stacked, the second address needs no gap to the first — the side margin pushed it 4 px out of line
+     with every other entry (measured at 390 px, 2026-09-26) */
+  .hf-v .hf-adr + .hf-adr { margin-left: 0; }
+  .hf-end { flex-direction: column; align-items: flex-start; }
+}
+
+/* the navbar is fixed and 55 px tall — without this every anchor in it lands under the bar */
+#philosophy, #gallery, #preise, #mobil, #kontakt { scroll-margin-top: calc(55px + 14px); }
+#faq { scroll-margin-top: 0; }                                       /* lands on the held frame */
+.hq-grp { scroll-margin-top: calc(var(--hq-head-h, 240px) + 18px); } /* lands under the held head */
+
+/* ================================================================ placeholder for section 9 */
+
+/* ⚠ SUPERSEDED 2026-09-20 — section 9 exists („Das Register“, above), so index.html no longer
+   renders `.hx-next`. The rules are kept, not deleted: the next prototype that needs somewhere to
+   scroll into can drop the one-line placeholder section back in. */
+
+/* Not a design — section 9 is chosen from three ideas first (Manuel, 2026-09-17). It only gives
+   the page a screen to scroll into after section 6. */
+.hx-next {
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  padding: 0 var(--hx-gutter);
+  background: #15151B;
+  border-top: 1px solid rgba(250, 248, 245, .08);
+  font-size: 15px;
+  letter-spacing: .01em;
+  color: rgba(250, 248, 245, .42);
+}
+@supports (height: 100lvh) {
+  .hx-next { min-height: 100lvh; }
+}

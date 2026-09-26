@@ -1,0 +1,246 @@
+/* ===================================================================================
+   SOLID — one rule for every pill, chip, badge and small button on the site.
+
+   Manuel, 2026-09-23, with two screenshots: „the thing that makes them look AI is that
+   you used a edge line and fill color that is lighter then the edge and the text in it
+   is the same as the edge." He is right, and it is the default that every generated
+   layout reaches for: one hue doing three jobs at three strengths.
+
+   He picked option A. Two rules, and they are the whole file:
+
+     1. A PILL HAS NO RING. It is either a solid body or it is bare text.
+     2. A HUE DOES ONE JOB. If the body carries the colour, the text is that colour's
+        own dark ink — never the same colour again, weaker.
+
+   Loaded last on all ten pages, so it wins without every stylesheet being rewritten.
+   The rules it supersedes are still in their own files, unchanged, above.
+
+   ⛔ NOT touched: the hairline around big surfaces — cards, panels, the calendar column,
+   the address blocks. There the line is structure and the text is never the line's colour,
+   so it is not the pattern he flagged. Taking those away would flatten the page.
+   =================================================================================== */
+
+:root {
+  --sol-acc: #4DB292;          /* the site's green */
+  --sol-acc-ink: #06120E;      /* what you write ON the green */
+  --sol-amb: #F0A93C;          /* the „nur auf Termin" amber */
+  --sol-amb-ink: #2A1B03;
+  --sol-terra: #D68960;        /* the „gesperrt" terracotta */
+  --sol-terra-ink: #2A1408;
+  --sol-body: rgba(250, 248, 245, .085);   /* a quiet body, for a button with no colour */
+  --sol-body-h: rgba(250, 248, 245, .16);
+}
+
+/* ─────────────────────────────── 1 · the ring goes, everywhere it was a pill */
+
+.hk-flag,
+.hk-tab,
+.hk-cta--ghost,
+.hx-btn--ghost,
+.ha-chip,
+.rc-doc,
+.mo-btn--ghost,
+.mo-towns span,
+.mo-chips li,
+.he-btn--ghost,
+.he-gift-l li,
+.he-perfect,
+.ko-btn--ghost,
+.ko-mini--ghost,
+.ko-area-fig,
+.ko-flag b,
+.bk-tab,
+.bk-btn,
+.bk-dp,
+.bk-phone,
+.bk-place-x,
+.bk-rec,
+.bk-rec-plus,
+.bk-cd-slot,
+.bk-day.in-span,
+.bk-tab:hover,
+.bk-btn:hover:not([disabled]),
+.bk-dp:hover,
+.bk-rec:hover,
+.bk-cd-slot:hover,
+.ha-chip:hover,
+.hk-tab:hover,
+.rc-doc:hover { box-shadow: none; }
+
+.ko-area-fig { border: 0; }
+
+/* ─────────────────────────────── 2 · a coloured badge is a solid block */
+
+.hk-flag,
+.he-perfect,
+.mo-chips li,
+.bk-tab--aio,
+.bk-rec-plus {
+  background: var(--sol-acc);
+  color: var(--sol-acc-ink);
+}
+.hf-new b { background: var(--hx-brand, #4DB292); color: var(--sol-acc-ink); }
+.bk-tab--aio:hover { background: #63c9a8; color: var(--sol-acc-ink); }
+.bk-tab--aio.is-on { background: var(--hx-paper); color: var(--hx-ink); }
+.bk-rec:hover .bk-rec-plus { background: var(--sol-acc-ink); color: var(--sol-acc); }
+
+.bk-phone,
+.bk-place-x { background: var(--sol-amb); color: var(--sol-amb-ink); }
+.ko-flag b { background: var(--sol-terra); color: var(--sol-terra-ink); }
+
+/* the sentence under a „Nur auf Termin" card is text, not a badge — it stays quiet */
+.bk-phone-l { color: rgba(240, 169, 60, .85); }
+
+/* ─────────────────────────────── 3 · a button with no colour gets a quiet body */
+
+.hk-cta--ghost,
+.hx-btn--ghost,
+.mo-btn--ghost,
+.he-btn--ghost,
+.ko-btn--ghost,
+.ko-mini--ghost,
+.mo-towns span,
+.he-gift-l li,
+.bk-btn {
+  background: var(--sol-body);
+  color: rgba(250, 248, 245, .88);
+}
+.hk-cta--ghost:hover,
+.hx-btn--ghost:hover,
+.mo-btn--ghost:hover,
+.he-btn--ghost:hover,
+.ko-btn--ghost:hover,
+.ko-mini--ghost:hover,
+.bk-btn:hover:not([disabled]) { background: var(--sol-body-h); color: var(--hx-paper); }
+
+/* on light ground the same button needs the ink version. ⚠ 2026-09-25 (page sweep): this list had only
+   the two closing sheets of mobil/kontakt — the cream package cards on „/" (Deep Polish „Termin
+   vereinbaren", Endstufe „Mehr erfahren") and the closing sheet of endstufe.html (the phone number) were
+   left with paper text on a cream ground, i.e. invisible. Every light surface that carries one of the
+   buttons above belongs here. */
+.mo-end .mo-btn--ghost,
+.ko-end .ko-btn--ghost,
+.he-end .he-btn--ghost,
+.hk-card--tier .hk-cta--ghost {
+  background: rgba(13, 13, 18, .08);
+  color: var(--hx-ink);
+}
+.mo-end .mo-btn--ghost:hover,
+.ko-end .ko-btn--ghost:hover,
+.he-end .he-btn--ghost:hover,
+.hk-card--tier .hk-cta--ghost:hover { background: var(--hx-ink); color: var(--hx-paper); }
+
+/* ─────────────────────────────── 4 · a tab that is not chosen is bare text
+   The chosen one already inverts to paper on every one of these strips, which IS the
+   solid block — the neutral version of it. So only the resting state changes. */
+
+.hk-tab,
+.bk-tab,
+.rc-doc {
+  background: transparent;
+  /* .52 recedes nicely and reads at about 4.4:1 on this ground — .6 keeps the recession and
+     clears 5:1, which a resting tab still has to do. */
+  color: rgba(250, 248, 245, .6);
+}
+.hk-tab:hover,
+.bk-tab:hover,
+.rc-doc:hover { background: var(--sol-body); color: var(--hx-paper); }
+.hk-tab.is-on,
+.bk-tab.is-on { background: var(--hx-paper); color: var(--hx-ink); }
+/* 2026-09-26, Manuel: the strip on arbeit.html wears the home page's button now — „make them our
+   standard button design like on the homepage". Resting = the quiet button (.hx-btn--ghost); the hover
+   is §8's, like every other button. The chosen one was green for an hour — same day, second word: „make
+   the active button white like the Termin buchen button on the same page" (.ha-cta: paper, ink). */
+.ha-chip { background: var(--sol-body); color: rgba(250, 248, 245, .88); }
+.ha-chip.is-on { background: var(--hx-paper); color: var(--hx-ink); }
+/* the legal pages mark WHICH document you are in — that is a state, not an offer, so it takes
+   the same paper block as every other chosen thing here. A full accent block shouted. */
+.rc-doc.is-on { background: var(--hx-paper); color: var(--hx-ink); }
+.rc-doc.is-on .rc-doc-n { color: rgba(13, 13, 18, .45); }
+
+/* ─────────────────────────────── 5 · the booking week and the day */
+
+.bk-dp { background: var(--sol-body); }
+.bk-dp:hover { background: var(--sol-body-h); }
+.bk-dp.is-on { background: var(--hx-paper); color: var(--hx-ink); }
+/* today was a green ring; a ring is what we just removed, so it is a bar instead */
+.bk-dp.is-today::before {
+  content: '';
+  position: absolute;
+  left: 22%;
+  right: 22%;
+  bottom: 0;
+  height: 3px;
+  border-radius: 3px 3px 0 0;
+  background: var(--sol-acc);
+}
+.bk-dp.is-on.is-today::before { background: var(--hx-ink); }
+
+/* a free slot is a solid block, the way a calendar draws an event */
+.bk-cd-slot { background: var(--sol-acc); color: var(--sol-acc-ink); }
+.bk-cd-slot:hover { background: #63c9a8; color: var(--sol-acc-ink); }
+.bk-cd-slot.is-on { background: var(--hx-paper); color: var(--hx-ink); }
+.bk-cd-s { color: rgba(6, 18, 14, .6); }
+.bk-cd-slot.is-on .bk-cd-s { color: rgba(13, 13, 18, .5); }
+.bk-day.in-span { background: rgba(77, 178, 146, .3); }
+
+/* ─────────────────────────────── 6 · „Passt dazu" keeps its pull without a ring */
+
+.bk-rec { background: rgba(250, 248, 245, .06); }
+.bk-rec:hover { background: rgba(77, 178, 146, .18); }
+/* the one-shot sweep drew a ring; it lifts the body instead */
+@keyframes bk-notice { from { background: rgba(77, 178, 146, .22); } to { background: rgba(250, 248, 245, .06); } }
+
+/* ─────────────────────────────── 7 · the figure beside the mobile band */
+
+.ko-area-fig { background: rgba(77, 178, 146, .12); }
+
+/* ─────────────────────────────── 8 · the hover: one calm swap for every button
+
+   Manuel, 2026-09-26, after volkswagen.at: on hover BOTH kinds of button — the coloured one and the
+   quiet one — become the SAME soft button: a solid body, dark text, no ring. From three colours in
+   lab/button-hover.html he picked A „Salbei": our green, paled to sage. It follows this file's own
+   two rules (no ring; the body carries the colour, the text is ink).
+   Only BUTTONS: tabs, chips, slots and the date/time pickers are choices, not actions, and keep their
+   own hover. `:is()` weighs as much as its heaviest argument (.hk-card--svc .hk-cta), so this one rule
+   wins over every per-page hover it replaces — including the light-card ones in section 3 above. */
+:root { --sol-hover: #CFE5DA; }
+:is(.hx-btn, .hk-cta, .hk-card--svc .hk-cta, .hs-btn, .hq-book, .he-btn, .mo-btn, .ko-btn, .ko-mini, .ha-cta,
+    .bk-btn, .bk-next, .bk-act, .bk-home) {
+  transition: background-color .28s ease, color .28s ease, box-shadow .28s ease;
+}
+:is(.hx-btn, .hk-cta, .hk-card--svc .hk-cta, .hs-btn, .hq-book, .he-btn, .mo-btn, .ko-btn, .ko-mini, .ha-cta,
+    .bk-btn, .bk-next, .bk-act, .bk-home):hover:not([disabled]) {
+  background: var(--sol-hover);
+  color: var(--hx-ink);
+  box-shadow: none;
+}
+
+/* ─────────────────────────────── 9 · the size: Apple's proportions
+
+   Manuel, 2026-09-26, with two Apple TV buttons („Vorschau ansehen", „Jetzt streamen"): „they do not
+   use so much empty space around the text and are more narrow" — all over the website, the SIZE only,
+   no colour. Measured on his screenshots: a 40 px pill with about 20 px either side of the words (text
+   height : pill height ≈ 1 : 2.6). Ours were 44–56 px tall with 22–34 px beside the words (≈ 1 : 3.3).
+   One size now for every text button on every page; the smaller steps (the address buttons on
+   kontakt.html, the van sheet and the phone hero on „/") keep their own step down, in proportion. */
+:is(.hx-btn, .hk-cta, .hs-btn, .hq-book, .he-btn, .mo-btn, .ko-btn, .ha-cta, .ha-chip,
+    .bk-next, .bk-act, .bk-home) {
+  height: 40px;
+  padding: 0 20px;
+  font-size: 15px;
+  line-height: 1;
+  white-space: nowrap;
+}
+/* the ones that were sized by padding need a flex box for the height to hold the words in the middle
+   (.hx-btn is inline-flex already, .hk-cta a full-width flex row in its card) */
+:is(.hs-btn, .hq-book, .he-btn, .mo-btn, .ko-btn, .ha-cta, .ha-chip, .bk-next, .bk-act, .bk-home, .ko-mini) {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.ko-mini { height: 34px; padding: 0 16px; font-size: 13px; line-height: 1; white-space: nowrap; }
+/* the phone menu's „Jetzt Buchen" (Tailwind px-10 py-4 text-lg: 60 px tall) — Apple's own large size */
+/* flex-shrink 0: the menu is a centred column, and on a phone on its side (740 × 360) it squeezed a
+   fixed-height button to 28 px — padding could not be squeezed, a height can */
+#mobile-menu a.bg-champagne { display: inline-flex; align-items: center; flex-shrink: 0; height: 46px; padding: 0 24px; font-size: 17px; }

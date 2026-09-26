@@ -1,0 +1,308 @@
+/* ===================================================================================
+   „Die Akte" — the four legal pages (impressum · datenschutz · agb · widerruf).
+   Built 2026-09-21. Markup comes from _build/recht.mjs; every word in it is the
+   client's own.
+
+   These pages have one job the other pages do not have: they must be READ. So the
+   middle column is capped at a measure a person can actually follow, and the space
+   that a capped column would otherwise leave empty is given to the two things a
+   long legal page always needs — where you are in this document (left) and which
+   of the four documents you are in (right). Both rails stay with you.
+
+   Tokens (--hx-ink, --hx-paper, --hx-gutter, the Inter faces, .hx-label) come from
+   hero.css; the navbar from nav.css.
+   =================================================================================== */
+
+.rc-page {
+  --rc-acc: #4DB292;
+  --rc-line: rgba(250, 248, 245, .1);
+  --rc-dim: rgba(250, 248, 245, .44);
+  --rc-text: rgba(250, 248, 245, .74);
+  --rc-top: calc(55px + clamp(16px, 2vh, 24px)); /* the navbar, plus air */
+  background: #08080B;
+}
+
+/* ---------------------------------------------------------------- the letterhead */
+
+.rc-head {
+  padding: calc(55px + clamp(34px, 6vh, 74px)) var(--hx-gutter) clamp(20px, 3vh, 34px);
+  border-bottom: 1px solid var(--rc-line);
+}
+.rc-head-in {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: clamp(20px, 4vw, 60px);
+  max-width: 1640px;
+  margin: 0 auto;
+}
+.rc-label { color: var(--rc-acc); }
+.rc-title {
+  margin: clamp(10px, 1.6vh, 18px) 0 0;
+  font-family: var(--hx-font);
+  font-weight: var(--hx-weight);
+  font-size: clamp(34px, 5.6vw, 96px);
+  letter-spacing: var(--hx-track);
+  line-height: .88;
+  color: var(--hx-paper);
+}
+.rc-letter {
+  flex: 0 1 auto;
+  margin: 0 0 .5em;
+  font-size: clamp(10.5px, .8vw, 13px);
+  font-weight: 500;
+  letter-spacing: .13em;
+  line-height: 1.6;
+  text-transform: uppercase;
+  text-align: right;
+  color: rgba(250, 248, 245, .38);
+}
+
+/* ---------------------------------------------------------------- the three columns */
+
+.rc-main {
+  display: grid;
+  grid-template-columns: clamp(180px, 15.5vw, 250px) minmax(0, 72ch) clamp(165px, 13.5vw, 225px);
+  grid-template-areas: 'rail doc docs';
+  gap: clamp(26px, 3.4vw, 64px);
+  justify-content: center;
+  padding: clamp(28px, 4.4vh, 56px) var(--hx-gutter) clamp(50px, 7.5vh, 100px);
+}
+.rc-rail { grid-area: rail; }
+.rc-doc-body { grid-area: doc; }
+.rc-docs { grid-area: docs; }
+
+.rc-rail,
+.rc-docs {
+  position: sticky;
+  top: var(--rc-top);
+  align-self: start;
+  max-height: calc(100svh - var(--rc-top) - 20px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+.rc-k {
+  margin: 0 0 12px;
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: .2em;
+  text-transform: uppercase;
+  color: rgba(250, 248, 245, .34);
+}
+
+/* left rail — where you are in this document */
+
+.rc-rail-l {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  border-left: 1px solid var(--rc-line);
+}
+.rc-rail-l a {
+  display: block;
+  padding: 7px 0 7px 14px;
+  margin-left: -1px;
+  border-left: 1px solid transparent;
+  font-size: clamp(12px, .88vw, 13.5px);
+  line-height: 1.4;
+  color: rgba(250, 248, 245, .46);
+  text-decoration: none;
+  transition: color .3s ease, border-color .3s ease;
+}
+.rc-rail-l a:hover { color: rgba(250, 248, 245, .82); }
+.rc-rail-l a.is-here {
+  border-left-color: var(--rc-acc);
+  color: var(--hx-paper);
+}
+
+/* right rail — which of the four you are reading */
+
+.rc-docs-l {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.rc-doc {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  padding: 10px 12px;
+  border: 1px solid transparent;
+  border-radius: 11px;
+  font-size: clamp(12.5px, .92vw, 14.5px);
+  color: rgba(250, 248, 245, .5);
+  text-decoration: none;
+  transition: color .3s ease, background-color .3s ease, border-color .3s ease;
+}
+.rc-doc:hover { color: var(--hx-paper); background: rgba(250, 248, 245, .045); }
+.rc-doc-n {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: .1em;
+  color: rgba(250, 248, 245, .28);
+}
+.rc-doc.is-on {
+  background: rgba(77, 178, 146, .1);
+  border-color: rgba(77, 178, 146, .3);
+  color: var(--hx-paper);
+}
+.rc-doc.is-on .rc-doc-n { color: var(--rc-acc); }
+
+/* ---------------------------------------------------------------- the document */
+
+.rc-s {
+  padding: clamp(22px, 3vh, 34px) 0 0;
+  scroll-margin-top: calc(var(--rc-top) + 8px);
+}
+.rc-s + .rc-s { border-top: 1px solid var(--rc-line); margin-top: clamp(22px, 3vh, 34px); }
+.rc-s:first-child { padding-top: 0; }
+.rc-h {
+  margin: 0 0 clamp(12px, 1.6vh, 18px);
+  font-family: var(--hx-font);
+  font-weight: var(--hx-weight);
+  font-size: clamp(17px, 1.35vw, 23px);
+  letter-spacing: -.012em;
+  line-height: 1.22;
+  color: var(--hx-paper);
+}
+.rc-c { display: flex; flex-direction: column; gap: clamp(12px, 1.5vh, 17px); }
+.rc-p {
+  margin: 0;
+  font-size: clamp(14.5px, 1.02vw, 16.5px);
+  line-height: 1.64;
+  letter-spacing: -.004em;
+  color: var(--rc-text);
+}
+.rc-p b { font-weight: 600; color: rgba(250, 248, 245, .93); }
+.rc-strong { font-weight: 600; color: var(--hx-paper); }
+.rc-mute { font-size: .88em; color: rgba(250, 248, 245, .42); }
+.rc-c a,
+.rc-addr a,
+.rc-box a { color: var(--rc-acc); text-decoration: none; border-bottom: 1px solid rgba(77, 178, 146, .3); }
+.rc-c a:hover { border-bottom-color: var(--rc-acc); }
+
+.rc-ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.rc-ul li {
+  position: relative;
+  padding-left: 20px;
+  font-size: clamp(14.5px, 1.02vw, 16.5px);
+  line-height: 1.6;
+  color: var(--rc-text);
+}
+.rc-ul li::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: .72em;
+  width: 10px;
+  height: 1px;
+  background: var(--rc-acc);
+  opacity: .8;
+}
+.rc-ul li b { font-weight: 600; color: rgba(250, 248, 245, .93); }
+
+/* the address block and the withdrawal form: quoted matter, so it is set apart */
+.rc-addr {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding-left: clamp(14px, 1.4vw, 20px);
+  border-left: 2px solid rgba(77, 178, 146, .38);
+}
+.rc-addr .rc-p { line-height: 1.66; }
+.rc-box {
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+  padding: clamp(18px, 2vw, 28px);
+  border: 1px solid var(--rc-line);
+  border-radius: clamp(13px, 1.1vw, 20px);
+  background: rgba(250, 248, 245, .03);
+}
+.rc-box .rc-p { font-size: clamp(13.5px, .95vw, 15.5px); }
+
+/* ---------------------------------------------------------------- the way out */
+
+.rc-end {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px clamp(18px, 3vw, 40px);
+  padding: clamp(20px, 2.8vh, 30px) var(--hx-gutter) clamp(26px, 4vh, 44px);
+  border-top: 1px solid var(--rc-line);
+  max-width: 1640px;
+  margin: 0 auto;
+}
+.rc-back,
+.rc-end-c a {
+  font-size: clamp(12.5px, .92vw, 14.5px);
+  color: rgba(250, 248, 245, .55);
+  text-decoration: none;
+  transition: color .3s ease;
+}
+.rc-back:hover,
+.rc-end-c a:hover { color: var(--rc-acc); }
+.rc-back span { margin-right: 7px; }
+.rc-end-c { display: flex; flex-wrap: wrap; gap: 8px clamp(14px, 2vw, 26px); margin: 0; }
+
+/* ---------------------------------------------------------------- reveal
+
+   Gated on .hx-js, exactly like the rest of the site: with JavaScript off, nothing is
+   hidden in the first place. recht.js shows everything anyway after two seconds — on a
+   page of legal text, invisible is the one failure that must not be possible. */
+.hx-js .rc-reveal { opacity: 0; }
+
+@media (prefers-reduced-motion: reduce) {
+  .hx-js .rc-reveal { opacity: 1; }
+}
+
+/* ---------------------------------------------------------------- narrower
+
+   At 1240 the third column no longer fits beside a readable measure, so the four
+   documents become a row above the page. At 860 the left rail joins them: on a phone
+   a sticky index costs more height than it gives. */
+
+@media (max-width: 1240px) {
+  .rc-main {
+    grid-template-columns: clamp(165px, 20vw, 230px) minmax(0, 1fr);
+    grid-template-areas:
+      'docs docs'
+      'rail doc';
+    gap: clamp(18px, 2.6vw, 40px) clamp(24px, 3.2vw, 48px);
+  }
+  .rc-docs { position: static; max-height: none; overflow: visible; }
+  .rc-docs-l { flex-direction: row; flex-wrap: wrap; gap: 8px; }
+  .rc-doc { border-color: var(--rc-line); }
+}
+
+@media (max-width: 860px) {
+  .rc-head-in { flex-direction: column; align-items: flex-start; gap: 14px; }
+  .rc-letter { text-align: left; margin: 0; }
+  .rc-main {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-areas:
+      'docs'
+      'rail'
+      'doc';
+  }
+  .rc-rail { position: static; max-height: none; overflow: visible; }
+  .rc-rail-l { display: flex; flex-wrap: wrap; gap: 0 6px; border-left: 0; }
+  .rc-rail-l a {
+    padding: 6px 11px;
+    margin: 0;
+    border: 1px solid var(--rc-line);
+    border-radius: 999px;
+  }
+  .rc-rail-l a.is-here { border-color: rgba(77, 178, 146, .4); background: rgba(77, 178, 146, .1); }
+}

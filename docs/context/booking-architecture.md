@@ -1,5 +1,12 @@
 # Booking architecture
 
+> **Since the relaunch (2026-09-26):** the booking page is `site/buchen.html` + `site/booking.js` (the new
+> design, exported — see build-and-seo.md). It uses the SAME rules (`site/assets/data/` holds verbatim copies of
+> `src/lib/pricing.js`, `scheduling.js`, `src/data/services.js` — with the new design's price deviations of
+> 2026-09-25) and the SAME API: `GET /api/availability?start&days=56` polled every 30 s on the Termin step
+> (unknown/fallback days are never offered), photos to the same Cloudinary preset, `POST /api/book` with the
+> same payload, `409 slot_taken` → back to the calendar. No Make.com fallback. The flow below is the React one.
+
 How the "Jetzt buchen" flow works end-to-end. Keep this current when the flow changes.
 
 ## Tech stack
