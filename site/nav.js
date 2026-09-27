@@ -22,8 +22,8 @@
     open = want;
     document.body.style.overflow = want ? 'hidden' : '';
     menu.style.pointerEvents = want ? 'auto' : 'none';
-    $('[data-icon="menu"]', toggle).hidden = want;
-    $('[data-icon="x"]', toggle).hidden = !want;
+    $('[data-icon="menu"]', toggle).toggleAttribute('hidden', want); // an <svg> has no .hidden property — the attribute is what hides it
+    $('[data-icon="x"]', toggle).toggleAttribute('hidden', !want);
     const gsap = window.gsap;
     if (!gsap) {
       menu.style.clipPath = want ? 'circle(150% at calc(100% - 2.5rem) 1.75rem)' : 'circle(0% at calc(100% - 2.5rem) 1.75rem)';

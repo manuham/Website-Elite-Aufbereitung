@@ -105,8 +105,8 @@
     menuOpen = open;
     document.body.style.overflow = open ? 'hidden' : '';
     menu.style.pointerEvents = open ? 'auto' : 'none';
-    $('[data-icon="menu"]', toggle).hidden = open;
-    $('[data-icon="x"]', toggle).hidden = !open;
+    $('[data-icon="menu"]', toggle).toggleAttribute('hidden', open); // an <svg> has no .hidden property — the attribute is what hides it
+    $('[data-icon="x"]', toggle).toggleAttribute('hidden', !open);
 
     if (open) {
       const items = $$('.menu-item', menu);

@@ -638,6 +638,33 @@
   .hx-meta { margin-top: 12px; }
 }
 
+/* ---------------------------------------------------------------- the prices button
+
+   2026-09-27, Matthias via Manuel: „What do customers want to see on my website? What do I offer and
+   what does it cost?" — a big button over the whole width of „Termin buchen" and „Unsere Arbeit
+   ansehen", in another colour so it stands out. Paper (ivory) with ink: the site's one other button
+   colour (arbeit.html's „Termin buchen"), and on the dark hero the brightest thing on the screen.
+   The actions become a two-column grid so the button spans exactly the two below it. Its hover is
+   solid.css §8's, like every button. Placed after every media block above on purpose: the same
+   selectors there would otherwise win by source order. (0,3,0) beats solid.css §9's size rule. */
+.hx-copy--duo .hx-actions { display: grid; grid-template-columns: auto auto; }
+.hx-copy .hx-actions .hx-btn--prices {
+  grid-column: 1 / -1;
+  justify-content: center;
+  height: 46px;                 /* the large step, same as the phone menu's „Jetzt Buchen" (solid.css §9) */
+  font-size: 17px;
+  background: var(--hx-paper);
+  color: var(--hx-ink);
+}
+.hx-copy .hx-actions .hx-btn { justify-content: center; }
+@media (max-width: 699px) {
+  .hx-copy--duo .hx-actions { grid-template-columns: minmax(0, 1fr); }   /* stacked, full width */
+}
+@media (orientation: landscape) and (max-height: 500px) {
+  .hx-copy--duo .hx-actions { grid-template-columns: auto auto; }        /* side by side again */
+  .hx-copy .hx-actions .hx-btn--prices { height: 40px; font-size: 15px; }
+}
+
 /* ================================================================ section 2 · the strip (#philosophy) */
 
 /* Manuel's pick of three (2026-09-17): the page holds, a strip of work photos slides sideways with
