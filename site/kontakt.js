@@ -38,7 +38,7 @@
      letters are hidden instead. */
   const HEADS = '.ko-title, .ko-h, .ko-area-h, .ko-end-t';
   const fades = (root) => $$('.ko-reveal', root).filter((el) => !el.matches(HEADS));
-  const writeIn = (root) => { const hs = $$(HEADS, root); gsap.set(hs, { opacity: 1 }); return hxWrite(hs); };
+  const writeIn = (root) => { const hs = $$(HEADS, root); if (hs.length) gsap.set(hs, { opacity: 1 }); return hxWrite(hs); };
 
   gsap.fromTo(fades(head), { y: 30, opacity: 0 },
     { y: 0, opacity: 1, duration: 0.94, ease: 'power1.inOut', stagger: 0.09, delay: 0.15 });

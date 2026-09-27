@@ -582,7 +582,7 @@ function timeGrid(week, d, n) {
 
   let body;
   if (!open) {
-    body = `<p class="bk-empty">In dieser Woche passt kein Termin dieser Länge. Springen Sie zum nächsten freien Termin.</p>`;
+    body = `<p class="bk-empty bk-empty--flow">In dieser Woche passt kein Termin dieser Länge. Springen Sie zum nächsten freien Termin.</p>`;
   } else {
     body = dayCalendar(open, d, n);
   }
@@ -628,7 +628,7 @@ function dayCalendar(open, d, n) {
 
   const tall = Math.round(span / 60 * 62);
   return `<div class="bk-cd" style="--bk-cd-h:${tall}px">
-    <p class="bk-cd-h">${esc(germanFull(open.day))}<span>${open.free.length} freie Startzeiten</span></p>
+    <p class="bk-cd-h">${esc(germanFull(open.day))}<span>${open.free.length} freie Startzeit${open.free.length === 1 ? '' : 'en'}</span></p>
     <div class="bk-cd-body">
       <div class="bk-cd-axis">${axis}</div>
       <div class="bk-cd-col">${lines}${past}${busy}${slots}</div>
