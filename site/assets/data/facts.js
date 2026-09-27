@@ -4,7 +4,7 @@ export const FACTS = {
   "tel": "+436642546078",
   "mail": "info.eliteaufbereitung@gmail.com",
   "studio": {
-    "feldkirch": "Ketschenstraße 1, 6800 Feldkirch",
+    "feldkirch": "Ketschelenstraße 1, 6800 Feldkirch",
     "nueziders": "Bundesstraße 2a, 6714 Nüziders"
   },
   "blockedName": "Nüziders",
