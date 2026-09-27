@@ -1,5 +1,5 @@
 /* COPIED, DO NOT EDIT — run `node _build/booking-data.mjs`.
-   Source: src/data/services.js (live site, 2026-09-25).
+   Source: src/data/services.js (live site, 2026-09-27).
    NEW DESIGN ONLY (_build/deviations.mjs): Wash & Clean 350 → 380 · Basic Handwäsche 95 → 100 · Basic Innenreinigung 95 → 100 */
 /* ─── Services & prices · Stand August 2026 ──────────────────────────────────
    `price` is a plain NUMBER (euros). Never format it here — `src/lib/pricing.js`

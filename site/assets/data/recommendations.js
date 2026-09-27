@@ -1,5 +1,5 @@
 /* COPIED, DO NOT EDIT — run `node _build/booking-data.mjs`.
-   Source: src/data/recommendations.js (live site, 2026-09-25). */
+   Source: src/data/recommendations.js (live site, 2026-09-27). */
 // ─── Smart Upselling: Recommendation Maps, Exclusion Rules & Package Detection ──
 
 /**

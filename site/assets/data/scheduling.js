@@ -1,5 +1,5 @@
 /* COPIED, DO NOT EDIT — run `node _build/booking-data.mjs`.
-   Source: src/lib/scheduling.js (live site, 2026-09-25). */
+   Source: src/lib/scheduling.js (live site, 2026-09-27). */
 /* ─── Booking calendar · scheduling utilities ────────────────────────────────
    Pure, framework-free helpers for the duration-aware week view.
    Rules ported from the design prototype (calendar-data.js) — NO mock data;

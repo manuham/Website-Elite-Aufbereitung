@@ -1,5 +1,5 @@
 /* COPIED, DO NOT EDIT — run `node _build/booking-data.mjs`.
-   Source: src/lib/pricing.js (live site, 2026-09-25).
+   Source: src/lib/pricing.js (live site, 2026-09-27).
    NEW DESIGN ONLY (_build/deviations.mjs): Anfahrtspauschale 65 → 70 */
 /* ─── Pricing · the single source of truth for money ─────────────────────────
    Base prices live as plain NUMBERS in src/data/services.js. Everything that

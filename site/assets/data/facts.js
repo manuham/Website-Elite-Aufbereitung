@@ -1,5 +1,5 @@
 /* COPIED, DO NOT EDIT — run `node _build/booking-data.mjs`.
-   Source: src/pages/BookingPage.jsx + src/components/PhoneConsultModal.jsx (read out, not typed) (live site, 2026-09-25). */
+   Source: src/pages/BookingPage.jsx + src/components/PhoneConsultModal.jsx (read out, not typed) (live site, 2026-09-27). */
 export const FACTS = {
   "tel": "+436642546078",
   "mail": "info.eliteaufbereitung@gmail.com",
@@ -9,6 +9,6 @@ export const FACTS = {
   },
   "blockedName": "Nüziders",
   "blockedBadge": "Gesperrt",
-  "blockedNote": "Wegen Bauarbeiten gesperrt bis September 2026",
+  "blockedNote": "Wegen Bauarbeiten vorübergehend gesperrt",
   "reply": "Wir melden uns innerhalb von 24 Stunden zur Bestätigung."
 };
