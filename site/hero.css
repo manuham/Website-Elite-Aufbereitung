@@ -107,6 +107,10 @@
 .hx-panel[data-panel="left"]   { left: 0; width: calc(100% / 3 + 1px); }
 .hx-panel[data-panel="middle"] { left: calc(100% / 3); width: calc(100% / 3 + 1px); }
 .hx-panel[data-panel="right"]  { left: calc(200% / 3); right: 0; }
+/* Phones: one photo at a time (2026-10-02). hero.js moves every photo into the left column and sets
+   this class at load — see „2. triptych slideshow" there. */
+.hx-tri--one .hx-panel[data-panel="left"] { width: 100%; }
+.hx-tri--one .hx-panel:not([data-panel="left"]) { display: none; }
 
 .hx-slide {
   position: absolute;
@@ -663,6 +667,34 @@
 @media (orientation: landscape) and (max-height: 500px) {
   .hx-copy--duo .hx-actions { grid-template-columns: auto auto; }        /* side by side again */
   .hx-copy .hx-actions .hx-btn--prices { height: 40px; font-size: 15px; }
+}
+
+/* ---------------------------------------------------------------- the upright phone, quieter
+
+   2026-10-02, Manuel, with the phone preview open — „all of these changes only on the phone":
+   1 „remove Feldkirch · Nüziders …"  2 „only Leistungen & Preise + Unsere Arbeit ansehen"
+   3 „align the text Perfektion trifft … in the middle"  4 „same for Ein besonderes … + make this text
+   smaller so it's not as distracting, nobody is gonna read this anyway".
+   One photo fills the screen there since the same day (.hx-tri--one), so the words stand under it like
+   a title card: centred, and less of them. Booking stays one tap away in the phone menu („Jetzt Buchen").
+   Upright only — a phone on its side keeps its own arrangement (the block above, 2026-09-24).
+   Placed last for the same reason as the prices button. */
+@media (max-width: 699px) and (orientation: portrait) {
+  .hx-copy--duo .hx-meta,
+  .hx-copy .hx-actions .hx-btn--brand { display: none; }
+  .hx-copy--duo .hx-copy-main { text-align: center; }
+  /* centred, so the optical pull that sets the first letter on the left text edge has no edge to meet */
+  .hx-title--duo .hx-line-in { margin-left: 0; }
+  /* The sentence: first centred and set smaller (13 px, .68), then — same day — „can you remove this
+     Ein besonderes … text from the phone view". Gone here; wide screens keep it. */
+  .hx-copy--duo .hx-lede-wrap { display: none; }
+  .hx-copy--duo { row-gap: 26px; }
+  /* Same day, his next two: „move this whole section up a few pixels and make the main button stand
+     out more with color", then „more up". The block stands 46 px higher (first 18); „Leistungen &
+     Preise" takes the Elité green — free here, because the green „Termin buchen" is not on this
+     screen. Wide screens keep it ivory. */
+  .hx-copy { bottom: calc(var(--hx-bottom) + 46px); }
+  .hx-copy .hx-actions .hx-btn--prices { background: var(--hx-brand); }
 }
 
 /* ================================================================ section 2 · the strip (#philosophy) */

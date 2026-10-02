@@ -158,7 +158,22 @@
 
   /* ============================================================ 2. triptych slideshow */
 
-  const ORDER = ['left', 'right', 'middle'];
+  // Phones show ONE photo at a time, full screen (Manuel, 2026-10-02: „on the phone lets use only one
+  // pic at a time not three" — a third of a phone screen is a 130 px slice). Every photo moves into the
+  // left column in the order it is picked (left 1, middle 1, right 1, left 2, …) and that column takes
+  // the whole width (.hx-tri--one in hero.css). Decided once, at load: a class, not a media query, so a
+  // phone turned sideways keeps its one photo and a narrowed desktop window keeps its three columns.
+  const onePhoto = window.matchMedia('(max-width: 699px)').matches;
+  if (onePhoto) {
+    const cols = ['left', 'middle', 'right'].map((name) => $$(`.hx-panel[data-panel="${name}"] .hx-slide`));
+    const home = $('.hx-panel[data-panel="left"]');
+    for (let i = 0; i < Math.max(...cols.map((c) => c.length)); i += 1) {
+      cols.forEach((c) => { if (c[i]) home.appendChild(c[i]); });
+    }
+    $('.hx-tri').classList.add('hx-tri--one');
+  }
+
+  const ORDER = onePhoto ? ['left'] : ['left', 'right', 'middle'];
   // Measured on frame strips (2026-09-16): with expo.inOut the edge crossed the column in
   // ~0.35 s and the screen then sat still for ~1.3 s — a snap and a pause, not a flow.
   // power3.inOut still left ~0.8 s of stillness per beat. power2.inOut spreads the travel over
@@ -168,10 +183,13 @@
   const WIPE = 2.05;   // seconds one swap takes
   const STEP = 1.42;   // seconds between swap starts (overlaps the slow tail of the last swap)
   const EASE = 'power2.inOut';
-  const SETTLE = STEP * ORDER.length + WIPE; // a photo zooms out for its whole time on screen
+  // A photo stays as long on a phone as in a column: three beats between its own swaps.
+  const BEAT = onePhoto ? STEP * 3 : STEP;
+  const SETTLE = STEP * 3 + WIPE; // a photo zooms out for its whole time on screen
 
   const panels = {};
   $$('.hx-panel').forEach((el) => {
+    if (!ORDER.includes(el.dataset.panel)) return;
     panels[el.dataset.panel] = {
       idx: -1,
       busy: false,
@@ -238,7 +256,7 @@
       swap(panel);
       turn += 1;
     }
-    gsap.delayedCall(STEP, loop);
+    gsap.delayedCall(BEAT, loop);
   }
 
   /* ============================================================ 3. van reveal on scroll */
@@ -1937,7 +1955,7 @@
     const GAP = 0.18;
     ORDER.forEach((name, i) => swap(panels[name], i * GAP));
     // One short establishing beat once all three photos stand, then the loop never stops.
-    gsap.delayedCall(GAP * (ORDER.length - 1) + WIPE + 0.6, loop);
+    gsap.delayedCall(onePhoto ? BEAT : GAP * (ORDER.length - 1) + WIPE + 0.6, loop);
 
     gsap.timeline()
       .fromTo('.hx-copy-main .hx-label', { y: 30, opacity: 0 }, { y: 0, opacity: 1, duration: 0.94, ease: 'power1.inOut' }, 0.8)
