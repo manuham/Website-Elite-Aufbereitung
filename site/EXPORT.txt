@@ -1,3 +1,3 @@
 Exported by 10-websites/design-reviews/elite-hero-2026-09-16/_build/export-live.mjs
-from the HMMR workspace at bb97a12a (2026-10-02T17:01:29.019Z).
+from the HMMR workspace at aef23038 (2026-10-02T17:25:37.508Z).
 Do not edit these files here — change the design folder and export again.

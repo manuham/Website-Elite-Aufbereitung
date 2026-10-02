@@ -3091,3 +3091,37 @@
 @supports (height: 100lvh) {
   .hx-next { min-height: 100lvh; }
 }
+
+/* ================================================================ the upright phone: no running text
+
+   2026-10-02, Manuel, after stripping the phone hero by hand: „how can we move on like this on the phone
+   view — you just saw that I basically wanted every small text and unnecessary thing removed from the
+   phone". Nine things were proposed in the viewer's „Remove things" list (lab/hero-picker), he left all
+   nine and said „push live". On an upright phone a part is now its headline, its picture and its button;
+   the running sentences and the tiny labels are gone. Wide screens and a phone on its side keep them.
+   Nothing with a price, an address, a review or a legal text is among them.
+   Last in the file on purpose: several of these classes are styled further up with the same weight. */
+@media (max-width: 699px) and (orientation: portrait) {
+  /* the van sheet's sentence („Unser voll ausgestatteter Van …") — the button under it stays */
+  #hero .hx-van-side .hx-body,
+  /* the three sentences under „Von Hand" / „Bis ins Detail" / „Für langfristigen Schutz" */
+  #prozess .hd-text,
+  /* „Detail A · 2 : 1" on the three results */
+  #gallery .hw-cap,
+  /* the three sentences under the Mobiler-Service steps */
+  #mobil .hm-desc,
+  /* „Kombinieren & sparen — …" and its seven siblings, one per tab */
+  #preise .hk-leads,
+  /* „Ihre Frage war nicht dabei? …" and the FAQ's small index (01–03 Leistungen · 04–05 Preise …) */
+  #faq .hq-ask,
+  #faq .hq-cats,
+  /* the footer, on every page: „Wir betreuen Kunden aus ganz Vorarlberg …" and „Studio betriebsbereit" */
+  .hf .hf-area,
+  .hf .hf-live { display: none; }
+  /* The label is gone, so the line that led to it leads nowhere: hero.js would draw it to the detail's
+     corner. Hidden, not removed — visibility keeps the path's geometry, which hero.js measures
+     (getTotalLength on a display:none path throws in Firefox). The frame on the photo stays. */
+  #gallery .hw-lead,
+  #gallery .hw-lead-halo,
+  #gallery .hw-node { visibility: hidden; }
+}
