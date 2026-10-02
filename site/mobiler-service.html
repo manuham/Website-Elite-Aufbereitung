@@ -102,16 +102,19 @@
          and the two things a person actually needs are icons on the far right: the telephone
          (the number slides out on hover) and the calendar (the booking).
          His two calls: keep the Elíté green, and put the number behind the phone icon. -->
+    <!-- 2026-10-02, Manuel: „we do not need that many buttons — basically only Home · Preise · Unsere
+         Arbeit · Kontakt · Mobiler Service · Endstufe", phone menu and bar alike. Six links, his order.
+         Gone from the bar (the sections stay on the page): „Warum wir" (#philosophy) and „FAQ" (#faq);
+         „Leistungen" is called „Preise" now (same target, #preise); „Home" is new (top of the home page —
+         hero.js scrolls there, the sub-pages link to index.html). „Mobiler Service" keeps the green.
+         The bar before: _archive/2026-10-02-navbar-before-six-links/. -->
     <div class="hidden lg:flex items-center gap-5 xl:gap-7 2xl:gap-9">
-      <a href="/#philosophy" class="font-sans text-[15px] font-medium text-ivory/80 hover:text-champagne transition-colors link-lift whitespace-nowrap">Warum wir</a>
+      <a href="/" class="font-sans text-[15px] font-medium text-ivory/80 hover:text-champagne transition-colors link-lift whitespace-nowrap">Home</a>
+      <a href="/#preise" class="font-sans text-[15px] font-medium text-ivory/80 hover:text-champagne transition-colors link-lift whitespace-nowrap">Preise</a>
       <a href="/projekte" class="font-sans text-[15px] font-medium text-ivory/80 hover:text-champagne transition-colors link-lift whitespace-nowrap">Unsere Arbeit</a>
-      <a href="/#preise" class="font-sans text-[15px] font-medium text-ivory/80 hover:text-champagne transition-colors link-lift whitespace-nowrap">Leistungen</a>
-      <a href="/elite-endstufe" class="font-sans text-[15px] font-medium text-ivory/80 hover:text-champagne transition-colors link-lift whitespace-nowrap">Endstufe</a>
-      <a href="/#faq" class="font-sans text-[15px] font-medium text-ivory/80 hover:text-champagne transition-colors link-lift whitespace-nowrap">FAQ</a>
       <a href="/kontakt" class="font-sans text-[15px] font-medium text-ivory/80 hover:text-champagne transition-colors link-lift whitespace-nowrap">Kontakt</a>
-      <!-- 2026-09-25, Manuel: „move it after Kontakt" — the green link closes the link row, the same
-           order the phone menu already has. -->
       <a href="/mobiler-service" class="font-sans text-[15px] font-medium text-champagne hover:text-emerald-300 transition-colors link-lift whitespace-nowrap">Mobiler Service</a>
+      <a href="/elite-endstufe" class="font-sans text-[15px] font-medium text-ivory/80 hover:text-champagne transition-colors link-lift whitespace-nowrap">Endstufe</a>
     </div>
 
     <div class="hidden lg:flex items-center gap-5 xl:gap-7 ml-auto">
@@ -134,13 +137,12 @@
   </nav>
 
   <div id="mobile-menu" class="fixed inset-0 z-[45] bg-obsidian flex flex-col items-center justify-center gap-10 lg:hidden" style="clip-path: circle(0% at calc(100% - 2.5rem) 1.75rem); pointer-events: none;">
-    <a href="/#philosophy" class="menu-item font-drama italic text-4xl text-ivory hover:text-champagne transition-colors duration-300">Warum wir</a>
+    <a href="/" class="menu-item font-drama italic text-4xl text-ivory hover:text-champagne transition-colors duration-300">Home</a>
+    <a href="/#preise" class="menu-item font-drama italic text-4xl text-ivory hover:text-champagne transition-colors duration-300">Preise</a>
     <a href="/projekte" class="menu-item font-drama italic text-4xl text-ivory hover:text-champagne transition-colors duration-300">Unsere Arbeit</a>
-    <a href="/#preise" class="menu-item font-drama italic text-4xl text-ivory hover:text-champagne transition-colors duration-300">Leistungen</a>
-    <a href="/elite-endstufe" class="menu-item font-drama italic text-4xl text-ivory hover:text-champagne transition-colors duration-300">Endstufe</a>
-    <a href="/#faq" class="menu-item font-drama italic text-4xl text-ivory hover:text-champagne transition-colors duration-300">FAQ</a>
     <a href="/kontakt" class="menu-item font-drama italic text-4xl text-ivory hover:text-champagne transition-colors duration-300">Kontakt</a>
     <a href="/mobiler-service" class="menu-item font-drama italic text-4xl text-champagne hover:text-emerald-300 transition-colors duration-300">Mobiler Service</a>
+    <a href="/elite-endstufe" class="menu-item font-drama italic text-4xl text-ivory hover:text-champagne transition-colors duration-300">Endstufe</a>
     <a href="/buchen" class="menu-item mt-4 bg-champagne text-obsidian px-10 py-4 rounded-full font-sans font-bold text-lg">Jetzt Buchen</a>
   </div>
   <!-- navbar:end -->

@@ -130,6 +130,14 @@
     setMenu(false);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   });
+  // „Home" in the bar and in the phone menu (2026-10-02) does what the logo does. It leaves no #hero in the
+  // address and takes an older #preise out of it — a reload would otherwise jump back down to the prices.
+  $$('a[href="#hero"]').forEach((link) => link.addEventListener('click', (ev) => {
+    ev.preventDefault();
+    setMenu(false);
+    if (location.hash) history.replaceState(null, '', location.pathname + location.search);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }));
   window.addEventListener('scroll', () => {
     updateNav();
     if (menuOpen) setMenu(false);
