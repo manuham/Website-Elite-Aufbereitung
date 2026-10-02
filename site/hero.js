@@ -163,17 +163,28 @@
   // left column in the order it is picked (left 1, middle 1, right 1, left 2, …) and that column takes
   // the whole width (.hx-tri--one in hero.css). Decided once, at load: a class, not a media query, so a
   // phone turned sideways keeps its one photo and a narrowed desktop window keeps its three columns.
+  //
+  // The phone may have its OWN photos (same day: „can I also pick different images for the phone and only
+  // the phone?"): then the page carries a fourth panel, data-panel="phone", and a phone uses that one
+  // instead. Every hero photo is loading="lazy" in that case, and the set this device does not use stays
+  // in a display:none panel (hero.css) — a lazy image that is never laid out is never downloaded.
   const onePhoto = window.matchMedia('(max-width: 699px)').matches;
-  if (onePhoto) {
+  const triEl = $('.hx-tri');
+  const ownPhone = onePhoto && $$('.hx-panel[data-panel="phone"] .hx-slide').length > 0;
+  if (onePhoto && !ownPhone) {
     const cols = ['left', 'middle', 'right'].map((name) => $$(`.hx-panel[data-panel="${name}"] .hx-slide`));
     const home = $('.hx-panel[data-panel="left"]');
     for (let i = 0; i < Math.max(...cols.map((c) => c.length)); i += 1) {
       cols.forEach((c) => { if (c[i]) home.appendChild(c[i]); });
     }
-    $('.hx-tri').classList.add('hx-tri--one');
   }
+  // the decision holds from here on, whatever the window does (hero.css keys the panels on these)
+  triEl.classList.add(onePhoto ? 'hx-tri--one' : 'hx-tri--three');
+  if (ownPhone) triEl.classList.add('hx-tri--own');
 
-  const ORDER = onePhoto ? ['left'] : ['left', 'right', 'middle'];
+  const ORDER = onePhoto ? [ownPhone ? 'phone' : 'left'] : ['left', 'right', 'middle'];
+  // the photos of the set in use load now, whether the browser's lazy loading reaches a hidden slide or not
+  ORDER.forEach((name) => $$(`.hx-panel[data-panel="${name}"] img`).forEach((img) => { img.loading = 'eager'; }));
   // Measured on frame strips (2026-09-16): with expo.inOut the edge crossed the column in
   // ~0.35 s and the screen then sat still for ~1.3 s — a snap and a pause, not a flow.
   // power3.inOut still left ~0.8 s of stillness per beat. power2.inOut spreads the travel over

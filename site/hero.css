@@ -111,6 +111,20 @@
    this class at load — see „2. triptych slideshow" there. */
 .hx-tri--one .hx-panel[data-panel="left"] { width: 100%; }
 .hx-tri--one .hx-panel:not([data-panel="left"]) { display: none; }
+/* The phone's OWN photos (2026-10-02): a fourth panel, only in the page when Manuel picked a separate
+   list for the phone (.hx-tri--phone-set, written by lab/hero-picker). Before the script runs, the
+   width decides which set is laid out — so the other set's lazy photos are never downloaded. Then the
+   script's decision at load takes over (--three / --own) and holds if the window changes.
+   Order matters: all of these weigh the same, the later one wins. */
+.hx-panel[data-panel="phone"] { left: 0; width: 100%; display: none; }
+@media (max-width: 699px) {
+  .hx-tri--phone-set .hx-panel[data-panel="phone"] { display: block; }
+  .hx-tri--phone-set .hx-panel:not([data-panel="phone"]) { display: none; }
+}
+.hx-tri--three .hx-panel[data-panel="phone"] { display: none; }
+.hx-tri--three .hx-panel:not([data-panel="phone"]) { display: block; }
+.hx-tri--own .hx-panel[data-panel="phone"] { display: block; }
+.hx-tri--own .hx-panel:not([data-panel="phone"]) { display: none; }
 
 .hx-slide {
   position: absolute;
