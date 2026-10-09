@@ -1,0 +1,177 @@
+/* 2026-10-09: local study from Manuel's Polestar screenshot. */
+/* Refinement, 2026-10-09: slimmer Apple-like bar and quieter type spacing.
+   Previous study preserved in _archive/2026-10-09-polestar-before-thin-nav/. */
+.elite-design { --study-gutter: clamp(24px, 5vw, 96px); --study-nav: 48px; }
+.elite-design #site-nav {
+  height: var(--study-nav);
+  padding: 0 var(--study-gutter);
+  gap: 0;
+  background: #fff !important;
+  border: 0;
+  backdrop-filter: none;
+  box-shadow: none;
+  color: #171819;
+}
+.elite-design #site-nav > .lg\:flex:first-of-type { margin-left: auto; gap: clamp(18px, 1.5vw, 28px); }
+.elite-design #site-nav > .lg\:flex:last-of-type { margin-left: 28px; gap: 22px; }
+.elite-design #site-nav a { color: #171819; font-size: 13px; font-weight: 450; letter-spacing: -.012em; }
+.elite-design #site-nav a:hover { color: #328b76; }
+.elite-design #site-nav [data-nav-home] { flex-shrink: 0; margin-right: 40px; }
+.elite-design #site-nav [data-nav-home] img { height: 96px; margin: -24px 0 -24px -12px; }
+.elite-design #site-nav > .lg\:flex svg { width: 18px; height: 18px; }
+.elite-design #site-nav [data-nav-toggle] { color: #171819; border: 0; border-radius: 0; }
+.elite-design #mobile-menu { background: #fff; padding-top: var(--study-nav); }
+.elite-design #mobile-menu .menu-item { color: #171819; font-family: Inter, sans-serif; font-style: normal; font-size: 28px; }
+.elite-design .hx-tri { top: var(--study-nav); }
+.elite-design .hx-tri-grade {
+  background:
+    linear-gradient(180deg, rgba(13,13,18,.52) 0%, rgba(13,13,18,.36) 38%, rgba(13,13,18,.08) 68%, rgba(13,13,18,.26) 100%),
+    linear-gradient(90deg, rgba(13,13,18,.18), transparent 65%);
+}
+.elite-design .hx-copy--polestar {
+  top: calc(var(--study-nav) + clamp(48px, 8.5vh, 88px));
+  bottom: auto;
+  left: var(--study-gutter);
+  right: var(--study-gutter);
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0;
+  text-align: left;
+}
+.elite-design .hx-copy--polestar .hx-copy-main { width: 100%; max-width: 670px; text-align: left; }
+.elite-design .hx-copy--polestar .hx-label {
+  display: block;
+  margin: 0 0 14px;
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: .045em;
+  line-height: 1.4;
+  text-transform: none;
+  color: rgba(255,255,255,.84);
+}
+.elite-design .hx-copy--polestar .hx-title {
+  margin: 0;
+  font-family: Inter, sans-serif;
+  font-size: clamp(28px, 1.8vw, 34px);
+  font-weight: 500;
+  line-height: 1.1;
+  letter-spacing: -.035em;
+  color: #fff;
+}
+.elite-design .hx-copy--polestar .hx-line-in { white-space: normal; margin: 0; }
+.elite-design .hx-copy--polestar .hx-lede-wrap { display: block; }
+.elite-design .hx-copy--polestar .hx-lede {
+  margin: 2px 0 0;
+  font-size: clamp(24px, 1.7vw, 32px);
+  font-weight: 400;
+  line-height: 1.1;
+  letter-spacing: -.025em;
+  color: #d0d4d3;
+  max-width: 100%;
+}
+.elite-design .hx-copy--polestar .hx-copy-side { width: auto; padding: 0; }
+.elite-design .hx-copy--polestar .hx-actions { display: flex; flex-direction: row; flex-wrap: wrap; gap: 16px; margin: 30px 0 0; }
+.elite-design .hx-copy--polestar .hx-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  height: 48px;
+  padding: 0 18px;
+  border-radius: 0;
+  border: 1px solid transparent;
+  font-size: 15px;
+  font-weight: 550;
+  line-height: 1;
+  letter-spacing: -.025em;
+  box-shadow: none;
+  transform: none;
+  backdrop-filter: none;
+}
+.elite-design .hx-copy--polestar .hx-btn--prices { min-width: 128px; background: #faf8f5; color: #171819; }
+.elite-design .hx-copy--polestar .hx-btn--brand { min-width: 184px; background: var(--hx-brand, #4bb393); color: #10241e; }
+.elite-design .hx-copy--polestar .hx-btn:hover { filter: brightness(.94); transform: none; }
+.elite-design .hx-copy--polestar .hx-btn svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 1.5; flex-shrink: 0; transition: transform .2s ease; }
+.elite-design .hx-copy--polestar .hx-btn:hover svg { transform: translateX(3px); }
+.elite-design a:focus-visible, .elite-design button:focus-visible { outline: 2px solid #4bb393; outline-offset: 5px; }
+@media (max-width: 1100px) {
+  .elite-design { --study-gutter: 32px; }
+  .elite-design #site-nav [data-nav-home] { margin-right: 20px; }
+  .elite-design #site-nav > .lg\:flex:first-of-type { gap: 16px; }
+  .elite-design #site-nav > .lg\:flex:last-of-type { margin-left: 20px; gap: 16px; }
+  .elite-design #site-nav a { font-size: 13px; }
+}
+@media (max-width: 1023px) {
+  .elite-design { --study-gutter: 24px; --study-nav: 48px; }
+  .elite-design #site-nav [data-nav-home] img { height: 88px; margin: -20px 0 -20px -11px; }
+  .elite-design .hx-copy--polestar { top: calc(var(--study-nav) + 44px); }
+  .elite-design .hx-copy--polestar .hx-title { max-width: 560px; }
+}
+@media (max-width: 600px) {
+  .elite-design .hx-copy--polestar .hx-copy-main { max-width: 360px; }
+  .elite-design .hx-copy--polestar .hx-title { max-width: 325px; font-size: 28px; }
+  .elite-design .hx-copy--polestar .hx-lede { max-width: 300px; font-size: 26px; }
+  .elite-design .hx-copy--polestar .hx-actions { gap: 12px; margin-top: 24px; }
+  .elite-design .hx-copy--polestar .hx-btn { height: 46px; padding: 0 15px; gap: 12px; font-size: 14px; }
+  .elite-design .hx-copy--polestar .hx-btn--prices { min-width: 112px; }
+  .elite-design .hx-copy--polestar .hx-btn--brand { min-width: 166px; }
+}
+@media (max-height: 500px) and (min-width: 600px) {
+  .elite-design .hx-copy--polestar { top: calc(var(--study-nav) + 26px); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .elite-design .hx-copy--polestar .hx-btn svg { transition: none; }
+}
+
+/* Approved site-wide action buttons, 2026-10-09. Existing fill colours stay in their page styles. */
+.elite-design :is(.hx-btn:not(.ha-chip), .hk-cta, .hs-btn, .hq-book, .he-btn,
+  .mo-btn, .ko-btn, .ko-mini, .ha-cta, .bk-next, .bk-act, .bk-home) {
+  display: inline-flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  min-height: 48px;
+  height: auto;
+  max-width: 100%;
+  padding: 12px 18px;
+  border-radius: 0;
+  border: 0;
+  box-shadow: none;
+  font-size: 15px;
+  font-weight: 550;
+  letter-spacing: -.025em;
+  line-height: 1.25;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  text-align: left;
+}
+.elite-design :is(.hx-btn:not(.ha-chip), .hk-cta, .hs-btn, .hq-book, .he-btn,
+  .mo-btn, .ko-btn, .ko-mini, .ha-cta, .bk-next, .bk-act, .bk-home):not(:has(svg))::after {
+  content: '→';
+  flex: 0 0 auto;
+  font-size: 20px;
+  font-weight: 400;
+  line-height: 1;
+  transition: transform .2s ease;
+}
+.elite-design :is(.hx-btn:not(.ha-chip), .hk-cta, .hs-btn, .hq-book, .he-btn,
+  .mo-btn, .ko-btn, .ko-mini, .ha-cta, .bk-next, .bk-act, .bk-home):hover:not([disabled])::after { transform: translateX(3px); }
+/* Filled selection controls share the corners, while keeping their existing selected states. */
+.elite-design :is(.ha-chip, .hk-tab, .bk-tab, .bk-btn, .bk-dp, .bk-cd-slot, .rc-doc) { border-radius: 0; }
+.elite-design #mobile-menu a.bg-champagne { border-radius: 0; padding: 0 24px; gap: 18px; }
+.elite-design #mobile-menu a.bg-champagne::after { content: '→'; font-size: 20px; font-weight: 400; }
+@media (max-width: 600px) {
+  .elite-design :is(.hx-btn:not(.ha-chip), .hk-cta, .hs-btn, .hq-book, .he-btn,
+    .mo-btn, .ko-btn, .ko-mini, .ha-cta, .bk-next, .bk-act, .bk-home) {
+    min-height: 46px;
+    padding: 12px 15px;
+    gap: 12px;
+    font-size: 14px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .elite-design :is(.hx-btn:not(.ha-chip), .hk-cta, .hs-btn, .hq-book, .he-btn,
+    .mo-btn, .ko-btn, .ko-mini, .ha-cta, .bk-next, .bk-act, .bk-home)::after { transition: none; }
+}
+

@@ -76,8 +76,9 @@
   <link rel="stylesheet" href="hero.css" />
   <link rel="stylesheet" href="solid.css" />
   <script src="hx-boot.js"></script>
+  <link rel="stylesheet" href="design.css" />
 </head>
-<body class="bg-obsidian text-ivory antialiased selection:bg-champagne selection:text-obsidian overflow-x-hidden">
+<body class="elite-design bg-obsidian text-ivory antialiased selection:bg-champagne selection:text-obsidian overflow-x-hidden">
 
   <!-- ===================================================================================
        NAVBAR — cloned 1:1 from src/components/Navbar.jsx (branch feat/why-how-what-homepage).
@@ -92,12 +93,12 @@
        against the headline's ink). The logo keeps its size; bigger negative margins let its
        transparent padding overhang, so the bar is 54 px tall instead of 73. -->
   <nav id="site-nav" class="fixed top-0 left-0 z-50 transition-all duration-500 w-full px-[clamp(20px,3.4vw,64px)] py-2 flex items-center gap-5 lg:gap-7 xl:gap-10 bg-transparent border-b border-transparent">
-    <div class="flex items-center shrink-0 cursor-pointer" data-nav-home>
+    <a href="#hero" class="flex items-center shrink-0 cursor-pointer" data-nav-home aria-label="Elité — Startseite">
       <picture>
         <source type="image/webp" srcset="assets/logo/logo-new2-640.webp 640w, assets/logo/logo-new2-1280.webp 1280w, assets/logo/logo-new2-1536.webp 1536w" sizes="112px" />
         <img src="assets/logo/logo-new2-1280.png" width="3000" height="3000" alt="Elité Auto Aufbereitung" class="h-[4.5rem] -my-[17px] sm:h-[5.5rem] sm:-my-[25px] lg:h-[7rem] lg:-my-[37px] w-auto object-contain -ml-[10px] sm:-ml-[13px] lg:-ml-[14px]" />
       </picture>
-    </div>
+    </a>
 
     <!-- gaps tightened 2026-09-22: seven links plus the booking button measured 1056 px at the
          1024 px breakpoint, i.e. 32 px past the screen. -->
@@ -236,36 +237,20 @@
              Fonts: his pick C from the font lab — „Perfektion trifft" Playfair Display Italic,
              „Präzision." Inter 700 (hero.css). Buttons side by side, his word. -->
 
-        <div class="hx-copy hx-copy--duo">
+        <!-- Manuel's chosen copy and Polestar-inspired local study, 2026-10-09. -->
+        <div class="hx-copy hx-copy--polestar">
           <div class="hx-copy-main">
-            <div class="hx-head">
-              <p class="hx-label hx-label--ruled hx-reveal"><span>Autoaufbereitung in Vorarlberg</span></p>
-              <h1 class="hx-title hx-title--duo" aria-label="Perfektion trifft Präzision.">
-                <span class="hx-line hx-line--top"><span class="hx-line-in">Perfektion trifft</span></span>
-                <span class="hx-line hx-line--big"><span class="hx-line-in">Präzision.</span></span>
-              </h1>
-            </div>
-            <!-- wrapper: the scroll fade (hero.js render) and the intro tween must not share one element -->
+            <p class="hx-label hx-reveal">Autoaufbereitung in Vorarlberg</p>
+            <h1 class="hx-title"><span class="hx-line"><span class="hx-line-in">Ein besonderes Auto verdient Zeit.</span></span></h1>
             <div class="hx-lede-wrap">
-              <p class="hx-body hx-lede hx-reveal"><span>Ein besonderes Auto verdient mehr als fünf Minuten und rotierende Bürsten.</span> <span>Handwäsche, Politur &amp; Keramikversiegelung in Vorarlberg.</span></p>
+              <p class="hx-lede hx-reveal">Handwäsche, Politur und Lackschutz.</p>
             </div>
           </div>
           <div class="hx-copy-side">
-            <!-- 2026-09-27, Matthias via Manuel: „What do customers want to see on my website? What do I
-                 offer and what does it cost?" — one big button over the full width of the two, in its
-                 own colour so it stands out (hero.css, „the prices button"). -->
             <div class="hx-actions hx-reveal">
-              <a class="hx-btn hx-btn--prices" href="#preise">
-                Leistungen &amp; Preise
-              </a>
-              <a class="hx-btn hx-btn--brand btn-magnetic" href="/buchen">
-                Termin buchen
-              </a>
-              <a class="hx-btn hx-btn--ghost" href="/projekte">
-                Unsere Arbeit ansehen
-              </a>
+              <a class="hx-btn hx-btn--prices" href="#preise">Preise <svg aria-hidden="true" viewBox="0 0 24 24"><path d="M4 12h15M13 6l6 6-6 6" /></svg></a>
+              <a class="hx-btn hx-btn--brand" href="/buchen">Termin buchen <svg aria-hidden="true" viewBox="0 0 24 24"><path d="M4 12h15M13 6l6 6-6 6" /></svg></a>
             </div>
-            <p class="hx-meta hx-reveal">Feldkirch <span aria-hidden="true">·</span> Nüziders <span aria-hidden="true">·</span> Mobiler Service</p>
           </div>
         </div>
 
