@@ -2,6 +2,8 @@
 /* Refinement, 2026-10-09: slimmer Apple-like bar and quieter type spacing.
    Previous study preserved in _archive/2026-10-09-polestar-before-thin-nav/. */
 .elite-design { --study-gutter: clamp(24px, 5vw, 96px); --study-nav: 48px; }
+/* 2026-10-09: clicked navigation lands immediately; scroll choreography stays intact. */
+html, html.scroll-smooth { scroll-behavior: auto; }
 .elite-design #site-nav {
   height: var(--study-nav);
   padding: 0 var(--study-gutter);

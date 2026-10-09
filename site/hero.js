@@ -128,7 +128,7 @@
   $$('a', menu).forEach((a) => a.addEventListener('click', () => setMenu(false)));
   $('[data-nav-home]').addEventListener('click', () => {
     setMenu(false);
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    window.scrollTo({ top: 0, behavior: 'instant' });
   });
   // „Home" in the bar and in the phone menu (2026-10-02) does what the logo does. It leaves no #hero in the
   // address and takes an older #preise out of it — a reload would otherwise jump back down to the prices.
@@ -136,7 +136,7 @@
     ev.preventDefault();
     setMenu(false);
     if (location.hash) history.replaceState(null, '', location.pathname + location.search);
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    window.scrollTo({ top: 0, behavior: 'instant' });
   }));
   window.addEventListener('scroll', () => {
     updateNav();
@@ -491,7 +491,7 @@
   let holding = false;
   let holdTimer = 0;
   let touchY = null;
-  let jumpUntil = 0;  // an in-page link is travelling (html is scroll-smooth); never catch that
+  let jumpUntil = 0;  // an in-page link is jumping; never catch that in the landing hold
   // Anchors whose landing is not simply the section's top (#philosophy lands mid-strip) register it here,
   // so the in-page link and an arrival from another page (index.html#…) land in the same place.
   const anchorTop = {};
@@ -824,7 +824,7 @@
     };
     $$('a[href="#philosophy"]').forEach((link) => link.addEventListener('click', (ev) => {
       ev.preventDefault();
-      window.scrollTo({ top: anchorTop['#philosophy'](), behavior: 'smooth' });
+      window.scrollTo({ top: anchorTop['#philosophy'](), behavior: 'instant' });
     }));
   }
 
@@ -1532,7 +1532,7 @@
     packTabs.forEach((t, i) => t.addEventListener('click', () => {
       showTab(i, true);
       // on a phone the pills are one sideways strip: bring the one that was tapped fully into view
-      t.scrollIntoView({ behavior: reduced ? 'auto' : 'smooth', block: 'nearest', inline: 'center' });
+      t.scrollIntoView({ behavior: 'instant', block: 'nearest', inline: 'center' });
     }));
 
     if (reduced) {

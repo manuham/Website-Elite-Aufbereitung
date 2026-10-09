@@ -871,7 +871,7 @@ function go(step) {
   S.touched = false;
   if (step === 3 && CAL.loaded && !CAL.demo) loadCalendar();   // fresh free/busy on the way in
   render();
-  window.scrollTo({ top: 0, behavior: reduced ? 'auto' : 'smooth' });
+  window.scrollTo({ top: 0, behavior: 'instant' });
   mainEl.classList.remove('is-fwd', 'is-back');
   void mainEl.offsetWidth;                 // restart the animation on an element that never left
   mainEl.classList.add(cls);
