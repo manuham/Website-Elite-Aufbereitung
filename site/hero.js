@@ -999,298 +999,79 @@
   }
 
   /* ============================================================ 8. section 4 · detail view (#gallery) */
-
-  // Manuel picked idea 1 of three (2026-09-17): a work photo fills one half of a row, the other half
-  // shows the spot under a marked frame at exactly twice the scale — the detail view of a technical
-  // drawing („Detail A · 2 : 1"). Nothing holds the page: while a row passes through the screen its
-  // frame glides along a path over the photo (data-path) and the detail follows it on every frame.
-  // The frame is always half the detail's width and height, so the printed scale is true on every screen.
-  const ZOOM = 2; // printed on the page as „2 : 1" — change both or neither
+  // Approved 2026-10-09: a matched crop, four quiet corner marks, captions outside the imagery.
+  // One scroll-linked zoom, 1.65 → 2.05. Geometry always derives from the actual object-fit crop.
   const work = $('#gallery');
-  const workTitle = work ? $('.hw-title', work) : null;
-  // 2026-09-23 (Manuel: „a more premium solution … round the edges … slight darkening … a better
-  // solution for the lines"): each row's drawing is built here. Back to front: the dim over the photo
-  // with a rounded hole where the frame is; the frame with a soft dark edge under it; ONE leader — an
-  // S-curve that leaves the frame's side level, sweeps across and meets the label level — with a small
-  // node where it leaves the frame. It fades a little towards the label (a gradient in page units,
-  // re-aimed every frame). First try that afternoon was two straight projection lines from the frame to
-  // the detail's two seam corners: they end on the row's own top and bottom edge, so a frame near the
-  // seam left two slivers on screen. A curve has no bad position.
-  // The gradient takes its colour from hero.css (.hw-lead-stop → --hx-paper), the same token as the
-  // frame and the node; only the two opacities live here. Until the code review of 2026-09-24 the hex
-  // was copied in (IVORY '#FAF8F5') and would not have followed a change of the paper colour.
-  function buildDrawing(svg, id) {
-    svg.innerHTML = `<defs><linearGradient id="${id}g" gradientUnits="userSpaceOnUse">`
-      + '<stop class="hw-lead-stop" offset="0" stop-opacity=".95"/><stop class="hw-lead-stop" offset="1" stop-opacity=".55"/>'
-      + '</linearGradient></defs>'
-      + '<path class="hw-dim" fill-rule="evenodd"/>'
-      + '<rect class="hw-halo"/><rect class="hw-frame"/>'
-      + `<path class="hw-lead-halo"/><path class="hw-lead" stroke="url(#${id}g)"/><circle class="hw-node" r="3.5"/>`;
-    return {
-      dim: $('.hw-dim', svg),
-      // `curve`, not `lead`: the row object also carried a number `lead: 0`, which overwrote this element
-      // (80 page errors per pass, 2026-09-23). That field is gone; the draw-in state is row.draw.lead.
-      curve: $('.hw-lead', svg),
-      leadHalo: $('.hw-lead-halo', svg),
-      node: $('.hw-node', svg),
-      grad: $(`#${id}g`, svg),
-    };
-  }
-  const workRows = work ? $$('.hw-row', work).map((el, i) => {
+  const workRows = work ? $$('.hw-row', work).map((el) => {
     const [iw, ih] = el.dataset.size.split(' ').map(Number);
-    const drawing = buildDrawing($('.hw-draw', el), `hwd${i}`);
-    return {
-      ...drawing,
-      curveD: '',      // the curve's path as last set
-      leadLen: -1,     // its length; -1 = not measured since it last moved
-      done: false,     // frame and curve stand whole and are painted so: nothing left to write
-      el, iw, ih,
-      path: el.dataset.path.split(',').map((pt) => pt.trim().split(/\s+/).map(Number)),
-      photo: $('.hw-photo', el),
-      img: $('.hw-img', el),
-      detail: $('.hw-detail', el),
-      zoom: $('.hw-zoom', el),
-      cap: $('.hw-cap', el),
-      tag: $('.hw-tag', el),
-      rects: $$('rect', el), // dark edge + frame
-      g: null,
-      q: -1,
-      qNow: 0,
-      // zoom 0 → the detail shows what the photo shows; 1 → the framed spot at 2 : 1
-      draw: { zoom: reduced ? 1 : 0, frame: reduced ? 1 : 0, lead: reduced ? 1 : 0 },
-      tl: null,
-    };
+    return { el, iw, ih, photo: $('.hw-photo', el), img: $('.hw-img', el),
+      detail: $('.hw-detail', el), zoom: $('.hw-zoom', el), corners: $('.hw-corners', el),
+      focus: el.dataset.focus.split(' ').map(Number), progress: 0, g: null };
   }) : [];
 
-  // A section heading set as wide as its content box allows — one size for the whole title (the title is
-  // `width: max-content`, so its offsetWidth is the text's own width; two lines on phones).
+  // Other section headings still use this shared fitting helper.
   function fitTitle(title) {
     title.style.fontSize = '100px';
-    const box = title.parentElement;
-    const bs = getComputedStyle(box);
-    const width = box.clientWidth - parseFloat(bs.paddingLeft) - parseFloat(bs.paddingRight);
-    title.style.fontSize = `${Math.min(window.innerHeight * 0.22, (100 * width * 0.995) / title.offsetWidth).toFixed(2)}px`;
+    const bs = getComputedStyle(title.parentElement);
+    const width = title.parentElement.clientWidth - parseFloat(bs.paddingLeft) - parseFloat(bs.paddingRight);
+    title.style.fontSize = `${Math.min(window.innerHeight * .22, 100 * width * .995 / title.offsetWidth).toFixed(2)}px`;
   }
 
   function fitWork() {
-    if (!work) return;
-    fitTitle(workTitle);
-
     for (const row of workRows) {
-      const pw = row.photo.clientWidth;
-      const ph = row.photo.clientHeight;
-      const s = Math.max(pw / row.iw, ph / row.ih); // object-fit: cover
-      const dw = row.iw * s;
-      const dh = row.ih * s;
-      const [fx, fy] = getComputedStyle(row.img).objectPosition.split(' ').map((v) => parseFloat(v) / 100);
-      const pl = row.photo.offsetLeft; // the row is the offset parent; transforms are ignored
-      const pt = row.photo.offsetTop;
-      const dl = row.detail.offsetLeft;
-      const dt = row.detail.offsetTop;
-      const side = dt > pt + 1 ? 'below' : dl > pl ? 'right' : 'left';
-      // the leader ends on the edge of the label that faces the photo
-      const cl = dl + row.cap.offsetLeft;
-      const ct = dt + row.cap.offsetTop;
-      const cw = row.cap.offsetWidth;
-      const ch = row.cap.offsetHeight;
-      const cap = side === 'right' ? [cl, ct + ch / 2] : side === 'left' ? [cl + cw, ct + ch / 2] : [cl + cw / 2, ct];
-      row.g = {
-        pw, ph, dw, dh, pl, pt, side, cap, dl, dt,
-        rw: row.el.clientWidth,
-        rh: row.el.clientHeight,
-        dW: row.detail.clientWidth,
-        dH: row.detail.clientHeight,
-        fw: row.detail.clientWidth / ZOOM,
-        fh: row.detail.clientHeight / ZOOM,
-        ox: (pw - dw) * fx,
-        oy: (ph - dh) * fy,
-      };
-      // the frame's corner: a share of its short side, kept between 8 and 18 px
-      row.g.r = Math.max(8, Math.min(18, 0.07 * Math.min(row.g.fw, row.g.fh)));
-      row.zoom.style.width = `${(dw * ZOOM).toFixed(1)}px`;
-      row.zoom.style.height = `${(dh * ZOOM).toFixed(1)}px`;
-      for (const r of row.rects) {
-        r.setAttribute('width', row.g.fw.toFixed(1));
-        r.setAttribute('height', row.g.fh.toFixed(1));
-        r.setAttribute('rx', row.g.r.toFixed(1));
-        r.setAttribute('ry', row.g.r.toFixed(1));
-      }
-      row.q = -1;
+      const pw = row.photo.clientWidth, ph = row.photo.clientHeight;
+      const s = Math.max(pw / row.iw, ph / row.ih);
+      const dw = row.iw * s, dh = row.ih * s;
+      const [fx, fy] = getComputedStyle(row.img).objectPosition.split(' ').map(v => parseFloat(v) / 100);
+      row.g = { pw, ph, dw, dh, ox: (pw - dw) * fx, oy: (ph - dh) * fy,
+        dW: row.detail.clientWidth, dH: row.detail.clientHeight };
+      row.zoom.style.width = `${dw}px`;
+      row.zoom.style.height = `${dh}px`;
+      renderWork(row);
     }
   }
 
-  // Catmull-Rom through the path's points: the frame passes each of them without stopping.
-  function pathAt(pts, t) {
-    const n = pts.length - 1;
-    if (n < 1) return pts[0];
-    const f = Math.min(n - 1e-6, Math.max(0, t) * n);
-    const i = Math.floor(f);
-    const s = f - i;
-    const a = pts[Math.max(0, i - 1)];
-    const b = pts[i];
-    const c = pts[i + 1];
-    const d = pts[Math.min(n, i + 2)];
-    const cr = (k) => 0.5 * (2 * b[k] + (c[k] - a[k]) * s + (2 * a[k] - 5 * b[k] + 4 * c[k] - d[k]) * s * s
-      + (3 * b[k] - a[k] - 3 * c[k] + d[k]) * s * s * s);
-    return [cr(0), cr(1)];
-  }
-
-  const glide = (t) => t * t * (3 - 2 * t);
-
-  function renderWork(row, q) {
+  function renderWork(row) {
     const g = row.g;
-    row.qNow = q;
-    if (!g || Math.abs(q - row.q) < 0.0004) return;
-    row.q = q;
-    // the frame travels while the row is on screen and rests at both ends of its path
-    const t = reduced ? 0.5 : glide(clamp01((q - 0.14) / 0.72));
-    const [u, v] = pathAt(row.path, t);
-    const x = Math.min(g.pw - g.fw - 1, Math.max(1, g.ox + u * g.dw - g.fw / 2));
-    const y = Math.min(g.ph - g.fh - 1, Math.max(1, g.oy + v * g.dh - g.fh / 2));
-    // The detail shows a "view" of the photo half: at zoom 1 exactly the frame (so twice the scale),
-    // at zoom 0 the whole photo half — the row's reveal dives from one into the other.
-    const k = row.draw.zoom;
-    const w0 = g.pw;
-    const h0 = Math.min(g.ph, (g.pw * g.dH) / g.dW);
-    const y0 = Math.min(g.ph - h0, Math.max(0, y + g.fh / 2 - h0 / 2));
-    const vx = x * k;
-    const vy = y0 + (y - y0) * k;
-    const m = g.dW / (w0 + (g.fw - w0) * k); // detail px per photo px: 1 → 2
-    const scale = m / ZOOM;
-    row.zoom.style.transform = `translate3d(${((g.ox - vx) * m).toFixed(1)}px, ${((g.oy - vy) * m).toFixed(1)}px, 0)${scale < 0.9999 ? ` scale(${scale.toFixed(4)})` : ''}`;
-    const X = g.pl + x;
-    const Y = g.pt + y;
-    for (const r of row.rects) {
-      r.setAttribute('x', X.toFixed(1));
-      r.setAttribute('y', Y.toFixed(1));
-    }
-    // The leader: from the middle of the frame's side that faces the detail to the label's facing
-    // edge. Both ends leave level (horizontal tangents; vertical when the detail sits below), so the
-    // curve is a calm S at any distance.
-    const R = g.r;
-    const kc = R * (1 - Math.SQRT1_2);
-    const f = (n) => n.toFixed(1);
-    const p0 = g.side === 'right' ? [X + g.fw, Y + g.fh / 2]
-      : g.side === 'left' ? [X, Y + g.fh / 2]
-      : [X + g.fw / 2, Y + g.fh];
-    const p3 = g.cap;
-    let c1, c2;
-    if (g.side === 'below') {
-      const dy = (p3[1] - p0[1]) * 0.55;
-      c1 = [p0[0], p0[1] + dy]; c2 = [p3[0], p3[1] - dy];
-    } else {
-      const dx = (p3[0] - p0[0]) * 0.55;
-      c1 = [p0[0] + dx, p0[1]]; c2 = [p3[0] - dx, p3[1]];
-    }
-    const d = `M${f(p0[0])} ${f(p0[1])}C${f(c1[0])} ${f(c1[1])} ${f(c2[0])} ${f(c2[1])} ${f(p3[0])} ${f(p3[1])}`;
-    if (d !== row.curveD) {
-      row.curveD = d;
-      row.curve.setAttribute('d', d);
-      row.leadHalo.setAttribute('d', d);
-      row.leadLen = -1;   // it moved: paintWork measures it again, and only if it is still drawing in
-    }
-    row.grad.setAttribute('x1', f(p0[0])); row.grad.setAttribute('y1', f(p0[1]));
-    row.grad.setAttribute('x2', f(p3[0])); row.grad.setAttribute('y2', f(p3[1]));
-    row.node.setAttribute('cx', f(p0[0]));
-    row.node.setAttribute('cy', f(p0[1]));
-    // the dim: the whole photo, with a rounded hole exactly where the frame is (even-odd fill)
-    const px = g.pl;
-    const py = g.pt;
-    row.dim.setAttribute('d', `M${f(px)} ${f(py)}H${f(px + g.pw)}V${f(py + g.ph)}H${f(px)}Z`
-      + `M${f(X + R)} ${f(Y)}H${f(X + g.fw - R)}A${f(R)} ${f(R)} 0 0 1 ${f(X + g.fw)} ${f(Y + R)}`
-      + `V${f(Y + g.fh - R)}A${f(R)} ${f(R)} 0 0 1 ${f(X + g.fw - R)} ${f(Y + g.fh)}`
-      + `H${f(X + R)}A${f(R)} ${f(R)} 0 0 1 ${f(X)} ${f(Y + g.fh - R)}V${f(Y + R)}A${f(R)} ${f(R)} 0 0 1 ${f(X + R)} ${f(Y)}Z`);
-    // the round badge sits on the frame's top corner AWAY from the detail, clear of the leader (which
-    // leaves from the middle of the side facing the detail); kept whole on screen when that corner
-    // touches the row's edge
-    const tx = Math.min(g.rw - 14, Math.max(14, g.side === 'left' ? X + g.fw - kc : X + kc));
-    const ty = Math.min(g.rh - 14, Math.max(14, Y + kc));
-    row.tag.style.transform = `translate3d(${tx.toFixed(1)}px, ${ty.toFixed(1)}px, 0)`;
-    paintWork(row);
-  }
-
-  // Draw-in: each stroke is dashed to its own length and uncovered from its start.
-  // Code review 2026-09-24: after the draw-in this kept running on every scroll frame of the section —
-  // the curve measured again, ten styles written again, all to the same values. Now a whole drawing is
-  // painted once, and the curve is measured only while it is still drawing in (it moves with the
-  // frame, so then again after every move).
-  function paintWork(row) {
-    const g = row.g;
-    if (!g) return;
-    const { frame, lead } = row.draw;
-    const done = frame >= 1 && lead >= 1;
-    if (done && row.done) return;
-    row.done = done;
-    const per = 2 * (g.fw + g.fh) - (8 - 2 * Math.PI) * g.r; // rounded corners shorten the way round
-    for (const r of row.rects) {
-      r.style.strokeDasharray = frame >= 1 ? '' : `${per.toFixed(1)} ${per.toFixed(1)}`;
-      r.style.strokeDashoffset = frame >= 1 ? '' : (per * (1 - frame)).toFixed(1);
-    }
-    if (lead < 1 && row.leadLen < 0) row.leadLen = row.curve.getTotalLength();
-    const len = row.leadLen;
-    for (const l of [row.curve, row.leadHalo]) {
-      l.style.strokeDasharray = lead >= 1 ? '' : `${len.toFixed(1)} ${(len + 2).toFixed(1)}`;
-      l.style.strokeDashoffset = lead >= 1 ? '' : (len * (1 - lead)).toFixed(1);
-    }
-    row.node.style.opacity = Math.min(1, lead * 4).toFixed(3);
-    row.dim.style.opacity = frame.toFixed(3);
+    if (!g || !g.pw || !g.dW) return;
+    const q = reduced ? .65 : clamp01(row.progress);
+    const t = q * q * (3 - 2 * q);
+    const mag = 1.65 + .4 * t;
+    const fw = g.dW / mag, fh = g.dH / mag;
+    const [u, v] = row.focus;
+    const x = Math.max(0, Math.min(g.pw - fw, g.ox + u * g.dw - fw / 2));
+    const y = Math.max(0, Math.min(g.ph - fh, g.oy + v * g.dh - fh / 2));
+    row.zoom.style.transform = `translate3d(${((g.ox - x) * mag).toFixed(2)}px, ${((g.oy - y) * mag).toFixed(2)}px, 0) scale(${mag.toFixed(5)})`;
+    const X = x, Y = y, R = x + fw, B = y + fh;
+    const c = Math.min(20, fw * .08, fh * .08);
+    // Only the eight short strokes: no enclosing rectangle, badges, leader or dimming layer.
+    row.corners.setAttribute('d', `M${X} ${Y+c}V${Y}H${X+c} M${R-c} ${Y}H${R}V${Y+c} M${R} ${B-c}V${B}H${R-c} M${X+c} ${B}H${X}V${B-c}`);
   }
 
   function setupWork() {
     if (!work) return;
     fitWork();
     ScrollTrigger.addEventListener('refreshInit', fitWork);
-    workRows.forEach((row) => {
-      ScrollTrigger.create({
-        trigger: row.el,
-        start: 'top bottom',
-        end: 'bottom top',
-        onUpdate: (self) => renderWork(row, self.progress),
-        onRefresh: (self) => { row.q = -1; renderWork(row, self.progress); },
-      });
-      renderWork(row, 0);
-    });
     if (reduced) {
       gsap.set('.hw-reveal', { opacity: 1, y: 0 });
-      // y too: GSAP reads the stylesheet's 160 % as pixels (see the top of this file) — without it the
-      // heading stayed hidden in its mask under reduced motion (caught on the first contact sheet)
       gsap.set('.hw-line-in', { y: 0, yPercent: 0 });
       return;
     }
-
+    workRows.forEach(row => {
+      gsap.to(row, { progress: 1, ease: 'none', onUpdate: () => renderWork(row),
+        scrollTrigger: { trigger: row.el, start: 'top 85%', end: 'bottom 15%', scrub: .65,
+          invalidateOnRefresh: true } });
+    });
     hxWrite.park('.hw-line-in');
     gsap.timeline({ scrollTrigger: { trigger: '.hw-head', start: 'top 85%', toggleActions: 'play none none reverse' } })
-      .fromTo('.hw-head .hw-reveal', { y: 30, opacity: 0 }, { y: 0, opacity: 1, duration: 0.94, ease: 'power1.inOut' }, 0)
-      .add(hxWrite('.hw-title .hw-line-in'), 0.1);
-
-    // Each row, played as it comes in: the detail starts as a second copy of the photo and dives into the
-    // framed spot while the frame draws itself; then the tag lands on its corner, the leader runs to the
-    // label, and the label — true only now — appears. (First build opened the detail out of the seam: it
-    // left a black half on screen under the row above.) Scrolling back above reverses it.
-    workRows.forEach((row) => {
-      gsap.set([row.tag, row.cap], { opacity: 0 });
-      const zoomed = () => { row.q = -1; renderWork(row, row.qNow); };
-      row.tl = gsap.timeline({ paused: true })
-        .to(row.draw, { zoom: 1, duration: 1.25, ease: 'power3.inOut', onUpdate: zoomed }, 0)
-        .to(row.draw, { frame: 1, duration: 0.9, ease: 'power2.inOut', onUpdate: () => paintWork(row) }, 0.2)
-        .to(row.tag, { opacity: 1, duration: 0.3, ease: 'power1.out' }, 1.0)
-        .to(row.draw, { lead: 1, duration: 0.55, ease: 'power2.inOut', onUpdate: () => paintWork(row) }, 1.05)
-        .fromTo(row.cap, { opacity: 0, y: 8 }, { opacity: 1, y: 0, duration: 0.6, ease: 'power1.inOut' }, 1.35);
-      ScrollTrigger.create({
-        trigger: row.el,
-        start: 'top 92%',
-        onEnter: () => row.tl.timeScale(1).play(),
-        onLeaveBack: () => row.tl.timeScale(1.8).reverse(),
-      });
-    });
-
-    // The line under the rows: Apple's rise, like section 3's paragraphs.
-    $$('.hw-more .hw-reveal', work).forEach((el, i) => {
-      gsap.timeline({ scrollTrigger: { trigger: el, start: 'top 92%', toggleActions: 'play none none reverse' } })
-        .fromTo(el, { y: 30 }, { y: 0, duration: 0.735, ease: 'power1.inOut', delay: i * 0.08 }, 0)
-        .fromTo(el, { opacity: 0 }, { opacity: 1, duration: 0.94, ease: 'power1.inOut', delay: i * 0.08 }, 0);
+      .fromTo('.hw-head .hw-reveal', { y: 18, opacity: 0 }, { y: 0, opacity: 1, duration: .7, ease: 'power2.out' }, 0)
+      .add(hxWrite('.hw-title .hw-line-in'), .1);
+    $$('.hw-more .hw-reveal', work).forEach(el => {
+      gsap.fromTo(el, { y: 18, opacity: 0 }, { y: 0, opacity: 1, duration: .7, ease: 'power2.out',
+        scrollTrigger: { trigger: el, start: 'top 92%', toggleActions: 'play none none reverse' } });
     });
   }
+
 
   /* ============================================================ 9. section 5 · before / after + reviews */
 
