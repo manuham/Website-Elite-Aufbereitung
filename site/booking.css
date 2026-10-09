@@ -798,7 +798,9 @@
 .bk-mode { flex-direction: column; gap: 0; min-height: 0; padding: 0; justify-content: flex-start; }
 .bk-mode-img {
   width: 100%;
-  height: clamp(150px, 19vw, 260px);
+  /* Manuel approved the studio lights + car framing, 2026-10-09. */
+  height: auto;
+  aspect-ratio: 3 / 2;
   object-fit: cover;
   display: block;
   filter: saturate(.92) contrast(1.02);
@@ -953,7 +955,7 @@
   .bk-dps { grid-template-columns: repeat(4, minmax(0, 1fr)); }
   .bk-dp-n { font-size: 20px; }
   .bk-tp { min-width: 0; flex: 1 1 88px; }
-  .bk-mode-img { height: 140px; }
+  .bk-mode-img { height: auto; }
 }
 
 /* The week used to be a full-bleed frame with a grid filling it edge to edge. With pills inside,

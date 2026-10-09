@@ -331,7 +331,7 @@ function viewPlace() {
   return head('Wo soll es<br>stattfinden?', 'Wählen Sie, ob Sie zu uns kommen oder wir zu Ihnen kommen sollen.') + `
     <div class="bk-modes bk-bleed">
       <button class="bk-opt bk-mode${studio ? ' is-on' : ''}" type="button" data-act="mode" data-v="studio">
-        <img class="bk-mode-img" src="assets/img/arbeit/handarbeit.webp" alt="" loading="lazy" decoding="async" />
+        <img class="bk-mode-img" src="assets/img/arbeit/n-studio-weiss-1400.webp" style="object-position:50% 12%" alt="" loading="lazy" decoding="async" />
         <span class="bk-mode-b">
           <span class="bk-mode-t">Im Studio</span>
           <span class="bk-mode-s">Sie bringen Ihr Fahrzeug zu uns</span>
@@ -339,7 +339,7 @@ function viewPlace() {
         </span>
       </button>
       <button class="bk-opt bk-mode${S.mode === 'mobil' ? ' is-on' : ''}" type="button" data-act="mode" data-v="mobil">
-        <img class="bk-mode-img" src="assets/img/arbeit/van.webp" alt="" loading="lazy" decoding="async" />
+        <img class="bk-mode-img" src="assets/img/arbeit/van-vorort-1400.webp" style="object-position:50% 35%" alt="" loading="lazy" decoding="async" />
         <span class="bk-mode-b">
           <span class="bk-tagnew">Neu</span>
           <span class="bk-mode-t">Mobiler Service</span>
