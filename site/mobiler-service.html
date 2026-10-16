@@ -71,7 +71,7 @@
   <title>Mobile Autoaufbereitung — wir kommen zu Ihnen | Elité</title>
   <link rel="icon" type="image/png" href="assets/logo/logo-new2-1280.png" />
   <link rel="preload" href="assets/fonts/inter-latin-opsz.woff2" as="font" type="font/woff2" crossorigin />
-  <link rel="preload" href="assets/img/van-cut-900.webp" as="image" imagesrcset="assets/img/van-cut-600.webp 600w, assets/img/van-cut-900.webp 895w" imagesizes="(max-aspect-ratio: 4/5) 138vw, 62vw" />
+  <link rel="preload" href="assets/img/van-cut-v1016-900.webp" as="image" imagesrcset="assets/img/van-cut-v1016-600.webp 600w, assets/img/van-cut-v1016-900.webp 900w" imagesizes="(max-aspect-ratio: 4/5) 138vw, 62vw" />
   <link rel="stylesheet" href="nav.css" />
   <!-- hero.css is linked for the shared tokens (the Inter faces, --hx-ink/--hx-paper/--hx-gutter) and
        the footer; none of its section rules match anything else on this page. -->
@@ -156,9 +156,9 @@
         <span class="mo-pool" aria-hidden="true"></span>
         <div class="mo-van">
           <span class="mo-van-shadow" aria-hidden="true"></span>
-          <img class="mo-van-img" src="assets/img/van-cut-900.webp"
-            srcset="assets/img/van-cut-600.webp 600w, assets/img/van-cut-900.webp 895w" sizes="(max-aspect-ratio: 4/5) 138vw, 62vw"
-            width="895" height="567" alt="Der weiße Elité-Van" fetchpriority="high" decoding="async" />
+          <img class="mo-van-img" src="assets/img/van-cut-v1016-900.webp"
+            srcset="assets/img/van-cut-v1016-600.webp 600w, assets/img/van-cut-v1016-900.webp 900w" sizes="(max-aspect-ratio: 4/5) 138vw, 62vw"
+            width="900" height="586" alt="Der weiße Elité-Van" fetchpriority="high" decoding="async" />
         </div>
       </div>
       <div class="mo-open-in">
@@ -175,7 +175,12 @@
          ⛔ 2026-09-26, go-live: the page carries the film WITHOUT its sound. Elité gave the go for the
          website, and that covers the film — not the music under it, which belongs to its label and is
          licensed for Instagram only. The web file has no audio track at all (ffmpeg -an), so there is no
-         sound button. The version with sound stays in assets/video/src/ for the day the music is cleared. -->
+         sound button. The version with sound stays in assets/video/src/ for the day the music is cleared. 
+         ⭐ 2026-10-16, Manuel: „can you add the sounds to these videos" — asked whether voice only (music
+         taken out) or full sound; he chose „Full sound with music", after being told Instagram's music
+         licence does not cover a website and a rights holder could send Elité a claim. His call. New file
+         name -v1016- (live /assets is cached 30 days); the silent file stays beside it, unused.
+         -->
     <section class="mo-reel" aria-labelledby="mo-reel-h">
       <div class="mo-reel-in">
         <div class="mo-reel-copy">
@@ -185,8 +190,12 @@
         <figure class="mo-phone">
           <div class="mo-phone-screen">
             <video class="mo-phone-v" muted loop playsinline preload="none" poster="assets/video/mobil-reel-poster.webp"
-              data-src="assets/video/mobil-reel-720.mp4"
+              data-src="assets/video/mobil-reel-v1016-720.mp4"
               aria-label="Video: der mobile Service von Elité bei einem Kunden, vom Waschen bis zum Ergebnis"></video>
+            <button class="mo-snd" type="button" aria-pressed="false" aria-label="Ton einschalten">
+              <svg class="mo-snd-off" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9.5h3.2L12 5.5v13l-4.8-4H4z" /><path d="M16 9.5l5 5M21 9.5l-5 5" /></svg>
+              <svg class="mo-snd-on" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9.5h3.2L12 5.5v13l-4.8-4H4z" /><path d="M15.5 9a4.2 4.2 0 0 1 0 6M18.2 6.6a7.6 7.6 0 0 1 0 10.8" /></svg>
+            </button>
             <span class="mo-bar" aria-hidden="true"><i></i></span>
           </div>
         </figure>

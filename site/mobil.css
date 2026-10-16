@@ -64,13 +64,13 @@
    The van is as wide as the screen allows below the two headline lines (--t is the headline size). */
 .mo-van {
   --t: clamp(56px, min(10vw, 17vh), 190px);
-  --w: min(62vw, 1040px, calc((100svh - var(--mo-bar) - 1.76 * var(--t) - clamp(26px, 5.5vh, 64px) - clamp(40px, 7vh, 84px)) * 1.578));
+  --w: min(62vw, 1040px, calc((100svh - var(--mo-bar) - 1.76 * var(--t) - clamp(26px, 5.5vh, 64px) - clamp(40px, 7vh, 84px)) * 1.536)); /* 1.536 = 900 / 586, the 2026-10-16 cut (it keeps the antenna) */
   position: absolute;
   left: 50%;
   bottom: clamp(26px, 5vh, 64px);
   width: var(--w);
   margin-left: calc(var(--w) / -2);
-  aspect-ratio: 895 / 567;
+  aspect-ratio: 900 / 586;
   transform-origin: 60% 100%;
   will-change: transform;
 }
@@ -502,7 +502,7 @@
     position: relative;
     left: auto;
     bottom: auto;
-    --w: min(138vw, calc((100svh - var(--mo-bar) - 34px - 2.7 * min(18.5vw, 130px) - 90px) * 1.578));
+    --w: min(138vw, calc((100svh - var(--mo-bar) - 34px - 2.7 * min(18.5vw, 130px) - 90px) * 1.536)); /* 1.536 = 900 / 586, the 2026-10-16 cut (it keeps the antenna) */
     margin: clamp(24px, 4vh, 40px) 0 0 4vw;
   }
   .mo-pool { left: -30%; right: -60%; bottom: -30%; height: 130%; }

@@ -177,3 +177,114 @@ html, html.scroll-smooth { scroll-behavior: auto; }
     .mo-btn, .ko-btn, .ko-mini, .ha-cta, .bk-next, .bk-act, .bk-home)::after { transition: none; }
 }
 
+/* ─────────────────────────────── Lucid buttons, 2026-10-15
+   Manuel, with a lucidmotors.com hero screenshot: „can you make the buttons … look like this?"
+   Measured off his screenshot: 48 px tall, 3 px corners, the words centred in CAPITALS with wide
+   tracking, no arrow. A white body with ink; the quiet one = dark frosted glass with a 1 px light
+   line; their gold „Demo Drive" = a solid colour body with dark ink (here: our green).
+   This block wins over the 10-09 one above in SHAPE and TYPE only — every fill colour stays where
+   its page put it, and the hover stays solid.css §8 („Salbei"). The 10-09 block is kept unchanged;
+   the file as it was is in _archive/2026-10-15-buttons-before-lucid/.
+   ⚠ The quiet button's 1 px line breaks solid.css rule 1 („a pill has no ring") — his reference
+   has it, his call. Text is paper, line is paper, body is dark glass: two jobs, not three. */
+.elite-design :is(.hx-btn:not(.ha-chip), .hk-cta, .hs-btn, .hq-book, .he-btn,
+  .mo-btn, .ko-btn, .ko-mini, .ha-cta, .bk-next, .bk-act, .bk-home) {
+  justify-content: center;
+  gap: 0;
+  min-height: 48px;
+  padding: 12px 28px;
+  border-radius: 3px;
+  font-size: 12.5px;
+  font-weight: 600;
+  letter-spacing: .16em;
+  line-height: 1.3;
+  text-transform: uppercase;
+  text-align: center;
+  overflow-wrap: normal;
+}
+.elite-design :is(.hx-btn:not(.ha-chip), .hk-cta, .hs-btn, .hq-book, .he-btn,
+  .mo-btn, .ko-btn, .ko-mini, .ha-cta, .bk-next, .bk-act, .bk-home):not(:has(svg))::after { content: none; }
+/* an e-mail address in capitals reads as shouting and tracks out to twice its width */
+.elite-design a[href^="mailto:"]:is(.hx-btn, .hk-cta, .hs-btn, .hq-book, .he-btn, .mo-btn, .ko-btn, .ko-mini, .ha-cta) {
+  text-transform: none;
+  letter-spacing: .02em;
+  font-size: 14px;
+}
+.elite-design .ko-mini { min-height: 40px; padding: 10px 20px; font-size: 11.5px; }
+
+/* the quiet button: dark glass, one light line (Lucid's „Build & Order") */
+/* :not(.ha-chip) only lifts the weight to the 10-09 block's (its :is() counts as .hx-btn:not(.ha-chip)),
+   otherwise that block's `box-shadow: none` eats the line */
+.elite-design :is(.hk-cta--ghost, .hx-btn--ghost, .mo-btn--ghost, .he-btn--ghost, .ko-btn--ghost, .ko-mini--ghost):not(.ha-chip) {
+  background: rgba(16, 15, 14, .38);
+  -webkit-backdrop-filter: blur(30px) saturate(1.2);
+  backdrop-filter: blur(30px) saturate(1.2);
+  box-shadow: inset 0 0 0 1px rgba(250, 248, 245, .78);
+  color: #faf8f5;
+}
+/* …and on the light sheets the same button in ink */
+.elite-design :is(.mo-end .mo-btn--ghost, .ko-end .ko-btn--ghost, .he-end .he-btn--ghost, .hk-card--tier .hk-cta--ghost) {
+  background: transparent;
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+  box-shadow: inset 0 0 0 1px rgba(13, 13, 18, .72);
+  color: var(--hx-ink, #0d0d12);
+}
+
+/* the hero pair: two equal bodies, no arrow (the arrows are <svg>s in the markup) */
+.elite-design .hx-copy--polestar .hx-btn {
+  justify-content: center;
+  gap: 0;
+  height: 48px;
+  min-width: 212px;
+  padding: 0 28px;
+  border-radius: 3px;
+  font-size: 12.5px;
+  font-weight: 600;
+  letter-spacing: .16em;
+  text-transform: uppercase;
+}
+.elite-design .hx-copy--polestar .hx-btn svg { display: none; }
+/* 2026-10-16, Manuel, with the Lucid pair again: „the left one should be transparent like the reference".
+   So the hero pair IS Lucid's pair: left („Preise") = dark glass + 1 px light line, right („Termin
+   buchen") = the white body. The green leaves the hero pair; the hover stays solid.css §8. */
+.elite-design .hx-copy--polestar .hx-btn--prices {
+  background: rgba(16, 15, 14, .38);
+  -webkit-backdrop-filter: blur(30px) saturate(1.2);
+  backdrop-filter: blur(30px) saturate(1.2);
+  box-shadow: inset 0 0 0 1px rgba(250, 248, 245, .78);
+  color: #faf8f5;
+}
+.elite-design .hx-copy--polestar .hx-btn--brand { background: #faf8f5; color: #171819; }
+/* 2026-10-16, „background inside the button more blurred": the blur never showed at all — hero.css gives
+   .hx-copy-side `will-change: opacity`, which makes it a backdrop root, so the glass could only blur the
+   (empty) box it sits in, not the photo. Without the hint the photo is what gets blurred. */
+.elite-design .hx-copy--polestar .hx-copy-side { will-change: auto; }
+/* choices share the corners; they stay in their own sentence case */
+.elite-design :is(.ha-chip, .hk-tab, .bk-tab, .bk-btn, .bk-dp, .bk-cd-slot, .rc-doc) { border-radius: 3px; }
+.elite-design #mobile-menu a.bg-champagne {
+  justify-content: center;
+  height: 48px;
+  min-width: 240px;
+  padding: 0 28px;
+  border-radius: 3px;
+  font-family: Inter, sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: .16em;
+  text-transform: uppercase;
+}
+.elite-design #mobile-menu a.bg-champagne::after { content: none; }
+@media (max-width: 600px) {
+  .elite-design :is(.hx-btn:not(.ha-chip), .hk-cta, .hs-btn, .hq-book, .he-btn,
+    .mo-btn, .ko-btn, .ko-mini, .ha-cta, .bk-next, .bk-act, .bk-home) {
+    min-height: 46px;
+    padding: 12px 18px;
+    font-size: 12px;
+    letter-spacing: .14em;
+  }
+  .elite-design .hx-copy--polestar .hx-copy-side { width: 100%; max-width: 360px; }
+  .elite-design .hx-copy--polestar .hx-actions { flex-wrap: nowrap; width: 100%; }
+  .elite-design .hx-copy--polestar .hx-btn { flex: 1 1 0; min-width: 0; height: 46px; padding: 0 12px; font-size: 12px; letter-spacing: .14em; white-space: nowrap; }
+}
+

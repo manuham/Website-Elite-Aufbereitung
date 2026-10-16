@@ -183,11 +183,19 @@
          ⛔ 2026-09-26, go-live: the page carries the film WITHOUT its sound. Elité gave the go for the
          website, and that covers the film — not the music under it, which belongs to its label and is
          licensed for Instagram only. The web file has no audio track at all (ffmpeg -an), so there is no
-         sound button. The version with sound stays in assets/video/src/ for the day the music is cleared. -->
+         sound button. The version with sound stays in assets/video/src/ for the day the music is cleared.
+         ⭐ 2026-10-16, Manuel: „can you add the sounds to these videos" — asked whether voice only (music
+         taken out) or full sound; he chose „Full sound with music", after being told Instagram's music
+         licence does not cover a website and a rights holder could send Elité a claim. His call. New file
+         name -v1016- (live /assets is cached 30 days); the silent file stays beside it, unused. -->
         <figure class="es-reel">
           <video class="es-reel-v" muted loop playsinline preload="none" poster="assets/video/endstufe-reel-poster.webp"
-            data-src="assets/video/endstufe-reel-720.mp4"
+            data-src="assets/video/endstufe-reel-v1016-720.mp4"
             aria-label="Video von Elité: das Endstufe-Paket, am Fahrzeug erklärt"></video>
+          <button class="es-reel-snd" type="button" aria-pressed="false" aria-label="Ton einschalten">
+            <svg class="es-snd-off" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9.5h3.2L12 5.5v13l-4.8-4H4z" /><path d="M16 9.5l5 5M21 9.5l-5 5" /></svg>
+            <svg class="es-snd-on" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9.5h3.2L12 5.5v13l-4.8-4H4z" /><path d="M15.5 9a4.2 4.2 0 0 1 0 6M18.2 6.6a7.6 7.6 0 0 1 0 10.8" /></svg>
+          </button>
           <span class="es-reel-bar" aria-hidden="true"><i></i></span>
         </figure>
       </div>

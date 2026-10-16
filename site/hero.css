@@ -1457,6 +1457,9 @@
 }
 .hb-tag--after { right: calc(100% + 10px); }
 .hb-tag--before { left: calc(100% + 10px); }
+/* 2026-10-16, Manuel: „remove the vorher/nachher labels on the lines". Hidden, not deleted from the
+   markup — hero.js reads both tags (row.tagAfter/tagBefore) and would throw without them. */
+.hb-tag { display: none; }
 
 /* ================================================================ section 5b · reviews (#reviews) */
 
