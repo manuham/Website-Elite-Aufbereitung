@@ -221,7 +221,24 @@
     };
   });
 
-  const ready = (img) => img.complete && img.naturalWidth > 0;
+  // > 1, not > 0: a phone's stand-in for middle-1 / right-1 is a 1-pixel image (2026-10-18, apply.cjs)
+  const ready = (img) => img.complete && img.naturalWidth > 1;
+
+  // ⭐ 2026-10-18 — speed fix 2 (Manuel: „Make all the Elité speed fixes"; plan: Agency-web/design/
+  // elite-speed-2026-10-17/SPEED-PLAN.md). Only the first photo of each column comes with the page; the others
+  // wait with their address in data-srcset / data-src (lab/hero-picker/apply.cjs). prime() hands it over, one
+  // photo ahead of the slideshow: swap() primes the photo after the one it brings in, so each has a whole beat
+  // (4.26 s) to arrive, and loop() still never swaps to a photo that is not there.
+  function prime(img) {
+    if (!img) return;
+    let held = false;
+    const pic = img.parentElement;
+    if (pic && pic.tagName === 'PICTURE') pic.querySelectorAll('source[data-hold]').forEach((el) => { el.remove(); held = true; });
+    if (img.dataset.srcset) { img.srcset = img.dataset.srcset; delete img.dataset.srcset; }
+    else if (held && img.getAttribute('srcset')) img.srcset = img.getAttribute('srcset'); // pick again, without the stand-in
+    if (img.dataset.src) { img.src = img.dataset.src; delete img.dataset.src; }
+    if (img.decode) img.decode().catch(() => {});
+  }
 
   // One swap: the new photo wipes up from the bottom edge while rising a little inside its own
   // mask; the old photo is pushed up and dimmed underneath. The zoom is a separate, longer tween
@@ -232,6 +249,8 @@
     const nextIdx = (panel.idx + 1) % panel.slides.length;
     const next = panel.slides[nextIdx];
     panel.busy = true;
+    prime(next.img); // normally done a beat ago — a no-op then
+    prime(panel.slides[(nextIdx + 1) % panel.slides.length].img); // the one after: one photo ahead
 
     gsap.killTweensOf(next.inner);
     gsap.set(next.el, { visibility: 'visible', zIndex: 2, yPercent: 100 });
@@ -274,7 +293,7 @@
     if (!triCovered && !panel.busy && ready(next.img)) {
       swap(panel);
       turn += 1;
-    }
+    } else prime(next.img);
     gsap.delayedCall(BEAT, loop);
   }
 
@@ -289,6 +308,24 @@
   const copyMain = $('.hx-copy-main');
   const copySide = $('.hx-copy-side');
   const copyLede = $('.hx-lede-wrap');   // experiment 2026-09-19: the sentence under the headline
+
+  // ⭐ 2026-10-18 — speed fix 2: the van photo waits below the screen (data-srcset in index.html: it is parked at
+  // translate(0, 100%) until the visitor scrolls, yet it used to download first thing). It comes on the first
+  // scroll, or when the intro starts (boot), whichever is first.
+  // A scroll means the visitor is on the way to the van: then it goes first (fetchPriority high). The re-check of
+  // 2026-10-18 measured, on a 1.6 Mbit/s line, a desktop van frame still empty for seconds after an early scroll —
+  // it was sharing the line with the next three slides. (Today's site on that line: the van not in after 6.5 s.)
+  let vanPrimed = false;
+  function primeVan(e) {
+    const img = $('img', vanImg);
+    if (!img) return;
+    if (e && e.type === 'scroll') img.fetchPriority = 'high';
+    if (vanPrimed) return;
+    vanPrimed = true;
+    if (img.dataset.srcset) { img.srcset = img.dataset.srcset; delete img.dataset.srcset; }
+    if (img.dataset.src) { img.src = img.dataset.src; delete img.dataset.src; }
+  }
+  window.addEventListener('scroll', primeVan, { once: true, passive: true });
 
   let landAt = 0.85;
   function measure() {
@@ -587,7 +624,11 @@
   const lastImg = $('.hl-grow .hl-img');
   const stripImgs = $$('.hl img');
 
-  // The photos are lazy; once the van lands they are one scroll away, so fetch them then.
+  // The photos wait; once the van lands they are one scroll away, so fetch them then.
+  // ⭐ 2026-10-18 — speed fix 4: „lazy" alone did not make them wait — the strip is pulled up under the hero
+  // (hero.css), so the browser fetched all of them at load (334 KB before the first line on a phone). Their
+  // address now sits in data-srcset / data-src (index.html) and only this hands it over: when the van lands, or
+  // 6 s into the intro (boot), whichever is first. Superseded (rule 2): ~~img.loading = 'eager' alone~~.
   let stripWarm = false;
   function warmStrip() {
     if (stripWarm) return;
@@ -595,6 +636,8 @@
     stripImgs.forEach((img) => {
       if (img.offsetParent === null && !img.closest('.hl-grow')) return; // phone-only picture on a desktop
       img.loading = 'eager';
+      if (img.dataset.srcset) { img.srcset = img.dataset.srcset; delete img.dataset.srcset; }
+      if (img.dataset.src) { img.src = img.dataset.src; delete img.dataset.src; }
     });
   }
 
@@ -839,6 +882,7 @@
   //   · the photo is laid out once for the whole title and stays put while the letters travel, so the
   //     words move across one still picture; it drifts slowly upwards over the whole pass
   const craft = $('#prozess');
+  let craftNear = !('IntersectionObserver' in window); // speed fix 5 (2026-10-18): the letters' photos wait for this
   const craftSteps = craft ? $$('.hd-step', craft).map((el) => {
     const title = $('.hd-title', el);
     const [iw, ih] = title.dataset.size.split(' ').map(Number);
@@ -886,7 +930,10 @@
       const need = bw * dpr;
       const pick = step.widths.find((w) => w >= need) || step.widths[step.widths.length - 1];
       const src = `${step.base}-${pick}.webp`;
-      step.title.style.setProperty('--hd-photo', `url('${src}')`);
+      // ⭐ 2026-10-18 — speed fix 5: the photo is only set once the section is within a screen (craftNear);
+      // until then the letters stay ink (hero.css, background-color). Superseded (rule 2): ~~set at boot~~.
+      step.src = src;
+      if (craftNear) step.title.style.setProperty('--hd-photo', `url('${src}')`);
       for (const row of step.rows) {
         row.left = row.el.offsetLeft - step.title.offsetLeft; // both measured from the step; transforms ignored
         row.top = row.el.offsetTop - step.title.offsetTop;
@@ -965,6 +1012,15 @@
   function setupCraft() {
     if (!craft) return;
     fitCraft();
+    if (!craftNear) {
+      const near = new IntersectionObserver((entries) => {
+        if (!entries.some((e) => e.isIntersecting)) return;
+        craftNear = true;
+        near.disconnect();
+        craftSteps.forEach((step) => { if (step.src) step.title.style.setProperty('--hd-photo', `url('${step.src}')`); });
+      }, { rootMargin: '100% 0px' });
+      near.observe(craft);
+    }
     ScrollTrigger.addEventListener('refreshInit', fitCraft);
     craftSteps.forEach((step) => {
       ScrollTrigger.create({
@@ -1760,14 +1816,17 @@
     gsap.timeline()
       .fromTo('.hx-copy-main .hx-label', { y: 30, opacity: 0 }, { y: 0, opacity: 1, duration: 0.94, ease: 'power1.inOut' }, 0.8)
       .add(hxWrite('.hx-line-in'), 0.9)
-      // the sentence under the headline (experiment 2026-09-19) follows the words, before the buttons
-      .fromTo('.hx-copy-main .hx-lede', { y: 30, opacity: 0 }, { y: 0, opacity: 1, duration: 0.94, ease: 'power1.inOut' }, 1.15)
+      // ⭐ 2026-10-18 — the sentence under the headline is no longer faded in: it is painted with the page (index.html
+      // dropped its hx-reveal). Google measures it as the page's largest text, and while it waited for this tween the
+      // phone test read 15.6 s (A/B on a local copy: 15.9 → 2.6 s). A fromTo here would hide it again at once.
+      // Superseded (rule 2): ~~.fromTo('.hx-copy-main .hx-lede', { y: 30, opacity: 0 }, { y: 0, opacity: 1, duration: 0.94, ease: 'power1.inOut' }, 1.15)~~
       .fromTo('.hx-copy-side .hx-reveal', { y: 30, opacity: 0 }, { y: 0, opacity: 1, duration: 0.94, ease: 'power1.inOut', stagger: 0.09 }, 1.3);
   }
 
   function showStatic() {
     Object.values(panels).forEach((p) => {
       p.idx = 0;
+      prime(p.slides[0].img); // 2026-10-18: drop a phone's 1-pixel stand-in, or a window narrowed later shows two empty columns
       gsap.set(p.slides[0].el, { visibility: 'visible', zIndex: 2 });
     });
     gsap.set('.hx-line-in', { yPercent: 0 });
@@ -1779,15 +1838,15 @@
   const timeout = new Promise((resolve) => setTimeout(resolve, 2500));
 
   // The display weight must be in before fitSlogan measures, or it fits the fallback face.
-  // The headline is two faces since 2026-09-19 (Playfair Display Italic over Inter 700): both must be in
-  // before fitHero measures, or it sizes the fallback. Playfair comes from Google Fonts (the phone menu
-  // already loads it), so it can be slower than the 3 s race below — see the late refit after boot.
-  const HEAD_TOP = 'italic 400 100px "Playfair Display"';
+  // ⭐ 2026-10-18 — speed fix 3: Playfair Display Italic is no longer loaded or waited for. Nothing on this page is
+  // drawn in it any more (the headline is Inter; the menu is forced to Inter in design.css; .hx-title--duo matches
+  // nothing), yet the intro waited up to 3 s for its 22 KB. Superseded (rule 2): ~~const HEAD_TOP = 'italic 400 100px
+  // "Playfair Display"'~~ and ~~document.fonts.load(HEAD_TOP, 'Perfektion trifft')~~ in the race below, plus the late
+  // refit after boot. A two-face headline (.hx-title--duo) would need both back.
   const fontsIn = Promise.all([
     document.fonts.ready,
     document.fonts.load('650 100px Inter', 'Sorgfalt fährt vor.').catch(() => {}),
     document.fonts.load('700 100px Inter', 'Präzision.').catch(() => {}),
-    document.fonts.load(HEAD_TOP, 'Perfektion trifft').catch(() => {}),
   ]);
   Promise.all([Promise.race([decoded, timeout]), Promise.race([fontsIn, new Promise((r) => setTimeout(r, 3000))])])
     .then(() => {
@@ -1797,11 +1856,7 @@
       // a hook for type tests (the font lab of 2026-09-19 used it; archived in _archive/2026-09-19-fontlab/)
       window.hxFitHero = fitHero;
       window.dispatchEvent(new Event('hx:ready'));
-      // if the serif lost the 3 s race, fit again the moment it lands (the lines are still masked or
-      // just revealing then — a resize is not visible as a jump)
-      if (!document.fonts.check(HEAD_TOP, 'Perfektion trifft')) {
-        document.fonts.load(HEAD_TOP, 'Perfektion trifft').then(() => fitHero()).catch(() => {});
-      }
+      // (2026-10-18: the late Playfair refit that stood here is gone with the font — speed fix 3)
       // The van's range ends where the cover phase begins: rise + hold, in stage heights (the
       // stage is 100lvh, so this stays right on phones whose toolbar changes the viewport).
       const stageEl = $('.hx-stage');
@@ -1860,7 +1915,14 @@
         setTimeout(() => { go(); ScrollTrigger.removeEventListener('refresh', go); }, 1200);
       }
 
-      // Warm the rest of the photos so the first swaps never wait on the network.
-      $$('.hx-slide img').forEach((img) => img.decode && img.decode().catch(() => {}));
+      // Superseded 2026-10-18 (rule 2): ~~$$('.hx-slide img').forEach((img) => img.decode && img.decode().catch(() => {}))~~
+      // — the photos no longer all come with the page; swap() primes and decodes each one a beat ahead (prime()).
+      // The van and the strip below wait too (speed fixes 2 and 4). The van is handed over now — the page has painted
+      // and the first photos are in — and the strip 6 s into the intro or when the van lands, whichever is first.
+      // (First tried: the van after 4 s. The check of 2026-10-18 measured an empty van frame for 66–133 ms when the
+      // visitor scrolled between ~2.2 and 4.4 s; handed over here it lands at 0.7–1.0 s. Superseded (rule 2):
+      // ~~gsap.delayedCall(4, primeVan)~~.)
+      primeVan();
+      gsap.delayedCall(6, warmStrip);
     });
 })();

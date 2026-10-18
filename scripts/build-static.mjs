@@ -97,7 +97,8 @@ for (const [p, file] of PAGES) {
     // every local reference resolves
     const refs = [
         ...[...s.matchAll(/\s(?:href|src|poster|data-src)="([^"]+)"/g)].map((m) => m[1]),
-        ...[...s.matchAll(/\ssrcset="([^"]+)"/g)].flatMap((m) => m[1].split(',').map((x) => x.trim().split(/\s+/)[0])),
+        // 2026-10-18: data-srcset too — the photos that wait for hero.js (speed fixes) must resolve as well
+        ...[...s.matchAll(/\s(?:data-)?srcset="([^"]+)"/g)].flatMap((m) => m[1].split(',').map((x) => x.trim().split(/\s+/)[0])),
     ].filter((r) => r && !/^(https?:|mailto:|tel:|data:|#|javascript:)/.test(r));
     for (const r of new Set(refs)) need(resolveLocal(r), `${p}: ${r} does not resolve`);
 }
