@@ -16,18 +16,8 @@ import { execSync } from 'node:child_process'
 /**
  * @type {{ id: string, package: string, reason: string, reviewBy: string }[]}
  */
-const ACCEPTED = [
-  {
-    id: 'GHSA-qwww-vcr4-c8h2',
-    package: 'react-router',
-    reason:
-      'RSC-mode CSRF bypass. Since the 2026-09-26 relaunch the live site is static pages from ' +
-      'site/ (scripts/build-static.mjs); the React app under src/ is not built, so react-router ' +
-      'never reaches a visitor, and api/ does not import it. A non-breaking `npm audit fix` ' +
-      'exists — take it on the next real change to this repo.',
-    reviewBy: '2026-10-31',
-  },
-]
+// 2026-10-22: GHSA-qwww-vcr4-c8h2 (react-router) left this list — fixed by 7.18.4.
+const ACCEPTED = []
 
 const today = new Date().toISOString().slice(0, 10)
 
