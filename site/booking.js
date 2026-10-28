@@ -78,6 +78,16 @@ const S = {
    every day unknown, and the Termin step shows „wird geladen" instead of slots. */
 const LOCAL = /^(localhost|127\.0\.0\.1|\[::1\])$/.test(location.hostname);
 let AVAIL = makeAvailability({}, { trusted: false });
+
+/* Manuel, 2026-10-28: Nüziders opens on Monday 2 November 2026 (FACTS.opensNote) — „block them":
+   a Nüziders booking cannot start before that day. Every day check below reads placeAvail(), which
+   counts those days as fully booked, so same-day and multi-day bookings both skip them. */
+const OPENS = { nueziders: new Date(2026, 10, 2) };
+const notYetOpen = (day) => S.mode === 'studio' && !!OPENS[S.place] && startOfDay(day) < OPENS[S.place];
+const placeAvail = () => ({
+  ...AVAIL,
+  busy: (day) => (notYetOpen(day) && AVAIL.isKnown(day) ? [[0, 24 * 60]] : AVAIL.busy(day)),
+});
 const CAL = { loaded: false, fallback: false, stale: false, failed: false, demo: false, sig: '' };
 let calCtrl = null;
 
@@ -123,12 +133,12 @@ function dropTakenPick() {
   const d = duration();
   const n = now();
   if (d.multiDay) {
-    const st = multiDayStartState(S.dt.date, d.spanDays, AVAIL, n);
+    const st = multiDayStartState(S.dt.date, d.spanDays, placeAvail(), n);
     if (st !== DAY.FREE && st !== DAY.UNKNOWN) takeAway();
     return;
   }
-  if (!S.dt.time || !AVAIL.isKnown(S.dt.date)) return;
-  const plan = sameDayPlan(S.dt.date, d.durationMin, AVAIL.busy(S.dt.date), n);
+  if (!S.dt.time || !placeAvail().isKnown(S.dt.date)) return;
+  const plan = sameDayPlan(S.dt.date, d.durationMin, placeAvail().busy(S.dt.date), n);
   if (!plan.free.some((f) => minToTime(f.start) === S.dt.time)) takeAway();
 }
 function takeAway() {
@@ -552,9 +562,10 @@ function caps(week, n) {
 function dayState(day, d, n) {
   if (!isWorkingDay(day)) return { kind: 'closed', label: 'geschlossen', free: [] };
   if (startOfDay(day) < startOfDay(n)) return { kind: 'past', label: 'vorbei', free: [] };
+  if (notYetOpen(day)) return { kind: 'closed', label: 'geschlossen', free: [] };
   // not covered by the calendar's answer: never offered as free
-  if (!AVAIL.isKnown(day)) return { kind: 'full', label: '—', free: [] };
-  const plan = sameDayPlan(day, d.durationMin, AVAIL.busy(day), n);
+  if (!placeAvail().isKnown(day)) return { kind: 'full', label: '—', free: [] };
+  const plan = sameDayPlan(day, d.durationMin, placeAvail().busy(day), n);
   if (plan.closed || plan.fullyPast) return { kind: 'past', label: 'vorbei', free: [] };
   if (!plan.free.length) return { kind: 'full', label: 'ausgebucht', free: [] };
   return { kind: 'free', label: `${plan.free.length} frei`, free: plan.free };
@@ -598,7 +609,7 @@ function timeGrid(week, d, n) {
    on one axis without lanes or collision maths. Nothing about the times is decided here — the
    opening hours, the buffer, the busy intervals and the free starts all come from `scheduling.js`. */
 function dayCalendar(open, d, n) {
-  const plan = sameDayPlan(open.day, d.durationMin, AVAIL.busy(open.day), n);
+  const plan = sameDayPlan(open.day, d.durationMin, placeAvail().busy(open.day), n);
   const from = plan.open;
   const to = plan.close;
   const span = to - from;
@@ -639,7 +650,7 @@ function multiDayGrid(week, d, n) {
   const terms = multiDayTerms(S.mode);
   let free = 0;
   const days = week.map((day) => {
-    const open = multiDayStartState(day, d.spanDays, AVAIL, n) === DAY.FREE;
+    const open = multiDayStartState(day, d.spanDays, placeAvail(), n) === DAY.FREE;
     if (open) free++;
     const on = sameDay(day, S.dt.date);
     const inSpan = !on && span.some((s) => sameDay(s, day));
@@ -996,7 +1007,7 @@ document.addEventListener('click', (e) => {
     }
     return render();
   }
-  if (act === 'place') { S.place = v; S.placeOpen = false; return render(); }
+  if (act === 'place') { S.place = v; S.placeOpen = false; dropTakenPick(); return render(); }
   if (act === 'closeplace') { S.placeOpen = false; return render(); }
   if (act === 'phone') { S.phoneFor = el.dataset.id; return render(); }
   if (act === 'closephone') { S.phoneFor = null; return render(); }
@@ -1020,7 +1031,7 @@ document.addEventListener('click', (e) => {
     else if (v === 'next') S.weekStart = addDays(S.weekStart, 7);
     else if (v === 'today') S.weekStart = weekStartMonday(n);
     else if (v === 'free') {
-      const first = availableDays(n, duration(), AVAIL, n).items.find((it) => it.kind === 'day');
+      const first = availableDays(n, duration(), placeAvail(), n).items.find((it) => it.kind === 'day');
       if (first) S.weekStart = weekStartMonday(first.date);
     }
     return render();
