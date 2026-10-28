@@ -286,14 +286,12 @@ const town = (key) => FACTS.studio[key].split(',').pop().trim().replace(/^\d{4}\
 /* ---- step 0 · Standort */
 function placeList() {
   return Object.entries(FACTS.studio).map(([key, addr]) => {
-    const open = key === 'feldkirch';                       // the other one is closed — see FACTS
+    const first = key === 'feldkirch';                      // Nüziders opens again — see FACTS.opensNote
     const on = S.place === key;
-    return `<button class="bk-opt bk-place${on ? ' is-on' : ''}${open ? '' : ' is-off'}" type="button"
-              ${open ? `data-act="place" data-v="${key}"` : 'disabled'}>
+    return `<button class="bk-opt bk-place${on ? ' is-on' : ''}" type="button" data-act="place" data-v="${key}">
       <span class="bk-mark">${on ? '✓' : ''}</span>
-      <span><span class="bk-place-n">${esc(key === 'feldkirch' ? 'Feldkirch' : FACTS.blockedName)}</span>
-        <span class="bk-place-a">${esc(addr)}${open ? '' : ` · ${esc(FACTS.blockedNote)}`}</span></span>
-      ${open ? '' : `<span class="bk-place-x">${esc(FACTS.blockedBadge)}</span>`}
+      <span><span class="bk-place-n">${esc(first ? 'Feldkirch' : FACTS.opensName)}</span>
+        <span class="bk-place-a">${esc(addr)}${first ? '' : ` · ${esc(FACTS.opensNote)}`}</span></span>
     </button>`;
   }).join('');
 }
@@ -993,7 +991,7 @@ document.addEventListener('click', (e) => {
     S.mode = v;
     if (v === 'mobil') { S.place = null; S.placeOpen = false; }
     else {
-      if (!S.place) S.place = 'feldkirch';        // the only one open — see FACTS.blockedNote
+      if (!S.place) S.place = 'feldkirch';        // the first studio; Nüziders is one tap away
       S.placeOpen = true;                         // … and the popup lets you say so
     }
     return render();

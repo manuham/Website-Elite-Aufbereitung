@@ -1,5 +1,5 @@
 /* COPIED, DO NOT EDIT — run `node _build/booking-data.mjs`.
-   Source: src/pages/BookingPage.jsx + src/components/PhoneConsultModal.jsx (read out, not typed) (live site, 2026-09-27). */
+   Source: src/pages/BookingPage.jsx + src/components/PhoneConsultModal.jsx (read out, not typed) (live site, 2026-10-28). */
 export const FACTS = {
   "tel": "+436642546078",
   "mail": "info.eliteaufbereitung@gmail.com",
@@ -7,8 +7,7 @@ export const FACTS = {
     "feldkirch": "Ketschelenstraße 1, 6800 Feldkirch",
     "nueziders": "Bundesstraße 2a, 6714 Nüziders"
   },
-  "blockedName": "Nüziders",
-  "blockedBadge": "Gesperrt",
-  "blockedNote": "Wegen Bauarbeiten vorübergehend gesperrt",
+  "opensName": "Nüziders",
+  "opensNote": "Ab 2. November 2026 wieder geöffnet",
   "reply": "Wir melden uns innerhalb von 24 Stunden zur Bestätigung."
 };
