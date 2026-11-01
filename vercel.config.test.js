@@ -62,7 +62,7 @@ describe('vercel.json — clean URLs (the static relaunch, 2026-09-26)', () => {
 
     it('has a real document for every page, named after its path', () => {
         for (const path of [
-            '/mobiler-service', '/elite-endstufe', '/projekte', '/buchen', '/kontakt',
+            '/mobiler-service', '/elite-endstufe', '/projekte', '/buchen', '/kontakt', '/winterschutz',
             '/impressum', '/datenschutz', '/agb', '/widerruf',
         ]) {
             const file = new URL(`./site${path}.html`, import.meta.url);

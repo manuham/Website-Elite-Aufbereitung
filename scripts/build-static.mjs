@@ -33,6 +33,7 @@ export const PAGES = [
     ['/mobiler-service', 'mobiler-service.html', '0.8'],
     ['/buchen', 'buchen.html', '0.8'],
     ['/kontakt', 'kontakt.html', '0.7'],
+    ['/winterschutz', 'winterschutz.html', '0.7'],
     ['/impressum', 'impressum.html', '0.5'],
     ['/datenschutz', 'datenschutz.html', '0.5'],
     ['/agb', 'agb.html', '0.5'],

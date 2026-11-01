@@ -18,8 +18,10 @@
   <meta name="twitter:description" content="Wunschtermin online wählen: Leistung, Fahrzeug und Zeitfenster in wenigen Schritten — im Studio oder mobil bei Ihnen vor Ort." />
   <meta name="twitter:image" content="https://www.eliteaufbereitung.at/assets/home_bg.jpg" />
   <script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
     {
-      "@context": "https://schema.org",
       "@type": "AutomotiveBusiness",
       "name": "Elité Auto Aufbereitung",
       "description": "Professionelle Fahrzeugaufbereitung in Vorarlberg — Kratzerfreie Handwäsche, Politur & Keramikversiegelung. Perfektion bis ins Detail.",
@@ -44,7 +46,13 @@
       "openingHoursSpecification": [
         {
           "@type": "OpeningHoursSpecification",
-          "dayOfWeek": ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"],
+          "dayOfWeek": [
+            "Monday",
+            "Tuesday",
+            "Wednesday",
+            "Thursday",
+            "Friday"
+          ],
           "opens": "08:00",
           "closes": "18:00"
         },
@@ -56,18 +64,55 @@
         }
       ],
       "areaServed": [
-        { "@type": "City", "name": "Bludenz" },
-        { "@type": "City", "name": "Feldkirch" },
-        { "@type": "City", "name": "Dornbirn" },
-        { "@type": "City", "name": "Bregenz" },
-        { "@type": "AdministrativeArea", "name": "Vorarlberg" }
+        {
+          "@type": "City",
+          "name": "Bludenz"
+        },
+        {
+          "@type": "City",
+          "name": "Feldkirch"
+        },
+        {
+          "@type": "City",
+          "name": "Dornbirn"
+        },
+        {
+          "@type": "City",
+          "name": "Bregenz"
+        },
+        {
+          "@type": "AdministrativeArea",
+          "name": "Vorarlberg"
+        }
       ],
       "sameAs": [
         "https://www.instagram.com/eliteaufbereitung/",
         "https://www.facebook.com/people/Elit%C3%A9-Autoaufbereitung/61555761685065/"
-      ]
+      ],
+      "vatID": "ATU81687006"
+    },
+    {
+      "@type": "AutomotiveBusiness",
+      "name": "Elité Auto Aufbereitung",
+      "description": "Professionelle Fahrzeugaufbereitung in Vorarlberg — Kratzerfreie Handwäsche, Politur & Keramikversiegelung. Perfektion bis ins Detail.",
+      "image": "https://www.eliteaufbereitung.at/assets/home_bg.jpg",
+      "url": "https://www.eliteaufbereitung.at",
+      "telephone": "+436642546078",
+      "email": "info.eliteaufbereitung@gmail.com",
+      "priceRange": "€€",
+      "vatID": "ATU81687006",
+      "address": {
+        "@type": "PostalAddress",
+        "streetAddress": "Bundesstraße 2a",
+        "addressLocality": "Nüziders",
+        "postalCode": "6714",
+        "addressRegion": "Vorarlberg",
+        "addressCountry": "AT"
+      }
     }
-    </script>
+  ]
+}
+</script>
   <title>Termin buchen — Autoaufbereitung Vorarlberg | Elité</title>
   <link rel="icon" type="image/png" sizes="48x48" href="assets/logo/favicon-48.png" />
   <link rel="apple-touch-icon" href="assets/logo/apple-touch-icon-180.png" />
