@@ -26,6 +26,7 @@
     $$('.wi-w').forEach((el) => { el.style.opacity = '1'; });
     $$('.wi-not, .wi-msg-btn').forEach((el) => { el.style.opacity = '1'; });
     $$('.wi-fl').forEach((el) => el.style.setProperty('--p', 1));
+    $$('.wi-wait').forEach((el) => el.classList.remove('wi-wait'));
     $$('.hq-row').forEach((el) => el.classList.add('is-in'));
   };
 
@@ -66,6 +67,13 @@
     return;
   }
   gsap.registerPlugin(ScrollTrigger);
+
+  /* Manuel on his iPhone, 2026-11-01: „minimize the scroll effects on the phone … right now you scroll past some stuff". The held scenes need a mouse or a
+     trackpad and room. On a touch screen or in a narrow window only the windscreen plays, and the rest is the column of the stylesheet. Same test as winter.css. */
+  const ROOMY = '(pointer: fine) and (min-width: 700px)';
+  const scenes = matchMedia(ROOMY).matches;
+  const shape = matchMedia(ROOMY);
+  if (shape.addEventListener) shape.addEventListener('change', () => location.reload());   // a window dragged across the line
 
   /* ---------------------------------------------------------------- what the scenes share */
   const RAD = Math.PI / 180;
@@ -214,6 +222,35 @@
   const wedge = (g, a0, a1) => {
     const pt = (d) => { const t = d * RAD; return `${f1(g.cx + g.r2 * Math.cos(t))} ${f1(g.cy - g.r2 * Math.sin(t))}`; };
     return `M${f1(g.cx)} ${f1(g.cy)}L${pt(a0)}A${f1(g.r2)} ${f1(g.r2)} 0 ${a1 - a0 > 180 ? 1 : 0} 0 ${pt(a1)}Z`;
+  };
+
+  /* the valley at night: lights thick round the towns and along the road, thin further out. They say „people live here", not where. */
+  const valleyLights = (sec) => {
+    const road = $('.wi-road', sec);
+    const len = road.getTotalLength();
+    const SAMPLES = 500;
+    const pts = Array.from({ length: SAMPLES + 1 }, (_, i) => road.getPointAtLength((len * i) / SAMPLES));
+    const marks = $$('[data-x]', sec).map((el) => ({ x: +el.dataset.x, y: +el.dataset.y, name: el.dataset.name }));
+    const rnd = seeded(29);
+    const near0 = () => (rnd() + rnd() + rnd() - 1.5) / 1.5;        // from -1 to 1, most of them near 0
+    let dim = ''; let bright = '';
+    const put = (x, y, strong) => { const s = `M${f1(x)} ${f1(y)}h.01`; if (strong) bright += s; else dim += s; };
+    marks.forEach((m) => {
+      const big = /Bregenz|Dornbirn|Feldkirch|Bludenz/.test(m.name);
+      for (let i = 0; i < (big ? 120 : 76); i++) put(m.x + near0() * (big ? 30 : 20), m.y + near0() * (big ? 30 : 20), rnd() < 0.3);
+    });
+    for (let i = 0; i < 330; i++) {                                 // along the road
+      const p = pts[Math.floor(rnd() * SAMPLES)];
+      const a = rnd() * Math.PI * 2; const d = 4 + rnd() * rnd() * 44;
+      put(p.x + Math.cos(a) * d, p.y + Math.sin(a) * d, rnd() < 0.16);
+    }
+    for (let i = 0; i < 130; i++) {                                 // a farm here and there
+      const p = pts[Math.floor(rnd() * SAMPLES)];
+      const a = rnd() * Math.PI * 2; const d = 70 + rnd() * 340;
+      put(p.x + Math.cos(a) * d, p.y + Math.sin(a) * d, false);
+    }
+    $('.wi-lights', sec).setAttribute('d', dim);
+    $('.wi-lights-b', sec).setAttribute('d', bright);
   };
 
   /* ---------------------------------------------------------------- 1 the windscreen */
@@ -406,7 +443,7 @@
      speaks of comes down over everything, then the wipers go up and back, and his second paragraph stands on clean black. */
   (() => {
     const sec = $('.wi-salt');
-    if (!sec) return;
+    if (!sec || !scenes) return;
     const view = $('.wi-held-view', sec);
     const a = $('.wi-salt-a', sec);
     const b = $('.wi-salt-b', sec);
@@ -519,7 +556,7 @@
      The words sit in the picture, so they arrive with it. */
   (() => {
     const sec = $('.wi-pack');
-    if (!sec) return;
+    if (!sec || !scenes) return;
     const view = $('.wi-held-view', sec);
     const lays = $$('.wi-lay', sec);
     const arms = $$('.wi-arm', sec);
@@ -598,7 +635,7 @@
      numbers in his table, and they roll by themselves to the nearest one, so a stopped scroll never leaves half a digit. */
   (() => {
     const sec = $('.wi-price');
-    if (!sec) return;
+    if (!sec || !scenes) return;
     const items = $$('.wi-ruler li', sec);
     const stops = items.map((li) => ({ name: li.dataset.n, cars: li.dataset.c, v: Number(li.dataset.v) }));
     const ruler = $('.wi-ruler', sec);
@@ -725,7 +762,7 @@
      Each line of text carries the same big picture, lined up with the screen, so it runs on from one line to the next. */
   (() => {
     const sec = $('.wi-fog');
-    if (!sec) return;
+    if (!sec || !scenes) return;
     const view = $('.wi-held-view', sec);
     const texts = $$('.wi-fog-write', sec);
     const not = $('.wi-not', sec);
@@ -829,7 +866,7 @@
      On a wide screen each step also stands large beside the phone. The last bubble is the real button. */
   (() => {
     const sec = $('.wi-steps');
-    if (!sec) return;
+    if (!sec || !scenes) return;
     const view = $('.wi-held-view', sec);
     const phone = $('.wi-phone', sec);
     const inner = $('.wi-phone-in', sec);
@@ -871,7 +908,7 @@
      At Feldkirch the first Halle opens, at Nüziders the second, then the camera pulls back and the whole road lies there. */
   (() => {
     const sec = $('.wi-end');
-    if (!sec) return;
+    if (!sec || !scenes) return;
     const view = $('.wi-held-view', sec);
     const svg = $('.wi-map', sec);
     const cam = $('.wi-cam', sec);
@@ -896,29 +933,7 @@
     const tN = marks.find((m) => m.name === 'Nüziders').t;
     const xs = pts.map((p) => p.x); const ys = pts.map((p) => p.y);
     const bb = { x0: Math.min(...xs), x1: Math.max(...xs), y0: Math.min(...ys), y1: Math.max(...ys) };
-    /* the valley at night: lights thick round the towns and along the road, thin further out. They say „people live here", not where. */
-    {
-      const rnd = seeded(29);
-      const near0 = () => (rnd() + rnd() + rnd() - 1.5) / 1.5;      // from -1 to 1, most of them near 0
-      let dim = ''; let bright = '';
-      const put = (x, y, strong) => { const s = `M${f1(x)} ${f1(y)}h.01`; if (strong) bright += s; else dim += s; };
-      marks.forEach((m) => {
-        const big = /Bregenz|Dornbirn|Feldkirch|Bludenz/.test(m.name);
-        for (let i = 0; i < (big ? 120 : 76); i++) put(m.x + near0() * (big ? 30 : 20), m.y + near0() * (big ? 30 : 20), rnd() < 0.3);
-      });
-      for (let i = 0; i < 330; i++) {                               // along the road
-        const p = pts[Math.floor(rnd() * SAMPLES)];
-        const a = rnd() * Math.PI * 2; const d = 4 + rnd() * rnd() * 44;
-        put(p.x + Math.cos(a) * d, p.y + Math.sin(a) * d, rnd() < 0.16);
-      }
-      for (let i = 0; i < 130; i++) {                               // a farm here and there
-        const p = pts[Math.floor(rnd() * SAMPLES)];
-        const a = rnd() * Math.PI * 2; const d = 70 + rnd() * 340;
-        put(p.x + Math.cos(a) * d, p.y + Math.sin(a) * d, false);
-      }
-      lights.setAttribute('d', dim);
-      lightsB.setAttribute('d', bright);
-    }
+    valleyLights(sec);
     const st = { t: 0, zoom: 0, c1: 0, c2: 0, btn: 0 };
     let w = 0; let h = 0; let z0 = 1; let centre = { x: 0, y: 0 }; let hold = { x: 0, y: 0 };
     const measure = () => {
@@ -990,7 +1005,7 @@
      The last screen: the frost grows back in from the edges of the glass, and what stays clear is his date and the button. */
   (() => {
     const sec = $('.wi-last');
-    if (!sec) return;
+    if (!sec || !scenes) return;
     const frost = $('.wi-last-frost', sec);
     const st = { r: 130 };
     const end = () => (innerWidth / innerHeight < 1 ? 70 : 44);
@@ -1000,10 +1015,29 @@
     tl.to(st, { r: () => end(), duration: 1, ease: 'sine.out' }, 0).to({}, { duration: 0.1 }, 1.2);
   })();
 
+  /* ---------------------------------------------------------------- a touch screen: the column
+     Nothing here follows the scroll. What comes into view arrives by the clock, so it cannot be half there when a thumb stops, and nothing waits above the screen after a reload. */
+  if (!scenes) {
+    const end = $('.wi-end');
+    if (end) valleyLights(end);
+    if ('IntersectionObserver' in window) {
+      const io = new IntersectionObserver((seen) => seen.forEach((e) => {
+        if (!e.isIntersecting) return;
+        e.target.classList.remove('wi-wait');
+        io.unobserve(e.target);
+      }), { rootMargin: '0px 0px 8% 0px' });
+      $$('.wi-salt-a > *, .wi-salt-b .wi-why-t, .wi-lay, .wi-ruler li, .wi-notes p, .wi-fog-t > *, .wi-not, .wi-msg, .wi-msg-btn, .wi-adr, .wi-map-box, .wi-facts > div, .wi-terms, .wi-last-t > *').forEach((el) => {
+        if (el.getBoundingClientRect().top <= innerHeight) return;
+        el.classList.add('wi-come', 'wi-wait');
+        io.observe(el);
+      });
+    }
+  }
+
   /* ---------------------------------------------------------------- the bands that only have to arrive
      (no `once: true` on any of these: several triggers killing themselves inside ScrollTrigger's first refresh crash it when the page is reloaded halfway down.
      A trigger's timeline plays once anyway, and the plain ones only set something that can safely be set twice.) */
-  $$('.wi-price-foot, .wi-faq, .wi-end-foot').forEach((band) => {
+  if (scenes) $$('.wi-price-foot, .wi-faq, .wi-end-foot').forEach((band) => {
     const fades = $$('.wi-reveal', band);
     const heads = $$('.wi-write', band);
     hxWrite.park(heads);
@@ -1012,7 +1046,7 @@
     if (heads.length) tl.add(hxWrite(heads), 0.04);
   });
   /* the big titles of the scenes are written in as you come to them */
-  $$('.wi-held .wi-write').forEach((head) => {
+  if (scenes) $$('.wi-held .wi-write').forEach((head) => {
     hxWrite.park(head);
     gsap.timeline({ scrollTrigger: { trigger: head.closest('.wi-held'), start: 'top 62%' } }).add(hxWrite(head));
   });

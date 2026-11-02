@@ -37,6 +37,9 @@
   const clamp01 = (v) => Math.min(1, Math.max(0, v));
   const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
+  // 2026-11-01: the ribbon to the winter package goes by itself after Matthias' last date, so the home page never shows an expired offer
+  if (Date.now() > Date.parse('2026-12-20T23:59:59+01:00')) { const ribbon = $('#hx-ribbon'); if (ribbon) ribbon.remove(); }
+
   // Where a masked line waits before it rises, as a share of its own height. ⚠ 2026-09-23 (Manuel:
   // „when you click on the site, you can see these white dots where the text is going to be“): it
   // was 115, and at 115 the tops of P, f, k, t and the i/ä dots of „Perfektion trifft / Präzision.“
