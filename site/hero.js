@@ -39,6 +39,9 @@
 
   // 2026-11-01: the ribbon to the winter package goes by itself after Matthias' last date, so the home page never shows an expired offer
   if (Date.now() > Date.parse('2026-12-20T23:59:59+01:00')) { const ribbon = $('#hx-ribbon'); if (ribbon) ribbon.remove(); }
+  // 2026-11-04: the same for everything that carries its own end date — the Winterpaket's card in the hero and its card
+  // in the prices (data-until, Vienna time). Removed before anything below measures or animates the page.
+  $$('[data-until]').forEach((el) => { if (Date.now() > Date.parse(`${el.dataset.until}T23:59:59+01:00`)) el.remove(); });
 
   // Where a masked line waits before it rises, as a share of its own height. ⚠ 2026-09-23 (Manuel:
   // „when you click on the site, you can see these white dots where the text is going to be“): it
@@ -311,6 +314,7 @@
   const copyMain = $('.hx-copy-main');
   const copySide = $('.hx-copy-side');
   const copyLede = $('.hx-lede-wrap');   // experiment 2026-09-19: the sentence under the headline
+  const winterCard = $('.hx-winter-wrap'); // 2026-11-04: the Winterpaket's card (gone after its date — see the top)
 
   // ⭐ 2026-10-18 — speed fix 2: the van photo waits below the screen (data-srcset in index.html: it is parked at
   // translate(0, 100%) until the visitor scrolls, yet it used to download first thing). It comes on the first
@@ -378,6 +382,10 @@
     // the small sentence under the headline sits lowest, so the van reaches it first: it leaves on
     // the small print's clock, not the headline's (no own lift — it already rides copyMain's)
     if (copyLede) fade(copyLede, 1 - clamp01(cover / 0.3), 0);
+    // the winter card stands lowest of all and lies ABOVE the van (design.css says why), so it must be gone before the
+    // van's white edge has climbed far into it: it leaves on twice the small print's speed (the edge reaches its foot at
+    // a cover of about .06 on a 1440 × 900 screen; by .15 the card has gone)
+    if (winterCard) fade(winterCard, 1 - clamp01(cover / 0.15), lift);
 
     if (!landed && r >= 0.999) {
       landed = true;
@@ -1816,7 +1824,7 @@
     // One short establishing beat once all three photos stand, then the loop never stops.
     gsap.delayedCall(onePhoto ? BEAT : GAP * (ORDER.length - 1) + WIPE + 0.6, loop);
 
-    gsap.timeline()
+    const tl = gsap.timeline()
       .fromTo('.hx-copy-main .hx-label', { y: 30, opacity: 0 }, { y: 0, opacity: 1, duration: 0.94, ease: 'power1.inOut' }, 0.8)
       .add(hxWrite('.hx-line-in'), 0.9)
       // ⭐ 2026-10-18 — the sentence under the headline is no longer faded in: it is painted with the page (index.html
@@ -1824,6 +1832,8 @@
       // phone test read 15.6 s (A/B on a local copy: 15.9 → 2.6 s). A fromTo here would hide it again at once.
       // Superseded (rule 2): ~~.fromTo('.hx-copy-main .hx-lede', { y: 30, opacity: 0 }, { y: 0, opacity: 1, duration: 0.94, ease: 'power1.inOut' }, 1.15)~~
       .fromTo('.hx-copy-side .hx-reveal', { y: 30, opacity: 0 }, { y: 0, opacity: 1, duration: 0.94, ease: 'power1.inOut', stagger: 0.09 }, 1.3);
+    // 2026-11-04: the Winterpaket's card arrives last, with the same rise (after 20.12. it is gone — no empty tween)
+    if ($('.hx-winter.hx-reveal')) tl.fromTo('.hx-winter.hx-reveal', { y: 30, opacity: 0 }, { y: 0, opacity: 1, duration: 0.94, ease: 'power1.inOut' }, 1.55);
   }
 
   function showStatic() {

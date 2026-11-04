@@ -1,6 +1,6 @@
 /* COPIED, DO NOT EDIT — run `node _build/booking-data.mjs`.
-   Source: src/data/services.js (live site, 2026-10-28).
-   NEW DESIGN ONLY (_build/deviations.mjs): Wash & Clean 350 → 380 · Basic Handwäsche 95 → 100 · Basic Innenreinigung 95 → 100 */
+   Source: src/data/services.js (live site, 2026-11-04).
+   NEW DESIGN ONLY (_build/deviations.mjs): Wash & Clean 350 → 380 · Basic Handwäsche 95 → 100 · Basic Innenreinigung 95 → 100 · Winterpaket first among the packages (Matthias, 31.10.; on the booking page and in Preise from 04.11.) */
 /* ─── Services & prices · Stand August 2026 ──────────────────────────────────
    `price` is a plain NUMBER (euros). Never format it here — `src/lib/pricing.js`
    owns every euro string and the vehicle-size factor. Optional `priceSuffix`
@@ -19,6 +19,27 @@
 -----------------------------------------------------------------------------*/
 
 export const tierPackages = [
+    {
+        // NEW DESIGN ONLY (_build/deviations.mjs, WINTER_2026_11_04): Matthias' Winterpaket, his words.
+        id: 'tier-winter',
+        tier: "Winterpaket",
+        dots: 0,
+        name: "Élite Winterschutz",
+        subtitle: "Termine bis 20. Dezember 2026.",
+        price: 340,
+        sizeSurcharge: true,
+        durationMin: 240, // „rund vier Stunden"
+        until: '2026-12-20',
+        headerStyle: { background: 'linear-gradient(135deg, #3E6680, #4F7A94, #7FA3BA)' },
+        features: [
+            { text: "Kratzfreie Premium-Handwäsche inkl. Felgen, Reifen und Radkästen" },
+            { text: "Lack dekontaminiert – Teer und Flugrost entfernt" },
+            { text: "Lackversiegelung als Winterschutz gegen Streusalz und Schmutz" },
+            { text: "Windschutzscheibe versiegelt – Regen perlt ab ca. 70 km/h ab" },
+            { text: "Türgummis gepflegt – frieren nicht fest" },
+            { text: "Innenraum und Fußmatten gesaugt, Armaturen gereinigt, Scheiben innen streifenfrei" },
+        ],
+    },
     {
         id: 'tier-bronze',
         tier: 'Essential',

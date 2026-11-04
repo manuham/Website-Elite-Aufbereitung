@@ -84,9 +84,26 @@ let AVAIL = makeAvailability({}, { trusted: false });
    counts those days as fully booked, so same-day and multi-day bookings both skip them. */
 const OPENS = { nueziders: new Date(2026, 10, 2) };
 const notYetOpen = (day) => S.mode === 'studio' && !!OPENS[S.place] && startOfDay(day) < OPENS[S.place];
+
+/* 2026-11-04 — a package with an end date (`until`: the Winterpaket, _build/deviations.mjs WINTER_2026_11_04). Matthias:
+   „Termine bis 20. Dezember 2026". Its tile is offered only until that day, and while it is in the cart no day after it can
+   be booked — counted as fully booked below, exactly like Nüziders before it opened, so same-day plans, multi-day spans and
+   „Nächster freier Termin" all respect it. */
+const lastDayOf = (p) => { const [y, m, d] = p.until.split('-').map(Number); return new Date(y, m - 1, d); };
+const inSeason = (p) => !p.until || startOfDay(new Date()) <= lastDayOf(p);
+function seasonEnd() {
+  let end = null;
+  for (const item of S.items) {
+    const p = tierPackages.find((x) => x.id === item.id);
+    if (p?.until && (!end || lastDayOf(p) < end)) end = lastDayOf(p);
+  }
+  return end;
+}
+const afterSeason = (day) => { const end = seasonEnd(); return !!end && startOfDay(day) > end; };
+
 const placeAvail = () => ({
   ...AVAIL,
-  busy: (day) => (notYetOpen(day) && AVAIL.isKnown(day) ? [[0, 24 * 60]] : AVAIL.busy(day)),
+  busy: (day) => ((notYetOpen(day) || afterSeason(day)) && AVAIL.isKnown(day) ? [[0, 24 * 60]] : AVAIL.busy(day)),
 });
 const CAL = { loaded: false, fallback: false, stale: false, failed: false, demo: false, sig: '' };
 let calCtrl = null;
@@ -206,7 +223,9 @@ let lastShape = 's0';
 function afterCartChange() {
   const d = duration();
   const shape = d.multiDay ? `m${d.spanDays}` : `s${d.durationMin}`;
-  if (shape !== lastShape) {
+  // 2026-11-04: a date picked before the Winterpaket came into the cart may lie after its last day — it goes too
+  const late = !!S.dt.date && (afterSeason(S.dt.date) || (!!S.dt.endDate && afterSeason(S.dt.endDate)));
+  if (shape !== lastShape || late) {
     lastShape = shape;
     S.dt = { date: null, time: null, multiDay: d.multiDay, spanDays: null, endDate: null };
   }
@@ -360,10 +379,10 @@ function viewPlace() {
 }
 
 /* ---- step 1 · Service */
-function tile({ id, band, name, sub, price, feats, phoneOnly, tier, durMin }) {
+function tile({ id, band, name, sub, price, feats, phoneOnly, tier, durMin, all }) {
   const on = has(id);
-  const opened = !!S.open[id];
-  const cut = band ? 5 : 4;
+  const opened = !!S.open[id] || !!all;     // `all`: the wide Winterpaket tile shows every line
+  const cut = all ? feats.length : band ? 5 : 4;
   const shown = opened ? feats : feats.slice(0, cut);
   const rest = feats.length - cut;
   const list = shown.map((f) => `<li class="${f.bold ? 'is-bold' : ''}${f.muted ? ' is-muted' : ''}">${esc(f.text)}</li>`).join('');
@@ -394,15 +413,19 @@ function viewServices() {
 
   let tiles;
   if (S.tab === 'aio') {
-    tiles = `<div class="bk-tiles bk-tiles--pkg">` + tierPackages.map((p) => {
+    const pkgTile = (p, all = false) => {
       const stops = String(p.headerStyle?.background || '').match(/#[0-9a-f]{3,8}/gi) || ['#555'];
       const dots = p.dots > 0 ? '<i></i>'.repeat(p.dots) : '';
       return tile({
         id: p.id, band: stops[Math.floor((stops.length - 1) / 2)], tier: `${dots}${esc(p.tier)}`,
         name: p.name, sub: p.subtitle, price: formatFrom(p.price), durMin: p.durationMin,
-        feats: p.features.filter((f) => !f.section), phoneOnly: !!p.phoneOnly,
+        feats: p.features.filter((f) => !f.section), phoneOnly: !!p.phoneOnly, all,
       });
-    }).join('') + '</div>';
+    };
+    // 2026-11-04: a package with an end date (the Winterpaket) stands above the four, the whole width, while it runs
+    const season = tierPackages.filter((p) => p.until && inSeason(p));
+    tiles = (season.length ? `<div class="bk-tiles bk-tiles--season">${season.map((p) => pkgTile(p, true)).join('')}</div>` : '')
+      + `<div class="bk-tiles bk-tiles--pkg">` + tierPackages.filter((p) => !p.until).map((p) => pkgTile(p)).join('') + '</div>';
   } else {
     const cat = serviceCategories.find((c) => c.id === S.tab);
     tiles = `<div class="bk-tiles">` + cat.packages.map((pkg, i) => tile({
@@ -513,7 +536,10 @@ function viewDate() {
   }
 
   const body = d.multiDay ? multiDayGrid(week, d, n) : timeGrid(week, d, n);
+  // the Winterpaket in the cart: its last day, in Matthias' words („Élite Winterschutz: Termine bis 20. Dezember 2026.")
+  const seasonal = tierPackages.filter((p) => p.until && has(p.id));
   const notes = [
+    ...seasonal.map((p) => `<p class="bk-msg">${esc(p.name)}: ${esc(p.subtitle)}</p>`),
     S.calNote ? `<p class="bk-msg bk-warn" role="alert">${esc(S.calNote)}</p>` : '',
     CAL.stale ? '<p class="bk-note">Die Verfügbarkeit konnte gerade nicht aktualisiert werden — die Anzeige ist wenige Minuten alt.</p>' : '',
   ].join('');
@@ -563,6 +589,7 @@ function dayState(day, d, n) {
   if (!isWorkingDay(day)) return { kind: 'closed', label: 'geschlossen', free: [] };
   if (startOfDay(day) < startOfDay(n)) return { kind: 'past', label: 'vorbei', free: [] };
   if (notYetOpen(day)) return { kind: 'closed', label: 'geschlossen', free: [] };
+  if (afterSeason(day)) return { kind: 'closed', label: '—', free: [] };   // after the Winterpaket's last day: nothing, said once above the calendar
   // not covered by the calendar's answer: never offered as free
   if (!placeAvail().isKnown(day)) return { kind: 'full', label: '—', free: [] };
   const plan = sameDayPlan(day, d.durationMin, placeAvail().busy(day), n);

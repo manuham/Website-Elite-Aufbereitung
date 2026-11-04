@@ -1,5 +1,5 @@
 /* COPIED, DO NOT EDIT — run `node _build/booking-data.mjs`.
-   Source: src/pages/BookingPage.jsx + src/components/PhoneConsultModal.jsx (read out, not typed) (live site, 2026-10-28). */
+   Source: src/pages/BookingPage.jsx + src/components/PhoneConsultModal.jsx (read out, not typed) (live site, 2026-11-04). */
 export const FACTS = {
   "tel": "+436642546078",
   "mail": "info.eliteaufbereitung@gmail.com",
