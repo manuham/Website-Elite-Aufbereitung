@@ -22,6 +22,26 @@
    Only on the local prototype server (localhost, where /api does not exist) does the old demo
    behaviour come back — every slot the opening hours allow, nothing sent — and the .bk-dev
    line says so on screen. Anywhere else a missing API is an error, never a silent „Danke".
+
+   2026-11-04, the UX pass (Manuel: „when you choose a service on the Preise page, it's not yet
+   preselected … when you are on a page you can see the services and different cards on the screen
+   and don't have to scroll"). Measured first (lab/booking-ux/walk.cjs), then Fresha / Walmart Auto
+   Care / Treatwell were looked at. What changed, and why:
+     • A „Buchen" on a price card now carries its package: buchen.html?leistung=<id>. The booking
+       opens with it in the cart and on its own tab; a „Nur auf Termin" id opens the phone dialog.
+     • SERVICE FIRST, then Standort (Fresha, Treatwell, Booksy all start with the „what"). So a
+       „Buchen" lands on the very card it was pressed on, ticked. Termin and Kontakt keep their
+       numbers (3, 4), so the calendar and submit code did not move.
+     • The main button never leaves the screen: inside the sticky summary on a wide screen (Fresha,
+       Square), in a bar at the bottom on a phone (Fresha iOS: „Total … Continue"). The foot under
+       each step is gone; „Zurück" sits beside the step title.
+     • The button is never a dead grey block: pressed too early it says what is missing.
+     • The phone's back button goes one step back (history.pushState per step) instead of
+       throwing the whole booking away.
+     • The Preishinweis opens once per visit, not on every card; the same words stay in the summary.
+     • The calendar opens on the first week that has a free day, and the day view is as tall as the
+       screen has room for (fitDay), not 62 px per hour.
+   Prices, durations, slots, opening hours and the API calls are untouched.
 --------------------------------------------------------------------------------------------- */
 
 import { serviceCategories, tierPackages, allInOnePackages } from './assets/data/services.js';
@@ -41,9 +61,12 @@ import { FACTS } from './assets/data/facts.js';
 
 const $ = (sel, root = document) => root.querySelector(sel);
 const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+// 2026-11-04: a short window shows two lines per card instead of three, so a row of cards still fits (booking.css)
+const SHORT = window.matchMedia('(max-height: 800px)');
 const esc = (s) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 
-const STEPS = ['Standort', 'Service', 'Fahrzeug', 'Termin', 'Kontakt'];
+// 2026-11-04: Service first (see the header). Before: ['Standort', 'Service', 'Fahrzeug', 'Termin', 'Kontakt']
+const STEPS = ['Service', 'Standort', 'Fahrzeug', 'Termin', 'Kontakt'];
 const MIN_PX = 0.9;                       // one minute of the day, in pixels of calendar height
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const PHONE_RE = /^[+\d][\d\s\-/]{6,}$/;
@@ -70,6 +93,10 @@ const S = {
   pending: null,                           // a service waiting behind the Preishinweis
   phoneFor: null,                          // a „Nur auf Termin" service whose dialog is open
   touched: false,                          // show form errors only after the first attempt
+  hint: null,                              // 2026-11-04: what is missing, when the main button was pressed too early
+  sheet: false,                            // the summary opened from the phone's bottom bar
+  weekTouched: false,                      // the visitor moved the week themselves — then the calendar stops jumping
+  noticed: false,                          // the Preishinweis has been shown once in this visit
 };
 
 /* ── the calendar (GET /api/availability) ──────────────────────────────────── */
@@ -202,19 +229,24 @@ function itemById(id) {
   return src.cat ? svcItem(src.cat, src.pkg, src.i) : pkgItem(src.pkg);
 }
 
-/** Adding shows the site's Preishinweis first; removing is immediate. */
+/** Adding shows the site's Preishinweis first; removing is immediate.
+    2026-11-04: the notice opens on the FIRST card of a visit only. It used to stop the visitor on every single card —
+    the same paragraph four times for four services. Its words stay in the summary (.bk-sum-note), always in view. */
 function toggle(id) {
+  S.hint = null;
   if (has(id)) {
     S.items = S.items.filter((i) => i.id !== id);
     afterCartChange();
     return;
   }
+  if (S.noticed) { const item = itemById(id); if (item) { S.items = [...S.items, item]; afterCartChange(); } return; }
   S.pending = id;
   render();
 }
 function confirmPending() {
   const item = S.pending && itemById(S.pending);
   S.pending = null;
+  S.noticed = true;
   if (item) { S.items = [...S.items, item]; afterCartChange(); } else render();
 }
 
@@ -286,8 +318,8 @@ function formState() {
 }
 function canLeave(step = S.step) {
   const d = duration();
-  if (step === 0) return !!S.mode && (S.mode !== 'studio' || !!S.place);
-  if (step === 1) return S.items.length > 0;
+  if (step === 0) return S.items.length > 0;                          // 2026-11-04: Service first
+  if (step === 1) return !!S.mode && (S.mode !== 'studio' || !!S.place);
   if (step === 2) return !!S.size;
   if (step === 3) return d.multiDay ? (!!S.dt.date && !!S.dt.endDate) : (!!S.dt.date && !!S.dt.time);
   if (step === 4) return Object.values(formState()).every(Boolean);
@@ -296,18 +328,47 @@ function canLeave(step = S.step) {
 
 /* ── views ─────────────────────────────────────────────────────────────────── */
 
-// no arrows on buttons (Manuel, 2026-09-26: „premium car brands websites do not have this")
-const foot = (label = 'Weiter', act = 'next') => `
-  <div class="bk-foot">
-    ${S.step > 0 ? '<button class="bk-back" type="button" data-act="back">Zurück</button>' : ''}
-    <button class="bk-next" type="button" data-act="${act}"${canLeave() && !S.sending ? '' : ' disabled'}>${S.sending && act === 'submit' ? 'Wird gesendet …' : label}</button>
+/* 2026-11-04 — the main button. It used to sit in a foot under each step (`.bk-foot`: Zurück … Weiter), which the walk
+   of 11-04 measured at 109–886 px below the fold on a computer and up to 2 434 px on a phone. Now it is drawn twice and
+   CSS shows one: inside the sticky summary on a wide screen (Fresha, Square) and in the bottom bar on a phone (Fresha iOS).
+   It is never a dead grey block any more: pressed too early it says what is missing (Walmart's „Please select …").
+   No arrows on buttons (Manuel, 2026-09-26: „premium car brands websites do not have this"). */
+function missing() {
+  if (S.step === 0) return 'Bitte wählen Sie mindestens eine Leistung.';
+  if (S.step === 1) return S.mode === 'studio' ? 'Bitte wählen Sie einen Standort.' : 'Bitte wählen Sie: im Studio oder Mobiler Service.';
+  if (S.step === 2) return 'Bitte wählen Sie Ihre Fahrzeugklasse.';
+  if (S.step === 3) return duration().multiDay ? `Bitte wählen Sie einen ${multiDayTerms(S.mode).chooseDay}.` : 'Bitte wählen Sie einen freien Termin.';
+  if (S.step === 4) return 'Bitte füllen Sie die markierten Felder aus.';
+  return null;
+}
+function cta() {
+  if (S.step > 4) return '';
+  const submit = S.step === 4;
+  const ok = canLeave();
+  const label = submit ? (S.sending ? 'Wird gesendet …' : 'Anfrage absenden') : 'Weiter';
+  return `<div class="bk-cta">
+    ${S.hint ? `<p class="bk-hint" role="alert">${esc(S.hint)}</p>` : ''}
+    <button class="bk-next${ok ? '' : ' is-blocked'}" type="button" data-act="${submit ? 'submit' : 'next'}"${ok ? '' : ' aria-disabled="true"'}${S.sending ? ' disabled' : ''}>${label}</button>
+  </div>`;
+}
+
+/* The step title on one line, „Zurück" beside it (where Fresha keeps its back arrow). `quiet` leads are left out on a
+   phone — Manuel's rule for this site's phone view: headline, picture, button, no running text (2026-10-02). */
+const head = (title, lead, quiet = true) => `
+  <div class="bk-step-head">
+    <div class="bk-step-top">
+      <h1 class="bk-h" tabindex="-1">${title}</h1>
+      ${S.step > 0 && S.step < 5 ? '<button class="bk-back" type="button" data-act="back">Zurück</button>' : ''}
+    </div>
+    ${lead ? `<p class="bk-lead${quiet ? ' bk-lead--quiet' : ''}">${lead}</p>` : ''}
   </div>`;
 
-const head = (title, lead) => `
-  <div class="bk-step-head">
-    <h1 class="bk-h">${title}</h1>
-    ${lead ? `<p class="bk-lead">${lead}</p>` : ''}
-  </div>`;
+/* 2026-11-04: the summary's date in its short form („Do, 5. Nov.") — „Donnerstag, 5. November · 08:00" broke into two lines
+   in the 230 px card. The step itself and the confirmation keep the full form. */
+const shortDate = (d) => {
+  const m = MONTHS[d.getMonth()];
+  return `${DAYS_SHORT[d.getDay()]}, ${d.getDate()}. ${m.length <= 4 ? m : `${m.slice(0, 3)}.`}`;   // „Mai", „Juni", „März" stay whole
+};
 
 /* The town on its own, without the postcode — the summary card is 230 px wide. */
 const town = (key) => FACTS.studio[key].split(',').pop().trim().replace(/^\d{4}\s+/, '');
@@ -355,7 +416,7 @@ function placeDialog() {
 
 function viewPlace() {
   const studio = S.mode === 'studio';
-  return head('Wo soll es<br>stattfinden?', 'Wählen Sie, ob Sie zu uns kommen oder wir zu Ihnen kommen sollen.') + `
+  return head('Wo soll es stattfinden?', 'Wählen Sie, ob Sie zu uns kommen oder wir zu Ihnen kommen sollen.') + `
     <div class="bk-modes bk-bleed">
       <button class="bk-opt bk-mode${studio ? ' is-on' : ''}" type="button" data-act="mode" data-v="studio">
         <img class="bk-mode-img" src="assets/img/arbeit/n-studio-weiss-1400.webp" style="object-position:50% 12%" alt="" loading="lazy" decoding="async" />
@@ -374,19 +435,27 @@ function viewPlace() {
           <span class="bk-mode-f bk-surcharge">+${esc(formatEuro(MOBILE_SURCHARGE))} Anfahrtspauschale</span>
         </span>
       </button>
-    </div>
-    ${foot()}`;
+    </div>`;
 }
 
 /* ---- step 1 · Service */
-function tile({ id, band, name, sub, price, feats, phoneOnly, tier, durMin, all }) {
+/* 2026-11-04: a card shows 3 lines instead of 5 (package) / 4 (service), so a row of cards fits the screen; „+N weitere"
+   opens the rest. On a phone the list is closed altogether and „Details" opens it — five packages then fit one phone
+   screen as five short cards (name, one line, price, duration) instead of 3½ screens of lists. `all` (the wide Winterpaket
+   tile) shows every line on a wide screen, in columns. */
+function tile({ id, band, name, sub, price, feats, phoneOnly, tier, durMin, all, wide }) {
   const on = has(id);
-  const opened = !!S.open[id] || !!all;     // `all`: the wide Winterpaket tile shows every line
-  const cut = all ? feats.length : band ? 5 : 4;
+  const opened = !!S.open[id];
+  // a window up to 800 px tall (1366 × 768, 1280 × 720, an iPad on its side): two lines. A „Nur auf Termin" card cannot go into the cart, so it
+  // shows none — its lines open on „+N weitere" — and it no longer makes the whole row of cards 60 px taller.
+  // The wide Winterpaket tile keeps three on any window: they stand side by side in one row, so a third costs no height.
+  const cut = all ? feats.length : phoneOnly ? 0 : SHORT.matches && !wide ? 2 : 3;
   const shown = opened ? feats : feats.slice(0, cut);
   const rest = feats.length - cut;
   const list = shown.map((f) => `<li class="${f.bold ? 'is-bold' : ''}${f.muted ? ' is-muted' : ''}">${esc(f.text)}</li>`).join('');
-  return `<div class="bk-opt bk-tile${on ? ' is-on' : ''}" ${band ? `style="--bk-tier:${band}"` : ''} role="button" tabindex="0"
+  const more = !feats.length ? '' : `<button class="bk-tile-more${rest > 0 || opened ? '' : ' bk-tile-more--phone'}" type="button" data-act="more" data-id="${esc(id)}" aria-expanded="${opened}">${
+    opened ? 'Weniger anzeigen' : `${rest > 0 ? `<span class="bk-more-w">+${rest} weitere</span>` : ''}<span class="bk-more-p">Details</span>`}</button>`;
+  return `<div class="bk-opt bk-tile${on ? ' is-on' : ''}${opened ? ' is-open' : ''}" ${band ? `style="--bk-tier:${band}"` : ''} role="button" tabindex="0" aria-pressed="${on}"
             ${phoneOnly ? `data-act="phone" data-id="${esc(id)}"` : `data-act="pick" data-id="${esc(id)}"`}>
     ${band ? `<span class="bk-tile-band">${tier}</span>` : ''}
     <span class="bk-tile-in">
@@ -401,7 +470,7 @@ function tile({ id, band, name, sub, price, feats, phoneOnly, tier, durMin, all 
         ${durMin ? `<span class="bk-tile-d">ca. ${esc(durLabel(durMin))}</span>` : ''}
       </span>
       <ul class="bk-tile-f">${list}</ul>
-      ${rest > 0 ? `<button class="bk-tile-more" type="button" data-act="more" data-id="${esc(id)}">${opened ? 'Weniger anzeigen' : `+${rest} weitere`}</button>` : ''}
+      ${more}
     </span>
   </div>`;
 }
@@ -409,31 +478,52 @@ function tile({ id, band, name, sub, price, feats, phoneOnly, tier, durMin, all 
 function viewServices() {
   /* All-in-One first and in the accent colour: it is the offer, the rest are its parts. */
   const tabs = [{ id: 'aio', label: '✦ All-in-One' }, ...serviceCategories.map((c) => ({ id: c.id, label: c.title }))];
-  const bar = tabs.map((t) => `<button class="bk-tab${t.id === 'aio' ? ' bk-tab--aio' : ''}${S.tab === t.id ? ' is-on' : ''}" type="button" data-act="tab" data-v="${t.id}">${esc(t.label)}</button>`).join('');
+  // 2026-11-04: a tab says how many of its services are in the cart, so a pick made on another tab is not „lost"
+  const picked = (t) => S.items.filter((i) => (t.id === 'aio' ? i.type === 'aio' : i.type === 'service' && i.id.startsWith(`${t.id}-`))).length;
+  const bar = tabs.map((t) => {
+    const n = picked(t);
+    return `<button class="bk-tab${t.id === 'aio' ? ' bk-tab--aio' : ''}${S.tab === t.id ? ' is-on' : ''}" type="button" role="tab" aria-selected="${S.tab === t.id}" data-act="tab" data-v="${t.id}">${esc(t.label)}${n ? `<span class="bk-tab-n" aria-label="${n} gewählt">${n}</span>` : ''}</button>`;
+  }).join('');
 
   let tiles;
   if (S.tab === 'aio') {
-    const pkgTile = (p, all = false) => {
+    const pkgTile = (p, wide = false) => {
       const stops = String(p.headerStyle?.background || '').match(/#[0-9a-f]{3,8}/gi) || ['#555'];
       const dots = p.dots > 0 ? '<i></i>'.repeat(p.dots) : '';
       return tile({
         id: p.id, band: stops[Math.floor((stops.length - 1) / 2)], tier: `${dots}${esc(p.tier)}`,
         name: p.name, sub: p.subtitle, price: formatFrom(p.price), durMin: p.durationMin,
-        feats: p.features.filter((f) => !f.section), phoneOnly: !!p.phoneOnly, all,
+        feats: p.features.filter((f) => !f.section), phoneOnly: !!p.phoneOnly, wide,
       });
     };
-    // 2026-11-04: a package with an end date (the Winterpaket) stands above the four, the whole width, while it runs
+    // 2026-11-04: a package with an end date (the Winterpaket) stands above the four, the whole width, while it runs.
+    // Second QA round: it shows three lines like every card (in one row of three, booking.css), not all six.
     const season = tierPackages.filter((p) => p.until && inSeason(p));
     tiles = (season.length ? `<div class="bk-tiles bk-tiles--season">${season.map((p) => pkgTile(p, true)).join('')}</div>` : '')
       + `<div class="bk-tiles bk-tiles--pkg">` + tierPackages.filter((p) => !p.until).map((p) => pkgTile(p)).join('') + '</div>';
   } else {
     const cat = serviceCategories.find((c) => c.id === S.tab);
-    tiles = `<div class="bk-tiles">` + cat.packages.map((pkg, i) => tile({
+    const card = (pkg, i) => tile({
       id: `${cat.id}-${i}`, name: pkg.name, sub: pkg.subtitle || '',
       price: formatServicePrice(pkg), durMin: pkg.durationMin,
       feats: pkg.features.map((f) => (typeof f === 'string' ? { text: f } : f)),
       phoneOnly: !!pkg.phoneOnly,
-    })).join('') + '</div>';
+    });
+    const groups = cat.id === 'zusatz' ? (FACTS.zusatzGroups || []) : [];
+    if (groups.length) {
+      // 2026-11-04: the 17 add-ons in the live price list's own four folders (FACTS.zusatzGroups, read out of Pricing.jsx),
+      // as short rows — seventeen cards were four screens on a phone. An add-on without a folder still shows, last.
+      const rows = (list) => `<div class="bk-tiles bk-tiles--list">${list.map(([pkg, i]) => card(pkg, i)).join('')}</div>`;
+      const all = cat.packages.map((pkg, i) => [pkg, i]);
+      tiles = groups.map((g) => {
+        const list = all.filter(([pkg]) => pkg.group === g.id);
+        return list.length ? `<h2 class="bk-kind">${esc(g.title)}</h2>${rows(list)}` : '';
+      }).join('');
+      const loose = all.filter(([pkg]) => !groups.some((g) => g.id === pkg.group));
+      if (loose.length) tiles += rows(loose);
+    } else {
+      tiles = `<div class="bk-tiles">` + cat.packages.map(card).join('') + '</div>';
+    }
   }
 
   const { recs, best } = advice();
@@ -454,12 +544,11 @@ function viewServices() {
 
   // The note: since 2026-09-25 Elité is VAT-registered (Matthias; NEW design only — _build/deviations.mjs).
   // Before: „Alle Preise sind Endpreise; keine Umsatzsteuer gemäß § 6 Abs. 1 Z 27 UStG."
-  return head('Welche<br>Services?', 'Wählen Sie beliebig viele Leistungen — Kombinationen sind möglich.') + `
-    <div class="bk-tabs bk-bleed">${bar}</div>
+  return head('Welche Services?', 'Wählen Sie beliebig viele Leistungen — Kombinationen sind möglich.') + `
+    <div class="bk-tabs bk-bleed" role="tablist" aria-label="Leistungen">${bar}</div>
     <div class="bk-bleed">${tiles}</div>
     ${recBlock}
-    <p class="bk-note">Alle Preise sind Endpreise inklusive 20 % Umsatzsteuer.</p>
-    ${foot(`Weiter${S.items.length ? ` (${S.items.length})` : ''}`)}`;
+    <p class="bk-note">Alle Preise sind Endpreise inklusive 20 % Umsatzsteuer.</p>`;
 }
 
 /* ---- step 2 · Fahrzeug
@@ -494,14 +583,20 @@ function viewVehicle() {
     ? 'Der Preis wird mit dem Größenfaktor Ihrer Klasse multipliziert.'
     : 'Hilft uns bei der Planung — ein Größenfaktor fällt nur bei manchen Leistungen an.') + `
     <div class="bk-vehs bk-bleed">${cards}</div>
-    <p class="bk-note">${t.anySized ? 'Ein größeres Auto braucht anteilig mehr Zeit — deshalb der Faktor.' : ''}</p>
-    ${foot()}`;
+    <p class="bk-note">${t.anySized ? 'Ein größeres Auto braucht anteilig mehr Zeit — deshalb der Faktor.' : ''}</p>`;
 }
 
 /* ---- step 3 · Termin */
 function viewDate() {
   const d = duration();
   const terms = multiDayTerms(S.mode);
+  // 2026-11-04: open on the first week that has a free day (Fresha opens on the first free date). Before, a full week
+  // opened on „In dieser Woche passt kein Termin" and a button to press. Only while nothing is picked and until the
+  // visitor moves the week themselves.
+  if (CAL.loaded && !CAL.failed && !CAL.fallback && !S.dt.date && !S.weekTouched) {
+    const first = availableDays(now(), d, placeAvail(), now()).items.find((it) => it.kind === 'day');
+    if (first) S.weekStart = weekStartMonday(first.date);
+  }
   const week = weekDays(S.weekStart);
   const n = now();
   const thisWeek = weekStartMonday(n);
@@ -514,12 +609,15 @@ function viewDate() {
     ? `${a.getDate()}.–${b.getDate()}. ${MONTHS[a.getMonth()]} ${a.getFullYear()}`
     : `${a.getDate()}. ${MONTHS[a.getMonth()].slice(0, 3)} – ${b.getDate()}. ${MONTHS[b.getMonth()].slice(0, 3)} ${b.getFullYear()}`;
 
+  // 2026-11-04: ‹ week › as one group (Fresha's „August 2024 ‹ ›"), the two jumps after it; a phone keeps only the group
   const bar = `<div class="bk-cal-bar">
-      <span class="bk-cal-w">${esc(label)}</span>
-      <button class="bk-btn bk-btn--main" type="button" data-act="week" data-v="free">Nächster freier Termin</button>
-      <button class="bk-btn" type="button" data-act="week" data-v="today">Heute</button>
       <button class="bk-btn bk-btn--arrow" type="button" data-act="week" data-v="prev"${canPrev ? '' : ' disabled'} aria-label="Woche zurück">←</button>
+      <span class="bk-cal-w">${esc(label)}</span>
       <button class="bk-btn bk-btn--arrow" type="button" data-act="week" data-v="next"${canNext ? '' : ' disabled'} aria-label="Woche vor">→</button>
+      <span class="bk-cal-jumps">
+        <button class="bk-btn bk-btn--main" type="button" data-act="week" data-v="free">Nächster freier Termin</button>
+        <button class="bk-btn" type="button" data-act="week" data-v="today">Heute</button>
+      </span>
     </div>`;
 
   const tel = `<a href="tel:${esc(FACTS.tel)}">+43 664 2546078</a>`;
@@ -530,9 +628,8 @@ function viewDate() {
       ? '<p class="bk-msg">Freie Termine werden geladen …</p>'
       : `<p class="bk-msg bk-warn">Die freien Termine können gerade nicht geladen werden. Bitte versuchen Sie es in einem Moment erneut — oder rufen Sie uns an: ${tel}.</p>
          <p class="bk-retry"><button class="bk-btn" type="button" data-act="reloadcal">Erneut laden</button></p>`;
-    return head('Wann passt es Ihnen?', esc(d.multiDay ? `${terms.stay(daysLabel(d.spanDays))}.` : `Dauer ca. ${durLabel(d.durationMin)}.`)) + `
-      <div class="bk-cal bk-bleed">${msg}</div>
-      ${foot()}`;
+    return head('Wann passt es Ihnen?', esc(d.multiDay ? `${terms.stay(daysLabel(d.spanDays))}.` : `Dauer ca. ${durLabel(d.durationMin)}.`), false) + `
+      <div class="bk-cal bk-bleed">${msg}</div>`;
   }
 
   const body = d.multiDay ? multiDayGrid(week, d, n) : timeGrid(week, d, n);
@@ -557,14 +654,15 @@ function viewDate() {
     ? `${terms.stay(daysLabel(d.spanDays))} — wählen Sie einen ${terms.chooseDay}.`
     : `Dauer ca. ${durLabel(d.durationMin)} — wählen Sie einen freien Termin.`;
 
-  return head('Wann passt es Ihnen?', esc(lead)) + notes + `
+  // 2026-11-04: the „Ihr Termin" box under the calendar is kept for a multi-day job only — there it names the pick-up day,
+  // which nothing else on the screen shows. A one-day pick already says „Ihr Termin" on its own slot and in the summary.
+  return head('Wann passt es Ihnen?', esc(lead), false) + notes + `
     <div class="bk-cal bk-bleed">${bar}${body}</div>
-    ${pick ? `<div class="bk-pick bk-bleed">
-      <span><span class="bk-pick-l">${d.multiDay ? 'Ihr Zeitraum' : 'Ihr Termin'}</span><span class="bk-pick-v">${esc(pick)}</span></span>
+    ${pick && d.multiDay ? `<div class="bk-pick bk-bleed">
+      <span><span class="bk-pick-l">Ihr Zeitraum</span><span class="bk-pick-v">${esc(pick)}</span></span>
       <button class="bk-pick-x" type="button" data-act="clearpick">ändern</button>
     </div>` : ''}
-    <p class="bk-note">Alle Zeitangaben sind Richtwerte und können je nach Fahrzeugzustand variieren.</p>
-    ${foot()}`;
+    <p class="bk-note">Alle Zeitangaben sind Richtwerte und können je nach Fahrzeugzustand variieren.</p>`;
 }
 
 function caps(week, n) {
@@ -618,7 +716,9 @@ function timeGrid(week, d, n) {
 
   let body;
   if (!open) {
-    body = `<p class="bk-empty bk-empty--flow">In dieser Woche passt kein Termin dieser Länge. Springen Sie zum nächsten freien Termin.</p>`;
+    // 2026-11-04: the jump sits in the message itself — on a phone the bar above no longer carries it
+    body = `<div class="bk-empty bk-empty--flow"><p>In dieser Woche passt kein Termin dieser Länge.</p>
+      <button class="bk-btn bk-btn--main" type="button" data-act="week" data-v="free">Nächster freier Termin</button></div>`;
   } else {
     body = dayCalendar(open, d, n);
   }
@@ -662,8 +762,8 @@ function dayCalendar(open, d, n) {
     </button>`;
   }).join('');
 
-  const tall = Math.round(span / 60 * 62);
-  return `<div class="bk-cd" style="--bk-cd-h:${tall}px">
+  const tall = Math.round(span / 60 * 62);   // the natural height; fitDay() shortens it to what the screen has room for
+  return `<div class="bk-cd" style="--bk-cd-h:${tall}px" data-natural="${tall}">
     <p class="bk-cd-h">${esc(germanFull(open.day))}<span>${open.free.length} freie Startzeit${open.free.length === 1 ? '' : 'en'}</span></p>
     <div class="bk-cd-body">
       <div class="bk-cd-axis">${axis}</div>
@@ -690,7 +790,8 @@ function multiDayGrid(week, d, n) {
   }).join('');
 
   const empty = free === 0
-    ? `<p class="bk-empty bk-empty--flow">In dieser Woche ist kein ${terms.chooseDay} frei. Springen Sie zum nächsten freien Termin.</p>`
+    ? `<div class="bk-empty bk-empty--flow"><p>In dieser Woche ist kein ${terms.chooseDay} frei.</p>
+      <button class="bk-btn bk-btn--main" type="button" data-act="week" data-v="free">Nächster freier Termin</button></div>`
     : '';
   return `<div class="bk-days">${days}</div>${empty}`;
 }
@@ -709,23 +810,26 @@ function viewContact() {
 
   const shots = S.photos.map((p, i) => `<div class="bk-shot"><img src="${p.url}" alt="Foto ${i + 1}" /><button type="button" data-act="rmphoto" data-i="${i}" aria-label="Foto entfernen">×</button></div>`).join('');
 
-  return head('Ihre<br>Kontaktdaten', esc(FACTS.reply)) + `
+  // 2026-11-04: two columns all the way down on a wide screen (e-mail beside the address, notes beside the photos), so the
+  // form and its consent box fit one screen; the send error stands at the top of the form, where it is seen.
+  return head('Ihre Kontaktdaten', esc(FACTS.reply)) + `
+    ${S.sendError ? `<p class="bk-msg bk-warn" role="alert">${esc(S.sendError)} <a href="tel:${esc(FACTS.tel)}">+43 664 2546078</a></p>` : ''}
     <!-- Honeypot: hidden from people, tempting to bots — the live site drops a filled request. -->
     <input type="text" name="website" tabindex="-1" autocomplete="off" aria-hidden="true" style="position:absolute;left:-9999px;width:1px;height:1px;opacity:0" />
     <div class="bk-form">
       ${field('name', 'Vor- &amp; Nachname *', 'text', 'Max Mustermann', v.name, 'Bitte geben Sie Ihren vollständigen Namen ein.')}
       ${field('phone', 'Telefonnummer *', 'tel', '+43 664 000 0000', v.phone, 'Bitte geben Sie eine gültige Telefonnummer ein.')}
-      ${field('email', 'E-Mail-Adresse *', 'email', 'max@mustermann.at', v.email, 'Bitte geben Sie eine gültige E-Mail-Adresse ein.', true)}
-      ${S.mode === 'mobil' ? field('address', 'Adresse (Einsatzort) *', 'text', 'Straße, Hausnummer, PLZ, Ort', v.address, 'Bitte geben Sie eine vollständige Adresse ein.', true) : ''}
-      <div class="bk-field bk-field--wide">
+      ${field('email', 'E-Mail-Adresse *', 'email', 'max@mustermann.at', v.email, 'Bitte geben Sie eine gültige E-Mail-Adresse ein.', S.mode !== 'mobil')}
+      ${S.mode === 'mobil' ? field('address', 'Adresse (Einsatzort) *', 'text', 'Straße, Hausnummer, PLZ, Ort', v.address, 'Bitte geben Sie eine vollständige Adresse ein.') : ''}
+      <div class="bk-field bk-field--notes">
         <label for="bk-notes">Anmerkungen</label>
         <textarea id="bk-notes" rows="3" data-field="notes" placeholder="Fahrzeugmodell, Zustand, besondere Wünsche…">${esc(c.notes)}</textarea>
       </div>
-      <div class="bk-field bk-field--wide">
+      <div class="bk-field bk-field--photos">
         <label>Fahrzeugfotos * <span style="text-transform:none;letter-spacing:0">(1–${MAX_PHOTOS} Fotos)</span></label>
         ${S.photos.length < MAX_PHOTOS ? `<label class="bk-drop" id="bk-drop">
-          Fotos auswählen oder hierher ziehen <span>${S.photos.length} / ${MAX_PHOTOS}</span>
-          <input type="file" accept="image/*" multiple hidden id="bk-file" />
+          Fotos auswählen<i class="bk-drop-drag"> oder hierher ziehen</i> <span>${S.photos.length} / ${MAX_PHOTOS}</span>
+          <input type="file" accept="image/*" multiple class="bk-file" id="bk-file" />
         </label>` : ''}
         ${shots ? `<div class="bk-shots">${shots}</div>` : ''}
         ${bad(v.photos, 'Bitte laden Sie mindestens 1 Foto hoch.')}
@@ -740,12 +844,12 @@ function viewContact() {
         </label>
         ${bad(v.consent, 'Bitte bestätigen Sie die Bedingungen.')}
       </div>
-    </div>
-    ${S.sendError ? `<p class="bk-msg bk-warn" role="alert">${esc(S.sendError)} <a href="tel:${esc(FACTS.tel)}">+43 664 2546078</a></p>` : ''}
-    ${foot('Anfrage absenden', 'submit')}`;
+    </div>`;
 }
 
 /* ---- step 5 · Bestätigung */
+/* 2026-11-04: the actions („Zum Kalender hinzufügen" first) stand right under the heading, as on Fresha's confirmation —
+   on a phone they used to sit under the receipt and three contact tiles, a screen and a half down. */
 function viewDone() {
   const t = totals();
   const terms = multiDayTerms(S.mode);
@@ -760,6 +864,13 @@ function viewDone() {
     <h1 class="bk-h">Anfrage<br>erhalten.</h1>
     <p class="bk-lead">${esc(FACTS.reply)}</p>
     ${S.photoWarning ? `<p class="bk-msg bk-warn">${esc(S.photoWarning)}</p>` : ''}
+
+    <div class="bk-acts">
+      ${S.dt.date ? `<a class="bk-act bk-act--main" href="${icsHref()}" download="elite-termin.ics">Zum Kalender hinzufügen</a>` : ''}
+      <a class="bk-act" href="tel:${esc(FACTS.tel)}">Anrufen</a>
+      <a class="bk-act" href="mailto:${esc(FACTS.mail)}">E-Mail schreiben</a>
+      <button class="bk-act" type="button" data-act="again">Neue Anfrage</button>
+    </div>
 
     <div class="bk-table">
       <p class="bk-sum-h">Ihre Buchungsübersicht</p>
@@ -776,13 +887,6 @@ function viewDone() {
       <a href="tel:${esc(FACTS.tel)}"><small>Telefon</small>+43 664 2546078</a>
       <a href="mailto:${esc(FACTS.mail)}"><small>E-Mail</small>${esc(FACTS.mail)}</a>
       <div><small>${S.mode === 'mobil' ? 'Mobiler Service' : 'Im Studio'}</small>${esc(S.mode === 'mobil' ? S.contact.address : FACTS.studio[S.place] || '')}</div>
-    </div>
-
-    <div class="bk-acts">
-      ${S.dt.date ? `<a class="bk-act bk-act--main" href="${icsHref()}" download="elite-termin.ics">Zum Kalender hinzufügen</a>` : ''}
-      <a class="bk-act" href="tel:${esc(FACTS.tel)}">Anrufen</a>
-      <a class="bk-act" href="mailto:${esc(FACTS.mail)}">E-Mail schreiben</a>
-      <button class="bk-act" type="button" data-act="again">Neue Anfrage</button>
     </div>
 
     <a class="bk-home" href="/">Zurück zur Startseite</a>
@@ -814,33 +918,53 @@ function icsHref() {
   return `data:text/calendar;charset=utf-8,${encodeURIComponent(ics)}`;
 }
 
-/* ---- the running summary */
+/* ---- the running summary
+   2026-11-04: from the first step on (Service is step 0 now), the WHAT first and the where/when under it, and it ends in
+   the main button (cta) — the summary IS the place you leave a step from, as on Fresha and Square. On a phone the same
+   block opens as a sheet from the bottom bar. The price note is the client's own Preishinweis, words only dropped:
+   „Die angegebenen Preise sind Richtpreise … Der endgültige Preis wird vor Ort individuell festgelegt." */
 function viewSide() {
-  if (S.step < 1 || S.step > 4) return null;
+  if (S.step > 4) return null;
   const t = totals();
   const d = duration();
   const row = (k, val, add) => `<div class="bk-sum-row${add ? ' is-add' : ''}"><span>${k}</span><b>${val}</b></div>`;
 
-  const lines = S.items.map((i) => `<div class="bk-sum-row">
+  const lines = S.items.map((i) => `<div class="bk-sum-row bk-sum-item">
       <span>${esc(i.name)}</span>
       <b>${esc(formatFrom(linePrice(i, S.size)))}</b>
-      <button class="bk-chip-x" type="button" data-act="pick" data-id="${esc(i.id)}" aria-label="Entfernen">×</button>
+      <button class="bk-chip-x" type="button" data-act="pick" data-id="${esc(i.id)}" aria-label="${esc(i.name)} entfernen">×</button>
     </div>`).join('');
 
   return `<div class="bk-side-in">
-    <p class="bk-sum-h">Ihre Auswahl</p>
-    ${row('Service-Art', S.mode === 'mobil' ? 'Mobiler Service' : 'Im Studio')}
-    ${S.mode === 'studio' && S.place ? row('Standort', esc(town(S.place))) : ''}
+    <div class="bk-side-top"><p class="bk-sum-h">Ihre Auswahl</p><button class="bk-sheet-x" type="button" data-act="sheet" aria-label="Zusammenfassung schließen">×</button></div>
     ${lines || '<p class="bk-sum-empty">Noch keine Leistung gewählt.</p>'}
+    ${S.mode ? row('Service-Art', S.mode === 'mobil' ? 'Mobiler Service' : 'Im Studio') : ''}
+    ${S.mode === 'studio' && S.place ? row('Standort', esc(town(S.place))) : ''}
     ${S.size ? row(S.size.name, esc(t.anySized ? sizeFactorLabel(S.size) : 'kein Größenfaktor')) : ''}
     ${S.mode === 'mobil' ? row('Anfahrtspauschale', `+${esc(formatEuro(MOBILE_SURCHARGE))}`, true) : ''}
     ${t.mobilPkg > 0 ? row('Mobil-Aufpreis', `+${esc(formatEuro(t.mobilPkg))}`, true) : ''}
     ${S.items.length ? row('Dauer', esc(d.multiDay ? daysLabel(d.spanDays) : durLabel(d.durationMin))) : ''}
-    ${S.dt.date ? row('Termin', esc(germanFull(S.dt.date)) + (S.dt.time ? ` · ${S.dt.time}` : '')) : ''}
+    ${S.dt.date ? row('Termin', esc(shortDate(S.dt.date)) + (S.dt.time ? ` · ${S.dt.time}` : '')) : ''}
     ${S.items.length ? `<div class="bk-sum-total"><span>Geschätzt</span><b>${esc(formatFrom(t.total))}</b></div>` : ''}
     ${S.items.length && t.anySized && !S.size ? '<p class="bk-sum-hint">Im Schritt „Fahrzeug" kommt der Größenfaktor Ihrer Klasse dazu.</p>' : ''}
     ${t.onRequest ? '<p class="bk-sum-hint">Großfahrzeuge: den Aufpreis nennen wir nach dem Blick aufs Fahrzeug.</p>' : ''}
+    ${S.items.length ? '<p class="bk-sum-hint bk-sum-note">Richtpreise — der endgültige Preis wird vor Ort individuell festgelegt.</p>' : ''}
+    ${cta()}
   </div>`;
+}
+
+/* ---- the phone's bottom bar (2026-11-04): what is in the cart and what it costs, and the main button. Fresha iOS:
+   „Total US$15,45 [Continue]". A tap on the left half opens the whole summary as a sheet. */
+function viewBar() {
+  if (S.step > 4) return '';
+  const t = totals();
+  const n = S.items.length;
+  const what = n === 0 ? 'Noch keine Leistung' : n === 1 ? S.items[0].name : `${n} Leistungen`;
+  return `<button class="bk-bar-sum" type="button" data-act="sheet" aria-expanded="${!!S.sheet}" aria-controls="bk-side">
+      <span class="bk-bar-l">${esc(what)}</span>
+      <span class="bk-bar-t">${n ? esc(formatFrom(t.total)) : '—'}<span class="bk-bar-more">${n ? 'Details' : ''}</span></span>
+    </button>
+    ${cta()}`;
 }
 
 /* ── render ────────────────────────────────────────────────────────────────── */
@@ -851,28 +975,71 @@ const sideEl = $('#bk-side');
 const stageEl = $('.bk-stage');
 const modalEl = $('#bk-modal');
 const devEl = $('.bk-dev');
+// 2026-11-04: the phone's bottom bar — buchen.html carries <div id="bk-bar">; an older page without it gets one here
+const barEl = $('#bk-bar') || document.body.appendChild(Object.assign(document.createElement('div'), { id: 'bk-bar', className: 'bk-bar' }));
 
 function render() {
   railEl.innerHTML = STEPS.map((label, i) => {
     const state = S.step === i ? ' is-now' : S.step > i ? ' is-done' : '';
-    return `<li><button class="bk-step${state}" type="button"${S.step > i ? ` data-act="goto" data-v="${i}"` : ' disabled'}>
+    return `<li${S.step === i ? ' class="is-now"' : ''}><button class="bk-step${state}" type="button"${S.step > i ? ` data-act="goto" data-v="${i}"` : ' disabled'}${S.step === i ? ' aria-current="step"' : ''}>
       <span class="bk-step-n">${S.step > i ? '✓' : i + 1}</span><span class="bk-step-t">${label}</span>
     </button></li>`;
   }).join('');
 
-  const views = [viewPlace, viewServices, viewVehicle, viewDate, viewContact, viewDone];
+  const views = [viewServices, viewPlace, viewVehicle, viewDate, viewContact, viewDone];   // 2026-11-04: Service first
   mainEl.innerHTML = views[S.step]();
-  modalEl.innerHTML = S.pending ? dialog() : S.placeOpen ? placeDialog() : S.phoneFor ? phoneDialog() : '';
+  const sheetOn = !!S.sheet && S.step <= 4;
+  modalEl.innerHTML = S.pending ? dialog() : S.placeOpen ? placeDialog() : S.phoneFor ? phoneDialog()
+    : sheetOn ? '<div class="bk-sheet-veil" data-act="sheet" aria-hidden="true"></div>' : '';
 
   const side = viewSide();
   sideEl.hidden = !side;
   sideEl.innerHTML = side || '';
+  sideEl.classList.toggle('is-sheet', sheetOn);
   stageEl.classList.toggle('is-solo', !side);
+  const bar = viewBar();
+  barEl.innerHTML = bar;
+  barEl.hidden = !bar;
+  document.documentElement.classList.toggle('bk-has-bar', !!bar);
+  document.documentElement.classList.toggle('bk-sheet-open', sheetOn);
 
-  if (S.step === 3) showFirstSlot();
+  if (S.step === 0) fitTabs();
+  if (S.step === 3) { fitDay(); showFirstSlot(); }
   if (S.step === 4) wirePhotos();
   if (devEl) devEl.hidden = !CAL.demo;
 }
+
+/** 2026-11-04: when the eight tabs are wider than the column (a phone, or a laptop with the summary beside it) the row
+    slides: its edge fades, and the open tab is brought into view — a „Buchen" for an add-on opens „Zusatzpakete", which
+    otherwise sat off-screen to the right. Scrolled by hand (scrollLeft), so the page itself never moves. */
+function fitTabs() {
+  const row = $('.bk-tabs', mainEl);
+  if (!row) return;
+  const over = row.scrollWidth > row.clientWidth + 1;
+  row.classList.toggle('is-scroll', over);
+  const on = $('.bk-tab.is-on', row);
+  if (!over || !on) return;
+  const a = on.getBoundingClientRect();
+  const b = row.getBoundingClientRect();
+  row.scrollLeft += (a.left + a.width / 2) - (b.left + b.width / 2);
+}
+
+/** 2026-11-04: the day view is as tall as the first screen has room for — between 220 px and its natural 62 px per hour —
+    so the day strip, the slots and the main button are in view together (a ten-hour day was 620 px, the button 364 px
+    below the fold at 1440 × 900). Measured where the day starts on the PAGE, because a step always opens at the top. */
+function fitDay() {
+  const cd = $('.bk-cd', mainEl);
+  const body = cd && $('.bk-cd-body', cd);
+  if (!body) return;
+  const natural = +cd.dataset.natural || 620;
+  const barH = barEl && !barEl.hidden && getComputedStyle(barEl).display !== 'none' ? barEl.getBoundingClientRect().height : 0;
+  const top = body.getBoundingClientRect().top + window.scrollY;
+  const room = window.innerHeight - top - barH - 20;
+  cd.style.setProperty('--bk-cd-h', `${Math.round(Math.max(220, Math.min(natural, room)))}px`);
+}
+let fitTimer = 0;
+window.addEventListener('resize', () => { clearTimeout(fitTimer); fitTimer = setTimeout(() => { if (S.step === 3) fitDay(); }, 120); });
+SHORT.addEventListener('change', () => { if (S.step === 0) render(); });
 
 /** Bring the earliest free slot into view — a day whose only opening is at 16:00, or a Friday on a
     phone's sideways-scrolling week, would otherwise sit outside the box and read as "nothing free". */
@@ -900,18 +1067,57 @@ function dialog() {
   </div>`;
 }
 
-/** Step change: the new step slides in from the side it came from, and the page goes back to the top. */
-function go(step) {
+/** Step change: the new step slides in from the side it came from, and the page goes back to the top.
+    2026-11-04: every step is a history entry, so the phone's back button (and the browser's) goes one step back instead
+    of leaving the booking and losing everything in it. `trail` mirrors the entries this page made: trail[i] = the step. */
+const trail = [];
+let at = 0;
+function go(step, fromHistory = false) {
   const cls = step > S.step ? 'is-fwd' : 'is-back';
   S.step = step;
   S.touched = false;
+  S.hint = null;
+  S.sheet = false;
+  if (!fromHistory) {
+    trail.length = at + 1;
+    trail.push(step);
+    at = trail.length - 1;
+    history.pushState({ bk: step, i: at }, '');
+  }
   if (step === 3 && CAL.loaded && !CAL.demo) loadCalendar();   // fresh free/busy on the way in
   render();
   window.scrollTo({ top: 0, behavior: 'instant' });
+  if (step === 3) fitDay();                // measured again at the top of the page
   mainEl.classList.remove('is-fwd', 'is-back');
   void mainEl.offsetWidth;                 // restart the animation on an element that never left
   mainEl.classList.add(cls);
+  $('.bk-h', mainEl)?.focus({ preventScroll: true });   // a screen reader starts reading at the new step, not the old button
 }
+
+/** „Zurück": the browser's back when the entry before is the step before (so the two never disagree), else a new entry. */
+function back() {
+  if (S.step <= 0) return;
+  if (at > 0 && trail[at - 1] === S.step - 1) history.back();
+  else go(S.step - 1);
+}
+
+window.addEventListener('popstate', (e) => {
+  const st = e.state;
+  if (!st || typeof st.bk !== 'number') return;
+  at = st.i ?? 0;
+  if (S.step === 5) {
+    // the request is sent: back leaves the booking for the page before it, instead of reopening a filled form
+    history.go(-(at + 1));
+    return;
+  }
+  S.pending = null; S.placeOpen = false; S.phoneFor = null;
+  // after a reload the older entries still exist, but the cart they were made with does not: never land on a step whose
+  // earlier steps are unanswered — stop at the first one that is
+  let target = st.bk;
+  for (let s = 0; s < target; s++) if (!canLeave(s)) { target = s; break; }
+  if (target !== S.step) go(target, true);
+  else render();
+});
 mainEl.addEventListener('animationend', () => mainEl.classList.remove('is-fwd', 'is-back'));
 
 /* ── sending (photos → Cloudinary, the booking → POST /api/book) ───────────── */
@@ -1011,11 +1217,24 @@ async function submit() {
 /* Esc closes the standort popup. There was no keyboard handler on this page at all before
    2026-09-22 — the price notice could only be dismissed with the mouse. Now both can. */
 document.addEventListener('keydown', (e) => {
+  // 2026-11-04: the cards are <div role="button"> — Enter and Space press them, as they would a real button
+  if ((e.key === 'Enter' || e.key === ' ') && e.target.matches?.('[role="button"][data-act]')) { e.preventDefault(); e.target.click(); return; }
   if (e.key !== 'Escape') return;
   if (S.placeOpen) { S.placeOpen = false; render(); }
   else if (S.phoneFor) { S.phoneFor = null; render(); }
   else if (S.pending) confirmPending();
+  else if (S.sheet) { S.sheet = false; render(); }
 });
+
+/** 2026-11-04: „Anfrage absenden" pressed with something missing — the errors show and the first field gets the focus. */
+function showFirstError() {
+  const err = $('.bk-err', mainEl);
+  const field = err && err.closest('.bk-field');
+  const target = field && $('input, textarea', field);
+  if (!field) return;
+  field.scrollIntoView({ block: 'center', behavior: reduced ? 'instant' : 'smooth' });
+  target?.focus({ preventScroll: true });
+}
 
 document.addEventListener('click', (e) => {
   const el = e.target.closest('[data-act]');
@@ -1025,7 +1244,9 @@ document.addEventListener('click', (e) => {
   const act = el.dataset.act;
   const v = el.dataset.v;
 
+  if (act === 'sheet') { S.sheet = !S.sheet; return render(); }
   if (act === 'mode') {
+    S.hint = null;
     S.mode = v;
     if (v === 'mobil') { S.place = null; S.placeOpen = false; }
     else {
@@ -1034,7 +1255,7 @@ document.addEventListener('click', (e) => {
     }
     return render();
   }
-  if (act === 'place') { S.place = v; S.placeOpen = false; dropTakenPick(); return render(); }
+  if (act === 'place') { S.hint = null; S.place = v; S.placeOpen = false; dropTakenPick(); return render(); }
   if (act === 'closeplace') { S.placeOpen = false; return render(); }
   if (act === 'phone') { S.phoneFor = el.dataset.id; return render(); }
   if (act === 'closephone') { S.phoneFor = null; return render(); }
@@ -1051,9 +1272,10 @@ document.addEventListener('click', (e) => {
     }
     return;
   }
-  if (act === 'size') { S.size = VEHICLE_SIZES.find((c) => c.id === v); return render(); }
+  if (act === 'size') { S.hint = null; S.size = VEHICLE_SIZES.find((c) => c.id === v); return render(); }
   if (act === 'week') {
     const n = now();
+    S.weekTouched = true;
     if (v === 'prev') S.weekStart = addDays(S.weekStart, -7);
     else if (v === 'next') S.weekStart = addDays(S.weekStart, 7);
     else if (v === 'today') S.weekStart = weekStartMonday(n);
@@ -1070,11 +1292,13 @@ document.addEventListener('click', (e) => {
   }
   if (act === 'slot') {
     S.calNote = null;
+    S.hint = null;
     S.dt = { ...S.dt, date: dateOf(el.dataset.d), time: el.dataset.t, multiDay: false, spanDays: null, endDate: null };
     return render();
   }
   if (act === 'day') {
     S.calNote = null;
+    S.hint = null;
     const d = duration();
     const start = dateOf(el.dataset.d);
     const span = workingSpan(start, d.spanDays);
@@ -1090,12 +1314,18 @@ document.addEventListener('click', (e) => {
   }
   if (act === 'again') { location.reload(); return; }
   if (act === 'goto') return go(+v);
-  if (act === 'back') return go(S.step - 1);
-  if (act === 'next') { if (canLeave()) go(S.step + 1); return; }
+  if (act === 'back') return back();
+  if (act === 'next') {
+    if (canLeave()) go(S.step + 1);
+    else { S.hint = missing(); render(); }
+    return;
+  }
   if (act === 'reloadcal') { CAL.failed = false; render(); loadCalendar(); return; }
   if (act === 'submit') {
+    if (S.sending) return;
     S.touched = true;
-    if (!canLeave() || S.sending) return render();
+    if (!canLeave()) { S.hint = missing(); render(); showFirstError(); return; }
+    S.hint = null;
     submit();
   }
 });
@@ -1110,15 +1340,13 @@ document.addEventListener('input', (e) => {
   const key = e.target.dataset?.field;
   if (!key) return;
   S.contact[key] = e.target.type === 'checkbox' ? e.target.checked : e.target.value;
-  if (S.touched || e.target.type === 'checkbox') {
-    // re-rendering on every keystroke would lose the caret: only the button's state can change
-    const btn = $('.bk-next', mainEl);
-    if (btn) btn.disabled = !canLeave();
-    if (e.target.type === 'checkbox') render();
-    return;
-  }
-  const btn = $('.bk-next', mainEl);
-  if (btn) btn.disabled = !canLeave();
+  if (e.target.type === 'checkbox') return render();
+  // re-rendering on every keystroke would lose the caret: only the main buttons' state changes (summary + phone bar)
+  const ok = canLeave();
+  document.querySelectorAll('.bk-next[data-act="submit"]').forEach((btn) => {
+    btn.classList.toggle('is-blocked', !ok);
+    if (ok) btn.removeAttribute('aria-disabled'); else btn.setAttribute('aria-disabled', 'true');
+  });
 });
 
 /** Photos: an object URL for the preview here; the file itself goes to Cloudinary on submit. */
@@ -1176,10 +1404,41 @@ function wirePhotos() {
 
 /* ── boot ──────────────────────────────────────────────────────────────────── */
 
-// The homepage links here plainly, but the live site also accepts ?service=mobil from the
-// mobile-service page — keep the same entry point.
-if (new URLSearchParams(location.search).get('service') === 'mobil') { S.mode = 'mobil'; S.step = 1; }
+// The live site accepts ?service=mobil from the mobile-service page — keep the same entry point. Since 2026-11-04 it only
+// answers the Standort question in advance; the visitor still starts with the services (Service first).
+const params = new URLSearchParams(location.search);
+if (params.get('service') === 'mobil') S.mode = 'mobil';
+
+/* 2026-11-04 — the way in from a price card: buchen.html?leistung=<id>[,<id>…]. The ids are this page's own (`tier-…`,
+   `${categoryId}-${index}`); _build/packages.mjs writes one into every „Buchen" and stops the build if one does not resolve
+   in assets/data/services.js. An unknown or expired id is skipped, never guessed. The card lands in the cart without the
+   Preishinweis dialog — its words stand in the summary — and its tab opens. A „Nur auf Termin" id opens the phone dialog. */
+for (const id of (params.get('leistung') || '').split(',').map((s) => s.trim()).filter(Boolean)) {
+  const src = sourceOf(id);
+  if (!src || (src.pkg.until && !inSeason(src.pkg))) continue;
+  S.tab = src.cat ? src.cat.id : 'aio';
+  if (src.pkg.phoneOnly) { S.phoneFor = id; continue; }
+  if (!has(id)) S.items.push(itemById(id));
+}
+if (S.items.length) { const d = duration(); lastShape = d.multiDay ? `m${d.spanDays}` : `s${d.durationMin}`; }
+
+// the first history entry of the booking (a reload keeps the index the entry already had)
+at = history.state && typeof history.state.i === 'number' ? history.state.i : 0;
+trail[at] = S.step;
+history.replaceState({ bk: S.step, i: at }, '');
 render();
 loadCalendar();
 // every 30 s while the Termin step is open and the tab is seen, so a slot taken meanwhile disappears
 setInterval(() => { if (S.step === 3 && document.visibilityState === 'visible') loadCalendar(); }, 30_000);
+// a „Buchen" for a card far down a long tab (an add-on in „Beschichten") lands with that card in view, not below the fold.
+// Cosmetic, so it runs AFTER the calendar has been asked for and can never stop the page from working: no
+// `checkVisibility()` (iOS before 17.4 does not have it and would have thrown here) and a try around the whole of it.
+try {
+  if (S.items.length) {
+    const picked = $(`.bk-tile[data-id="${CSS.escape(S.items[S.items.length - 1].id)}"]`, mainEl);
+    const r = picked && picked.getBoundingClientRect();
+    const barShown = !barEl.hidden && getComputedStyle(barEl).display !== 'none';
+    const floor = innerHeight - (barShown ? barEl.getBoundingClientRect().height : 0);
+    if (r && (r.bottom > floor || r.top < 0)) picked.scrollIntoView({ block: 'center' });
+  }
+} catch { /* a page that cannot scroll there still works */ }

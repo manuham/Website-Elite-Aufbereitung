@@ -9,5 +9,23 @@ export const FACTS = {
   },
   "opensName": "Nüziders",
   "opensNote": "Ab 2. November 2026 wieder geöffnet",
-  "reply": "Wir melden uns innerhalb von 24 Stunden zur Bestätigung."
+  "reply": "Wir melden uns innerhalb von 24 Stunden zur Bestätigung.",
+  "zusatzGroups": [
+    {
+      "id": "innenraum",
+      "title": "Innenraum"
+    },
+    {
+      "id": "aussen",
+      "title": "Außen"
+    },
+    {
+      "id": "polieren",
+      "title": "Polieren"
+    },
+    {
+      "id": "beschichten",
+      "title": "Beschichten"
+    }
+  ]
 };
