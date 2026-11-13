@@ -57,9 +57,10 @@ function pagePayload(items, size, mode) {
 }
 
 const NOW = new Date('2026-11-13T09:00:00Z');
+// Everything the page lets into a cart: phoneOnly cards open the phone dialog instead.
 const ALL = [
-  ...tierPackages.map(pkgItem),
-  ...serviceCategories.flatMap((cat) => cat.packages.map((pkg, i) => svcItem(cat, pkg, i))),
+  ...tierPackages.filter((p) => !p.phoneOnly).map(pkgItem),
+  ...serviceCategories.flatMap((cat) => cat.packages.flatMap((pkg, i) => (pkg.phoneOnly ? [] : [svcItem(cat, pkg, i)]))),
 ];
 
 function expectSame(items, size, mode) {

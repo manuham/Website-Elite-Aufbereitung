@@ -159,7 +159,12 @@ collapsible folders; the booking Step-1 still lists them flat.
   a past time today, a multi-day start that is today or not Mon–Fri, a Winterpaket (`until`) span
   past its last day, and a studio location that is not one of `FACTS.studio`. Customer free text
   (name, address, notes) has links defanged (`https[:]//`, `www[.]`) and `<>` removed before it
-  reaches the calendar/mail. `booking-equivalence.test.js` replays every cart the page can build
+  reaches the calendar/mail. Also refused: a non-canonical ID (`keramik-01`), any `phoneOnly`
+  package/service (the page routes those to the phone dialog), an impossible day (`2026-11-31`),
+  an e-mail containing `<>"/\:;,()[]`, and a photo URL that is not exactly
+  `https://res.cloudinary.com/<cloud>/image/upload/…` without whitespace, query or fragment (the
+  stored value is the parser's `href`, never the raw input). A well-formed booking whose day/time
+  has passed while the customer typed gets `409 slot_taken` (back to the calendar), not a 400. `booking-equivalence.test.js` replays every cart the page can build
   (each service × vehicle class × mode, every pair) and pins that the calendar numbers equal what
   the customer confirmed. If `pkgItem`/`svcItem` in `site/booking.js` change, update that test.
   (The pre-factor field `vehicleAufpreis` is no longer read — the server computes the factor.)

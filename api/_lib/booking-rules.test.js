@@ -74,8 +74,8 @@ describe('the cart is rebuilt from IDs', () => {
     expect(c.duration).toEqual({ multiDay: false, durationMin: 90, spanDays: null });
   });
   it('multi-day spans come from the data', () => {
-    const c = rebuildCart(['keramik-1'], 'SUV / Van', 'studio');
-    expect(c.duration).toEqual({ multiDay: true, spanDays: 3, durationMin: null });
+    const c = rebuildCart(['zusatz-13', 'lenkrad-0'], 'SUV / Van', 'studio');
+    expect(c.duration).toEqual({ multiDay: true, spanDays: 2, durationMin: null });
   });
   it('refuses a missing or unknown vehicle class and empty carts', () => {
     expect(rebuildCart(['handwaesche-1'], 'Panzer', 'studio').ok).toBe(false);
@@ -91,6 +91,30 @@ describe('the cart is rebuilt from IDs', () => {
     expect(c.anfahrt).toBe(70);
     expect(c.mobilPkg).toBe(45);
     expect(c.totalStr).toBe('ab €735,-');
+  });
+});
+
+describe('review 2026-11-13: id, date and slot edge cases', () => {
+  it('zero-padded and other non-canonical ids are refused', () => {
+    expect(itemForId('keramik-01')).toBeNull();
+    expect(itemForId('handwaesche-1 ')).toBeNull();
+    expect(itemForId('__proto__-0')).toBeNull();
+    expect(itemForId('constructor-0')).toBeNull();
+    expect(itemForId('handwaesche-1e0')).toBeNull();
+  });
+  it('phoneOnly packages and services can not be booked online', () => {
+    for (const id of ['tier-gold', 'tier-elite', 'politur-1', 'keramik-0', 'keramik-1', 'keramik-2']) {
+      expect(itemForId(id), id).toBeNull();
+    }
+  });
+  it('impossible calendar days are refused', () => {
+    for (const d of ['2026-11-31', '2026-12-99', '2026-12-00', '2026-13-01', '2027-02-29']) {
+      expect(inBookingWindow(d, NOW), d).toBe(false);
+    }
+  });
+  it('a slot that passed while the customer typed is "passed", not invalid (→ 409 slot_taken)', () => {
+    expect(validateBooking(body({ date: '2026-11-13', time: '09:30' }), NOW)).toEqual({ ok: false, passed: true });
+    expect(validateBooking(body({ date: '2026-11-11' }), NOW)).toEqual({ ok: false });
   });
 });
 
@@ -138,9 +162,9 @@ describe('validateBooking (the request the page sends)', () => {
     expect(validateBooking(body({ multiDay: true, spanDays: 30, time: null }), NOW).ok).toBe(false);
   });
   it('a real multi-day cart still books, with the span from the data', () => {
-    const r = validateBooking(body({ services: [{ id: 'keramik-1' }], multiDay: true, spanDays: 30, time: null, durationMin: null, date: '2026-11-16' }), NOW);
+    const r = validateBooking(body({ services: [{ id: 'zusatz-13' }, { id: 'lenkrad-0' }], multiDay: true, spanDays: 30, time: null, durationMin: null, date: '2026-11-16' }), NOW);
     expect(r.ok).toBe(true);
-    expect(r.data.spanDays).toBe(3);
+    expect(r.data.spanDays).toBe(2);
   });
   it('past, far-future and unknown-service bookings are refused', () => {
     expect(validateBooking(body({ date: '2026-11-01' }), NOW).ok).toBe(false);

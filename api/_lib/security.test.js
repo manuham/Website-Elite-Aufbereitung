@@ -54,9 +54,29 @@ describe('sanitisation', () => {
     ]);
   });
   it('sanitizePhotoUrls caps count and handles non-arrays', () => {
-    const many = Array.from({ length: 10 }, (_, i) => `https://res.cloudinary.com/c/${i}.jpg`);
+    const many = Array.from({ length: 10 }, (_, i) => `https://res.cloudinary.com/c/image/upload/${i}.jpg`);
     expect(sanitizePhotoUrls(many, { cloudName: 'c', max: 4 })).toHaveLength(4);
     expect(sanitizePhotoUrls('nope')).toEqual([]);
+  });
+  it('sanitizePhotoUrls refuses smuggled text, markup and other paths (review 2026-11-13)', () => {
+    const ok = 'https://res.cloudinary.com/ddtmjszd6/image/upload/v1/a.jpg';
+    const bad = [
+      `${ok}\n\nAnzahlung an https://evil.example/pay`,
+      `${ok}\t<a href="https://evil.example">x</a>`,
+      `${ok}?x=https://evil.example`,
+      `${ok}#frag`,
+      'https://res.cloudinary.com/ddtmjszd6/raw/upload/x.pdf',
+      'https://user:pw@res.cloudinary.com/ddtmjszd6/image/upload/a.jpg',
+      `${ok}/${'a'.repeat(300)}`,
+    ];
+    expect(sanitizePhotoUrls([...bad, ok], { cloudName: 'ddtmjszd6' })).toEqual([ok]);
+  });
+  it('isEmail refuses links and markup (review 2026-11-13)', () => {
+    expect(isEmail('https://evil.example/pay@a.co')).toBe(false);
+    expect(isEmail('<a/href=x>y</a>@a.co')).toBe(false);
+    expect(isEmail('max.muster+elite@gmx.at')).toBe(true);
+    expect(isEmail('anna_o-k@sub.example.co.at')).toBe(true);
+    expect(isEmail("o'brien@example.ie")).toBe(true);
   });
 });
 

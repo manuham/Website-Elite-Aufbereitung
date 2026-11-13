@@ -93,7 +93,11 @@ export function enforceRateLimit(req, res, { name, max, windowMs }) {
 export const ISO_DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
 export const HM_TIME_RE = /^([01]\d|2[0-3]):[0-5]\d$/;
 // Deliberately loose but bounded — matches the client-side checks in BookingPage.
-const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+// 2026-11-13 (security review): the address is written into the owner's calendar, so it may not
+// carry a link or markup ("https://evil.example/pay@a.co" passed the old /^[^\s@]+@…/ shape).
+// Characters that real addresses practically never use — <>"/\:;,()[] and backticks — are refused
+// (an apostrophe stays allowed before the @: o'brien@… is a real address).
+const EMAIL_RE = /^[^\s@<>"`/\\:;,()[\]]+@[^\s@<>"'`/\\:;,()[\]]+\.[^\s@<>"'`/\\:;,()[\]]+$/;
 const PHONE_RE = /^[+\d][\d\s\-/]{6,}$/;
 
 export function isIsoDate(v) { return typeof v === 'string' && ISO_DATE_RE.test(v); }
@@ -122,17 +126,27 @@ export function cleanMultiline(v, max) {
  */
 export function sanitizePhotoUrls(urls, { cloudName, max = 4 } = {}) {
   if (!Array.isArray(urls)) return [];
-  const host = cloudName ? `res.cloudinary.com/${cloudName}/` : 'res.cloudinary.com/';
+  // 2026-11-13 (security review): the WHATWG parser silently drops line breaks and tabs, so a
+  // valid URL followed by "\n\nAnzahlung an https://…" used to pass and was written VERBATIM into
+  // the calendar. Now: no whitespace/quotes/brackets at all, a length cap, the exact upload path,
+  // and the parser's normalised href (never the raw input) is what gets stored.
+  const prefix = cloudName ? `/${cloudName}/image/upload/` : '/';
   return urls
-    .filter((u) => typeof u === 'string')
+    .filter((u) => typeof u === 'string' && u.length <= 300)
     .map((u) => u.trim())
-    .filter((u) => {
+    // eslint-disable-next-line no-control-regex
+    .filter((u) => !/[\s<>"'`\\\x00-\x1f\x7f]/.test(u))
+    .map((u) => {
       try {
         const parsed = new URL(u);
-        return parsed.protocol === 'https:' && `${parsed.host}${parsed.pathname}`.startsWith(host);
+        const ok = parsed.protocol === 'https:' && parsed.host === 'res.cloudinary.com'
+          && parsed.pathname.startsWith(prefix) && !parsed.search && !parsed.hash
+          && !parsed.username && !parsed.password;
+        return ok ? parsed.href : null;
       } catch {
-        return false;
+        return null;
       }
     })
+    .filter(Boolean)
     .slice(0, max);
 }

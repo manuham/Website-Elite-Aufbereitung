@@ -68,28 +68,36 @@ export function spanEnd(startIso, count) {
  */
 export function inBookingWindow(iso, now = new Date()) {
   if (typeof iso !== 'string' || !ISO_RE.test(iso)) return false;
+  if (addDaysIso(iso, 0) !== iso) return false;         // a real calendar day: no 2026-11-31, 2026-12-99
   const today = viennaToday(now);
   return iso >= addDaysIso(today, -1) && iso <= addDaysIso(today, HORIZON_DAYS);
 }
 
 // ─── the cart, rebuilt from IDs ──────────────────────────────────────────────
 
-/** The package or service behind an id (same lookup as sourceOf() in site/booking.js), or null. */
+/**
+ * The package or service behind an id (same lookup as sourceOf() in site/booking.js), or null.
+ * Refused as well (review 2026-11-13): a non-canonical index ("keramik-01" used to resolve but
+ * skip the size factor and the dedupe) and anything marked `phoneOnly` — the page sends those
+ * to the phone dialog and never lets them into a cart.
+ */
 export function itemForId(id) {
   if (typeof id !== 'string' || id.length > 80) return null;
   const p = tierPackages.find((x) => x.id === id);
   if (p) {
+    if (p.phoneOnly) return null;
     return {
       id: p.id, name: `${p.tier} – ${p.name}`, priceNum: p.price, priceSuffix: null, until: p.until || null,
       durationMin: p.durationMin ?? null, durationDays: p.durationDays ?? null,
       mobilExtraMin: p.mobilExtraMin ?? 0, mobilSurcharge: p.mobilSurcharge ?? 0,
     };
   }
-  const m = id.match(/^(.+)-(\d+)$/);
+  const m = id.match(/^([a-z][a-z0-9-]*)-(0|[1-9]\d{0,2})$/);
   if (!m) return null;
   const cat = serviceCategories.find((c) => c.id === m[1]);
-  const pkg = cat && cat.packages[Number(m[2])];
-  if (!pkg) return null;
+  const idx = Number(m[2]);
+  const pkg = cat && Object.hasOwn(cat.packages, idx) ? cat.packages[idx] : null;
+  if (!pkg || pkg.phoneOnly) return null;
   return {
     id, name: pkg.name, priceNum: pkg.price, priceSuffix: pkg.priceSuffix ?? null, until: pkg.until || null,
     durationMin: pkg.durationMin ?? null, durationDays: pkg.durationDays ?? null,
@@ -146,22 +154,32 @@ export function rebuildCart(serviceIds, vehicleName, serviceMode) {
  * - a seasonal package (`until`, the Winterpaket) never runs past its last day
  * - a same-day slot today does not start in the past
  */
-export function dateAllowed({ date, time, duration, items }, now = new Date()) {
-  if (!inBookingWindow(date, now)) return false;
+export function dateCheck({ date, time, duration, items }, now = new Date()) {
+  if (!inBookingWindow(date, now)) return 'invalid';
   const today = viennaToday(now);
-  if (date < today) return false;                       // the window's slack is for availability only
   const lastDay = duration.multiDay ? spanEnd(date, duration.spanDays) : date;
-  for (const i of items) if (i.until && lastDay > i.until) return false;
+  for (const i of items) if (i.until && lastDay > i.until) return 'invalid';
   if (duration.multiDay) {
     // multiDayStartState(): a future working day, never today (TOO_SOON), Monday–Friday
     const w = weekdayOf(date);
-    return date > today && w >= 1 && w <= 5;
+    if (w < 1 || w > 5) return 'invalid';
+    return date > today ? 'ok' : 'passed';
   }
+  if (date < today) return 'passed';                    // the window's slack is for availability only
   if (date === today) {
     const [h, m] = String(time).split(':').map(Number);
-    if (h * 60 + m < viennaNowMin(now)) return false;
+    if (h * 60 + m < viennaNowMin(now)) return 'passed';
   }
-  return true;
+  return 'ok';
+}
+
+/**
+ * 'passed' is kept apart from 'invalid' (review 2026-11-13): a real customer can pick today 13:00
+ * at 12:29, add photos and press send at 13:01. That is answered like a taken slot (409), which
+ * the page already handles — back to the calendar with fresh data — instead of a dead-end error.
+ */
+export function dateAllowed(args, now = new Date()) {
+  return dateCheck(args, now) === 'ok';
 }
 
 // ─── free text that lands in the owner's calendar and mailbox ────────────────

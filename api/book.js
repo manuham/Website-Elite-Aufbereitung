@@ -16,7 +16,7 @@ import {
   sanitizePhotoUrls,
 } from './_lib/security.js';
 import {
-  rebuildCart, dateAllowed, defangText, sizeForName, STUDIO_ADDRESSES,
+  rebuildCart, dateCheck, defangText, sizeForName, STUDIO_ADDRESSES,
 } from './_lib/booking-rules.js';
 
 const SLOT_TAKEN = {
@@ -54,7 +54,9 @@ export function validateBooking(body, now = new Date()) {
   // stale page or a hand-made request — either way nothing is written.
   if ((multiDay === true) !== d.multiDay) return { ok: false };
   if (!d.multiDay && !isHmTime(time)) return { ok: false };
-  if (!dateAllowed({ date, time, duration: d, items: cart.items }, now)) return { ok: false };
+  const when = dateCheck({ date, time, duration: d, items: cart.items }, now);
+  if (when === 'passed') return { ok: false, passed: true };
+  if (when !== 'ok') return { ok: false };
 
   // ── contact ──
   const name = defangText(cleanStr(contact?.name, 100));
@@ -138,6 +140,9 @@ export default async function handler(req, res) {
 
   const validated = validateBooking(req.body);
   if (!validated.ok) {
+    // A well-formed booking whose time has passed while the customer typed: same answer as a
+    // taken slot, so the page returns to the calendar with fresh data (site/booking.js submit()).
+    if (validated.passed) return res.status(409).json(SLOT_TAKEN);
     return res.status(400).json(INVALID);
   }
   const b = validated.data;
