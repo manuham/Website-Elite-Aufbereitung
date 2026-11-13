@@ -1,5 +1,6 @@
 import { getBusyForRange, WORKING_HOURS } from './_lib/calendar.js';
 import { applyCors, enforceRateLimit } from './_lib/security.js';
+import { inBookingWindow } from './_lib/booking-rules.js';
 
 const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
 
@@ -42,6 +43,12 @@ export default async function handler(req, res) {
 
   if (!start || !DATE_RE.test(start)) {
     return res.status(400).json({ error: 'Invalid date format. Use YYYY-MM-DD.' });
+  }
+  // 2026-11-13 (security review N1/N2): only the window the booking page can show. Before, any
+  // past or far-future start was answered, and every new start missed the edge cache and cost a
+  // Google free/busy call — a cheap way to burn the quota and take online booking offline.
+  if (!inBookingWindow(start)) {
+    return res.status(400).json({ error: 'Date outside the booking window.' });
   }
 
   try {

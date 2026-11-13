@@ -15,6 +15,9 @@ import {
   cleanMultiline,
   sanitizePhotoUrls,
 } from './_lib/security.js';
+import {
+  rebuildCart, dateAllowed, defangText, sizeForName, STUDIO_ADDRESSES,
+} from './_lib/booking-rules.js';
 
 const SLOT_TAKEN = {
   error: 'slot_taken',
@@ -25,61 +28,52 @@ const INVALID = { error: 'Missing required fields.' };
 const CLOUD_NAME = process.env.CLOUDINARY_CLOUD_NAME || 'ddtmjszd6';
 const NOTIFY_EMAIL = process.env.NOTIFY_EMAIL || 'info.eliteaufbereitung@gmail.com';
 
-function toNum(v, { min, max, fallback = 0 }) {
-  const n = Number(v);
-  if (!Number.isFinite(n)) return fallback;
-  return Math.min(Math.max(n, min), max);
-}
-
 // Build a validated, sanitised booking payload from the raw request body.
 // Returns { ok: true, data } or { ok: false }.
-function validateBooking(body) {
+//
+// 2026-11-13 (security review E1/E6): the browser now chooses only WHICH services, WHICH vehicle
+// class, WHEN, and the contact details. Duration, span, names, prices, surcharges and the total
+// are rebuilt on the server from the service IDs (api/_lib/booking-rules.js, same data the page
+// uses), and the date must lie inside the window the page offers. Free text is defanged.
+export function validateBooking(body, now = new Date()) {
   if (!body || typeof body !== 'object') return { ok: false };
 
-  const {
-    date, time, services, contact, serviceMode, location,
-    vehicleCategory, vehicleSizeFactor, vehicleAufpreis, mobileSurcharge, mobilePackageSurcharge,
-    totalStr, photoUrls, durationMin, multiDay, spanDays,
-  } = body;
+  const { date, time, services, contact, serviceMode, location, vehicleCategory, photoUrls, multiDay } = body;
 
   // ── shape ──
   if (!isIsoDate(date)) return { ok: false };
-  const isMulti = multiDay === true;
-  if (isMulti) {
-    if (!Number.isFinite(Number(spanDays)) || Number(spanDays) < 1 || Number(spanDays) > 30) return { ok: false };
-  } else {
-    if (!isHmTime(time)) return { ok: false };
-    if (!Number.isFinite(Number(durationMin)) || Number(durationMin) < 1 || Number(durationMin) > 600) return { ok: false };
-  }
+  const mode = serviceMode === 'mobil' ? 'mobil' : 'studio';
 
-  // ── services ──
-  if (!Array.isArray(services) || services.length < 1 || services.length > 20) return { ok: false };
-  const cleanServices = services.map((s) => ({
-    id: cleanStr(s?.id, 80),
-    name: cleanStr(s?.name, 120),
-    price: cleanStr(s?.price, 40),
-    priceNum: toNum(s?.priceNum, { min: 0, max: 100000, fallback: 0 }),
-  }));
-  if (cleanServices.some((s) => !s.name)) return { ok: false };
+  // ── the cart, rebuilt from IDs (unknown id or vehicle class → refused) ──
+  if (!Array.isArray(services)) return { ok: false };
+  const cart = rebuildCart(services.map((s) => s?.id), vehicleCategory, mode);
+  if (!cart.ok) return { ok: false };
+  const d = cart.duration;
+
+  // The page and the server compute the shape from the same data. A disagreement means a
+  // stale page or a hand-made request — either way nothing is written.
+  if ((multiDay === true) !== d.multiDay) return { ok: false };
+  if (!d.multiDay && !isHmTime(time)) return { ok: false };
+  if (!dateAllowed({ date, time, duration: d, items: cart.items }, now)) return { ok: false };
 
   // ── contact ──
-  const name = cleanStr(contact?.name, 100);
+  const name = defangText(cleanStr(contact?.name, 100));
   if (name.length < 2) return { ok: false };
   if (!isPhone(contact?.phone)) return { ok: false };
   if (!isEmail(String(contact?.email || '').trim())) return { ok: false };
 
-  const mode = serviceMode === 'mobil' ? 'mobil' : 'studio';
-  const address = cleanStr(contact?.address, 200);
+  const address = defangText(cleanStr(contact?.address, 200));
   if (mode === 'mobil' && address.trim().length < 5) return { ok: false };
 
-  const vehicle = cleanStr(vehicleCategory, 100);
-  if (!vehicle) return { ok: false };
+  // In the studio the location is one of the two studio addresses; mobil = the customer's address.
+  const studio = cleanStr(location, 200);
+  if (mode === 'studio' && !STUDIO_ADDRESSES.includes(studio)) return { ok: false };
 
   const cleanContact = {
     name,
     phone: cleanStr(contact?.phone, 40),
     email: cleanStr(contact?.email, 254),
-    notes: cleanMultiline(contact?.notes, 1000),
+    notes: defangText(cleanMultiline(contact?.notes, 1000)),
     address,
   };
 
@@ -87,32 +81,32 @@ function validateBooking(body) {
     ok: true,
     data: {
       date,
-      time: isMulti ? null : time,
-      services: cleanServices,
+      time: d.multiDay ? null : time,
+      services: cart.lines,
       contact: cleanContact,
       serviceMode: mode,
-      location: cleanStr(location, 200),
-      vehicleCategory: vehicle,
-      // "×1,15 (Kompaktklasse)". `vehicleAufpreis` is the pre-factor field name a client cached
-      // across the deploy may still send — accepted so its calendar line keeps the suffix.
-      vehicleSizeFactor: cleanStr(vehicleSizeFactor ?? vehicleAufpreis, 60),
-      mobileSurcharge: toNum(mobileSurcharge, { min: 0, max: 100000, fallback: 0 }),
-      mobilePackageSurcharge: toNum(mobilePackageSurcharge, { min: 0, max: 100000, fallback: 0 }),
-      totalStr: cleanStr(totalStr, 120),
+      location: mode === 'mobil' ? address : studio,
+      vehicleCategory: sizeForName(vehicleCategory).name,
+      vehicleSizeFactor: cart.vehicleSizeFactor,
+      mobileSurcharge: cart.anfahrt,
+      mobilePackageSurcharge: cart.mobilPkg,
+      totalStr: cart.totalStr,
       photoUrls: sanitizePhotoUrls(photoUrls, { cloudName: CLOUD_NAME, max: 4 }),
-      durationMin: isMulti ? null : toNum(durationMin, { min: 1, max: 600, fallback: 90 }),
-      multiDay: isMulti,
-      spanDays: isMulti ? toNum(spanDays, { min: 1, max: 30, fallback: 1 }) : null,
+      durationMin: d.multiDay ? null : d.durationMin,
+      multiDay: d.multiDay,
+      spanDays: d.multiDay ? d.spanDays : null,
     },
   };
 }
 
-// Fire-and-forget notification email (server-side, only after a validated,
-// rate-limited booking succeeds). Never blocks or fails the booking response.
+// Backup notification email (server-side, only after a validated, rate-limited booking
+// succeeds). Awaited with a short timeout since 2026-11-13: un-awaited work after the response
+// is not guaranteed to run on Vercel, so the mail could be lost silently. Never fails the booking.
 async function sendNotificationEmail(event) {
   try {
     await fetch(`https://formsubmit.co/ajax/${encodeURIComponent(NOTIFY_EMAIL)}`, {
       method: 'POST',
+      signal: AbortSignal.timeout(4000),
       headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
       body: JSON.stringify({
         _subject: event.summary || 'Neue Terminanfrage',
@@ -164,8 +158,8 @@ export default async function handler(req, res) {
 
     const event = await createBookingEvent(b);
 
-    // Send the backup notification email server-side (fire-and-forget).
-    sendNotificationEmail(event);
+    // Send the backup notification email server-side (awaited, 4 s cap, never throws).
+    await sendNotificationEmail(event);
 
     return res.status(201).json({
       success: true,

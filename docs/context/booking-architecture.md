@@ -149,10 +149,25 @@ collapsible folders; the booking Step-1 still lists them flat.
   details: service mode, location/address, vehicle + `vehicleSizeFactor` ("×1,15 (Kompaktklasse)"),
   services at their **sized** prices, total, notes, photo URLs. Same-day events span
   `[start, start+durationMin]`; multi-day creates ONE spanning event from day-1 09:00 to
-  last-working-day 16:00. (`api/book.js` still accepts the pre-factor field name
-  `vehicleAufpreis` as a fallback, for clients cached across the deploy.)
-- A FormSubmit.co email (`info.eliteaufbereitung@gmail.com`) is sent fire-and-forget as a
-  notification backup. It does **not** touch the calendar.
+  last-working-day 16:00.
+- **The server decides every number (2026-11-13, security review).** `api/book.js` takes only the
+  service IDs, the vehicle class name, the mode, the date/time and the contact details from the
+  browser. `api/_lib/booking-rules.js` rebuilds names, sized prices, surcharges, total, duration and
+  multi-day span from the IDs, importing the **same** `site/assets/data/*` modules the page uses
+  (services, scheduling, pricing, facts). It refuses: an unknown service ID or vehicle class, a
+  same-day/multi-day shape that disagrees with the data, a date outside today..today+`HORIZON_DAYS`,
+  a past time today, a multi-day start that is today or not Mon–Fri, a Winterpaket (`until`) span
+  past its last day, and a studio location that is not one of `FACTS.studio`. Customer free text
+  (name, address, notes) has links defanged (`https[:]//`, `www[.]`) and `<>` removed before it
+  reaches the calendar/mail. `booking-equivalence.test.js` replays every cart the page can build
+  (each service × vehicle class × mode, every pair) and pins that the calendar numbers equal what
+  the customer confirmed. If `pkgItem`/`svcItem` in `site/booking.js` change, update that test.
+  (The pre-factor field `vehicleAufpreis` is no longer read — the server computes the factor.)
+- `api/availability.js` answers only starts inside today−1..today+`HORIZON_DAYS` (400 otherwise),
+  so a scripted range sweep can no longer burn the Google free/busy quota.
+- A FormSubmit.co email (`info.eliteaufbereitung@gmail.com`) is sent as a notification backup,
+  awaited with a 4 s timeout since 2026-11-13 (un-awaited work after the response may never run on
+  Vercel). It does **not** touch the calendar and never fails the booking.
 - Photos upload to Cloudinary first (`uploadPhoto`).
 
 ### Known limitation
